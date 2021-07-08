@@ -1,6 +1,7 @@
-tensorflow~=2.5.0
-tensorflow_recommenders~=0.5.1
-scann~=1.2.2
 pandas
+tensorflow==2.5.0
+tensorflow_recommenders==0.5.1
+scann==1.2.2
+numpy==1.19.5
 coverage
 pytest
