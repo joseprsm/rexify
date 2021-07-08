@@ -1,0 +1,6 @@
+tensorflow~=2.5.0
+tensorflow_recommenders~=0.5.1
+scann~=1.2.2
+pandas
+coverage
+pytest
