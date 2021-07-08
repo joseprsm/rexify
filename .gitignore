@@ -1,0 +1,8 @@
+venv
+data
+.idea
+__pycache__
+UNKNOWN.egg-info/
+
+.coverage
+
