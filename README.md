@@ -1,0 +1,1 @@
+[![CircleCI](https://circleci.com/gh/joseprsm/rexify/tree/main.svg?style=svg)](https://circleci.com/gh/joseprsm/rexify/tree/main)

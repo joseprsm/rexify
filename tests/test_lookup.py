@@ -20,5 +20,13 @@ def test_lookup():
     emb = lookup([lookup.vocabulary[0]])
     assert emb is not None
     assert isinstance(emb, tf.Tensor)
-    assert emb.shape == tf.TensorShape(32,)
+    assert emb.shape == tf.TensorShape(32)
+
+
+def test_lookup_config():
+    vocab = np.random.choice(list(string.ascii_lowercase), 10, replace=False)
+    embeddings = np.random.rand(10, 32)
+    lookup = EmbeddingLookup(
+        vocabulary=vocab,
+        embeddings=embeddings)
     assert lookup.get_config() == dict()
