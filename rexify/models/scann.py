@@ -1,14 +1,14 @@
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
-from rexify.lookup import EmbeddingLookup
+from rexify.models.lookup import EmbeddingLookupModel
 
 
 class ScaNN(tfrs.layers.factorized_top_k.ScaNN):
 
     def __init__(
             self,
-            lookup_model: EmbeddingLookup,
+            lookup_model: EmbeddingLookupModel,
             candidates: tf.data.Dataset,
             embeddings: tf.data.Dataset,
             sample_query,

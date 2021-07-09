@@ -2,8 +2,8 @@ import string
 import numpy as np
 import tensorflow as tf
 
-from rexify.index import ScaNN
-from rexify.lookup import EmbeddingLookup
+from rexify.models.scann import ScaNN
+from rexify.models.lookup import EmbeddingLookupModel
 
 
 def get_sample_data():
@@ -23,7 +23,7 @@ def get_tf_datasets(candidates, embeddings):
 
 def get_sample_positive_inputs():
     candidates, embeddings = get_sample_data()
-    lookup_model = EmbeddingLookup(vocabulary=candidates, embeddings=embeddings)
+    lookup_model = EmbeddingLookupModel(vocabulary=candidates, embeddings=embeddings)
 
     sample_query = candidates[0]
     candidates_tf, embeddings_tf = get_tf_datasets(candidates, embeddings)

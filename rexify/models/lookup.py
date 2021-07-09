@@ -1,10 +1,18 @@
+from typing import Union
+
+import numpy as np
 import tensorflow as tf
 
 
-class EmbeddingLookup(tf.keras.Model):
+class EmbeddingLookupModel(tf.keras.Model):
 
-    def __init__(self, vocabulary, embeddings, **kwargs):
-        super(EmbeddingLookup, self).__init__(**kwargs)
+    def __init__(
+            self,
+            vocabulary: Union[tf.data.Dataset, np.array],
+            embeddings: Union[tf.data.Dataset, np.array],
+            **kwargs
+    ):
+        super(EmbeddingLookupModel, self).__init__(**kwargs)
         self.vocabulary = vocabulary
         self.embeddings = embeddings
 

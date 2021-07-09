@@ -8,7 +8,7 @@ from tensorflow_transform.tf_metadata import schema_utils
 from tfx.components.trainer.fn_args_utils import DataAccessor, FnArgs
 from tfx_bsl.public import tfxio
 
-from rexify.recommender import Recommender
+from rexify.models.recommender import Recommender
 
 _FEATURE_KEYS = ['userId', 'itemId']
 _FEATURE_SPEC = {
