@@ -41,6 +41,11 @@ def test_recommender_call():
     assert query_embeddings.shape == tf.TensorShape([1, 32])
     assert candidate_embeddings.shape == tf.TensorShape([1, 32])
 
+    assert (tf.reduce_sum(
+        tf.cast(
+            query_embeddings == rex.query_model(tf.constant([[1]])),
+            tf.int32)) == 32).numpy()
+
 
 def test_recommender_get_config():
     rex = Recommender(50, 50)

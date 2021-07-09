@@ -1,45 +1,42 @@
-from typing import List
+from typing import List, Text
 
 from tfx.orchestration.pipeline import Pipeline
+from tfx.orchestration.metadata import sqlite_metadata_connection_config
+from tfx.components import CsvExampleGen, Trainer, Pusher
+from tfx.components.trainer import executor as trainer_executor
 from tfx.dsl.components.base.base_component import BaseComponent
-from tfx.components import CsvExampleGen, StatisticsGen, SchemaGen, Trainer, Pusher
+from tfx.dsl.components.base import executor_spec
+from tfx.proto import trainer_pb2
 from tfx.proto.pusher_pb2 import PushDestination
 
 
 def build(
-        data_path,
-        run_fn,
-        serving_model_dir,
-        pipeline_name,
-        pipeline_root,
-        metadata_connection_config,
-        beam_pipeline_args
+        pipeline_name: Text,
+        pipeline_root: Text,
+        data_root: Text,
+        run_fn: Text,
+        serving_model_dir: Text,
+        metadata_path: Text
 ) -> Pipeline:
 
     components: List[BaseComponent] = list()
 
-    example_gen = CsvExampleGen(input_base=data_path)
+    example_gen = CsvExampleGen(input_base=data_root)
     components.append(example_gen)
-
-    statistics_gen = StatisticsGen(examples=example_gen.outputs.examples)
-    components.append(statistics_gen)
-
-    schema_gen = SchemaGen(
-        statistics=statistics_gen.outputs.statistics,
-        infer_feature_shape=True)
-    components.append(schema_gen)
 
     trainer_args = dict(
         run_fn=run_fn,
-        schema=schema_gen.outputs.schema,
-        examples=example_gen.outputs.examples)
+        examples=example_gen.outputs.examples,
+        train_args=trainer_pb2.TrainArgs(num_steps=1000),
+        eval_args=trainer_pb2.EvalArgs(num_steps=1000),
+        custom_executor_spec=executor_spec.ExecutorClassSpec(trainer_executor.GenericExecutor))
     trainer = Trainer(**trainer_args)
     components.append(trainer)
 
     pusher_args = dict(
         model=trainer.outputs.model,
         push_destination=PushDestination(
-            filesystem=PushDestination.filesystem(
+            filesystem=PushDestination.Filesystem(
                 base_directory=serving_model_dir)))
     pusher = Pusher(**pusher_args)
     components.append(pusher)
@@ -48,5 +45,4 @@ def build(
         pipeline_name=pipeline_name,
         pipeline_root=pipeline_root,
         components=components,
-        metadata_connection_config=metadata_connection_config,
-        beam_pipeline_args=beam_pipeline_args)
+        metadata_connection_config=sqlite_metadata_connection_config(metadata_path))
