@@ -13,7 +13,7 @@ class EmbeddingLookupModel(tf.keras.Model):
             **kwargs
     ):
         super(EmbeddingLookupModel, self).__init__(**kwargs)
-        self.vocabulary = tf.strings.as_string(vocabulary)
+        self.vocabulary = tf.strings.as_string(vocabulary) if 'str' not in vocabulary.dtype.name else vocabulary
         self.embeddings = embeddings
 
         init = tf.lookup.KeyValueTensorInitializer(
