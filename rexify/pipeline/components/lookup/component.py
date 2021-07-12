@@ -21,7 +21,8 @@ class EmbeddingLookupSpec(ComponentSpec):
 
     PARAMETERS = {
         "query_model": ExecutionParameter(type=Text),
-        "feature_key": ExecutionParameter(type=Text)
+        "feature_key": ExecutionParameter(type=Text),
+        "schema": ExecutionParameter(type=Text)
     }
 
 
@@ -35,7 +36,8 @@ class EmbeddingLookup(BaseComponent):
                  model: Channel,
                  lookup_model: Channel = None,
                  query_model: Optional[Text] = None,
-                 feature_key: Optional[Text] = None):
+                 feature_key: Optional[Text] = None,
+                 schema: Optional[Text] = None):
 
         lookup_model = lookup_model or channel_utils.as_channel([standard_artifacts.Model()])
         spec = EmbeddingLookupSpec(
@@ -43,5 +45,6 @@ class EmbeddingLookup(BaseComponent):
             model=model,
             lookup_model=lookup_model,
             query_model=query_model,
-            feature_key=feature_key)
+            feature_key=feature_key,
+            schema=schema)
         super(EmbeddingLookup, self).__init__(spec=spec)

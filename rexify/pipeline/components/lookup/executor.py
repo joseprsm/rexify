@@ -1,6 +1,7 @@
 from typing import Dict, Text, List, Any, Optional, Tuple
 
 import os
+import json
 import numpy as np
 import tensorflow as tf
 
@@ -23,11 +24,12 @@ class Executor(base_executor.BaseExecutor):
     ) -> Optional[execution_result_pb2.ExecutorOutput]:
         self._log_startup(input_dict, output_dict, exec_properties)
 
-        examples_artifact: Artifact = artifact_utils.get_single_uri(input_dict['examples'])
-        examples: tf.data.Dataset = utils.read_split_examples(examples_artifact)
+        feature_spec = utils.get_feature_spec(json.loads(exec_properties['schema']))
+        examples_uri: Text = artifact_utils.get_split_uri(input_dict['examples'], 'train')
+        examples: tf.data.Dataset = utils.read_split_examples(examples_uri, feature_spec=feature_spec)
 
         model_uri: Text = artifact_utils.get_single_uri(input_dict['model'])
-        model: Recommender = tf.saved_model.load(model_uri)
+        model: Recommender = tf.keras.models.load_model(os.path.join(model_uri, 'Format-Serving'))
 
         lookup_model = EmbeddingLookupModel(
             *self.get_lookup_params(
@@ -35,6 +37,7 @@ class Executor(base_executor.BaseExecutor):
                 model=model,
                 query_model=exec_properties['query_model'],
                 feature_key=exec_properties['feature_key']))
+        lookup_model([lookup_model.vocabulary[0]])
 
         output_dir = artifact_utils.get_single_uri(output_dict['lookup_model'])
         output_uri = os.path.join(output_dir, 'lookup_model')
@@ -51,6 +54,6 @@ class Executor(base_executor.BaseExecutor):
 
         vocabulary: np.array = tf.keras.Sequential([
             tf.keras.layers.Lambda(lambda x: x[feature_key])
-        ]).predict(batched_examples)
+        ]).predict(batched_examples).reshape(-1)
 
         return vocabulary, embeddings
