@@ -1,4 +1,4 @@
-from typing import Dict, Text, List, Any, Optional
+from typing import Dict, Text, List, Any, Optional, Tuple
 
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
@@ -23,6 +23,19 @@ def generate_ann(
     return scann
 
 
+def _get_models(input_dict) -> Tuple[Recommender, EmbeddingLookup]:
+    model: Recommender = utils.load_model(input_dict['model'])
+    lookup_model: EmbeddingLookup = utils.load_model(
+        input_dict['lookup_model'], model_name='lookup_model')
+    return model, lookup_model
+
+
+def _get_candidates(input_dict, exec_properties):
+    candidates: tf.data.Dataset = utils.read_split_examples(
+        input_dict['candidates'], schema=exec_properties['schema'])
+    return candidates
+
+
 class Executor(base_executor.BaseExecutor):
 
     def Do(self,
@@ -31,20 +44,18 @@ class Executor(base_executor.BaseExecutor):
            exec_properties: Dict[Text, Any]) -> Optional[execution_result_pb2.ExecutorOutput]:
         self._log_startup(input_dict, output_dict, exec_properties)
 
-        model: Recommender = utils.load_model(input_dict['model'])
-        lookup_model: EmbeddingLookup = utils.load_model(
-            input_dict['lookup_model'], model_name='lookup_model')
+        model, lookup_model = _get_models(input_dict)
+        candidates = _get_candidates(input_dict, exec_properties).map(lambda x: x[exec_properties['feature_key']])
 
-        candidates: tf.data.Dataset = utils.read_split_examples(
-            input_dict['candidates'], schema=exec_properties['schema'])
         candidate_embeddings: tf.data.Dataset = candidates.batch(512).map(model.candidate_model)
-        sample_query = lookup_model.get_config()['sample_query'][0]
+        sample_query = lookup_model.get_config()['sample_query']
 
         scann = generate_ann(
             lookup_model=lookup_model,
-            candidates=candidates.map(lambda x: x[exec_properties['feature_key']]),
+            candidates=candidates,
             embeddings=candidate_embeddings,
-            sample_query=sample_query)
+            sample_query=sample_query,
+            **exec_properties.get('custom_config', {}))
 
         utils.export_model(
             output_dict['index'], scann, 'index',

@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from rexify.models.recommender import Recommender
 
-from utils import load_mock_events
+from .utils import load_mock_events
 
 
 def test_recommender_training():
