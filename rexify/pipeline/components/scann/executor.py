@@ -48,6 +48,8 @@ class Executor(base_executor.BaseExecutor):
         candidates = _get_candidates(input_dict, exec_properties).map(lambda x: x[exec_properties['feature_key']])
 
         candidate_embeddings: tf.data.Dataset = candidates.batch(512).map(model.candidate_model)
+        if len(list(candidate_embeddings.take(1))[0].shape) > 2:
+            candidate_embeddings = candidate_embeddings.unbatch()
         sample_query = lookup_model.get_config()['sample_query']
 
         scann = generate_ann(
