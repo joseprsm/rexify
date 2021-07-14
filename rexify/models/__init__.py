@@ -1,2 +1,2 @@
 from .recommender import Recommender
-from .lookup import EmbeddingLookupModel
+from .lookup import EmbeddingLookup

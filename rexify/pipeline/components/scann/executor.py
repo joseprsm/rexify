@@ -8,11 +8,11 @@ from tfx.dsl.components.base import base_executor
 from tfx.proto.orchestration import execution_result_pb2
 
 from rexify import utils
-from rexify.models import Recommender, EmbeddingLookupModel
+from rexify.models import Recommender, EmbeddingLookup
 
 
 def generate_ann(
-        lookup_model: EmbeddingLookupModel,
+        lookup_model: EmbeddingLookup,
         embeddings: tf.data.Dataset,
         candidates: tf.data.Dataset,
         sample_query: Text, **kwargs) -> tf.keras.Model:
@@ -32,7 +32,7 @@ class Executor(base_executor.BaseExecutor):
         self._log_startup(input_dict, output_dict, exec_properties)
 
         model: Recommender = utils.load_model(input_dict['model'])
-        lookup_model: EmbeddingLookupModel = utils.load_model(
+        lookup_model: EmbeddingLookup = utils.load_model(
             input_dict['lookup_model'], model_name='lookup_model')
 
         candidates: tf.data.Dataset = utils.read_split_examples(

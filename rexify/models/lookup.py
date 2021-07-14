@@ -1,19 +1,21 @@
-from typing import Union
+from typing import Union, Optional, Any
 
 import numpy as np
 import tensorflow as tf
 
 
-class EmbeddingLookupModel(tf.keras.Model):
+class EmbeddingLookup(tf.keras.Model):
 
     def __init__(
             self,
             vocabulary: Union[tf.data.Dataset, np.array],
             embeddings: Union[tf.data.Dataset, np.array],
+            sample_query: Optional[Any] = None,
             **kwargs
     ):
-        super(EmbeddingLookupModel, self).__init__(**kwargs)
+        super(EmbeddingLookup, self).__init__(**kwargs)
         self.vocabulary = tf.strings.as_string(vocabulary) if 'str' not in vocabulary.dtype.name else vocabulary
+        self.sample_query = sample_query
         self.embeddings = embeddings
 
         init = tf.lookup.KeyValueTensorInitializer(
@@ -30,5 +32,7 @@ class EmbeddingLookupModel(tf.keras.Model):
         return embeddings[0, 0]
 
     def get_config(self):
-        return {}
-
+        sample_query = self.vocabulary[0]
+        if isinstance(sample_query, tf.Tensor):
+            sample_query = sample_query.numpy().decode()
+        return {'sample_query': sample_query}

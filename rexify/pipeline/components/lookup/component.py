@@ -26,7 +26,7 @@ class EmbeddingLookupSpec(ComponentSpec):
     }
 
 
-class EmbeddingLookup(BaseComponent):
+class LookupGen(BaseComponent):
 
     SPEC_CLASS = EmbeddingLookupSpec
     EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
@@ -47,4 +47,4 @@ class EmbeddingLookup(BaseComponent):
             query_model=query_model,
             feature_key=feature_key,
             schema=schema)
-        super(EmbeddingLookup, self).__init__(spec=spec)
+        super(LookupGen, self).__init__(spec=spec)
