@@ -14,7 +14,12 @@ class EmbeddingLookup(tf.keras.Model):
             **kwargs
     ):
         super(EmbeddingLookup, self).__init__(**kwargs)
-        self.vocabulary = tf.strings.as_string(vocabulary) if 'str' not in vocabulary.dtype.name else vocabulary
+        self.vocabulary = vocabulary
+        if type(vocabulary) == np.ndarray:
+            self.vocabulary = vocabulary.astype(str)
+        else:
+            if vocabulary.dtype.name != 'string':
+                self.vocabulary = tf.strings.as_string(vocabulary)
         self.sample_query = sample_query
         self.embeddings = embeddings
 
@@ -34,5 +39,6 @@ class EmbeddingLookup(tf.keras.Model):
     def get_config(self):
         sample_query = self.vocabulary[0]
         if isinstance(sample_query, tf.Tensor):
-            sample_query = sample_query.numpy().decode()
+            sample_query = sample_query.numpy()
+        sample_query = sample_query.decode() if isinstance(sample_query, bytes) else sample_query
         return {'sample_query': sample_query}

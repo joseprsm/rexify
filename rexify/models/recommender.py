@@ -29,3 +29,12 @@ class Recommender(tfrs.Model):
             tf.keras.layers.experimental.preprocessing.Hashing(num_bins=num_bins),
             tf.keras.layers.Embedding(input_dim=num_bins, output_dim=output_dim)
         ])
+
+
+def build(query_bins: int,
+          candidate_bins: int,
+          output_dims: int = 32,
+          learning_rate: float = 0.2) -> Recommender:
+    model = Recommender(query_bins, candidate_bins, output_dims)
+    model.compile(optimizer=tf.keras.optimizers.Adagrad(learning_rate))
+    return model

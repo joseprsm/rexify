@@ -11,6 +11,15 @@ from rexify import utils
 from rexify.models import Recommender, EmbeddingLookup
 
 
+def _get_examples(input_dict, exec_properties):
+    return utils.read_split_examples(
+        input_dict['examples'], schema=exec_properties['schema'])
+
+
+def _get_recommender(input_dict):
+    return utils.load_model(input_dict['model'])
+
+
 class Executor(base_executor.BaseExecutor):
 
     def Do(
@@ -21,8 +30,8 @@ class Executor(base_executor.BaseExecutor):
     ) -> Optional[execution_result_pb2.ExecutorOutput]:
         self._log_startup(input_dict, output_dict, exec_properties)
 
-        examples: tf.data.Dataset = utils.read_split_examples(input_dict['examples'], schema=exec_properties['schema'])
-        model: Recommender = utils.load_model(input_dict['model'])
+        examples: tf.data.Dataset = _get_examples(input_dict, exec_properties)
+        model: Recommender = _get_recommender(input_dict)
 
         lookup_model = EmbeddingLookup(
             *self.get_lookup_params(
