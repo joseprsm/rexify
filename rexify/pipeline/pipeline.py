@@ -1,4 +1,6 @@
-from typing import List, Text
+from typing import List, Text, Dict
+
+import json
 
 from tfx.orchestration.pipeline import Pipeline
 from tfx.orchestration.metadata import sqlite_metadata_connection_config
@@ -9,11 +11,15 @@ from tfx.dsl.components.base import executor_spec
 from tfx.proto import trainer_pb2
 from tfx.proto.pusher_pb2 import PushDestination
 
+from rexify.pipeline.components import LookupGen, ScaNNGen
+
 
 def build(
         pipeline_name: Text,
         pipeline_root: Text,
         data_root: Text,
+        items_root: Text,
+        schema: Dict[Text, Text],
         run_fn: Text,
         serving_model_dir: Text,
         metadata_path: Text
@@ -33,8 +39,27 @@ def build(
     trainer = Trainer(**trainer_args)
     components.append(trainer)
 
-    pusher_args = dict(
+    item_gen = CsvExampleGen(input_base=items_root)
+    components.append(item_gen)
+
+    lookup_gen = LookupGen(
+        examples=item_gen.outputs.examples,
         model=trainer.outputs.model,
+        query_model='candidate_model',
+        feature_key='itemId',
+        schema=json.dumps(schema))
+    components.append(lookup_gen)
+
+    scann_gen = ScaNNGen(
+        candidates=item_gen.outputs.examples,
+        model=trainer.outputs.model,
+        lookup_model=lookup_gen.outputs.lookup_model,
+        schema=json.dumps(schema),
+        feature_key='itemId')
+    components.append(scann_gen)
+
+    pusher_args = dict(
+        model=scann_gen.outputs.index,
         push_destination=PushDestination(
             filesystem=PushDestination.Filesystem(
                 base_directory=serving_model_dir)))
