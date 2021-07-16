@@ -16,7 +16,7 @@ def generate_ann(
         embeddings: tf.data.Dataset,
         candidates: tf.data.Dataset,
         sample_query: Text, **kwargs) -> tf.keras.Model:
-    """"""
+    """Generates a ScaNN TensorFlow model"""
     scann = tfrs.layers.factorized_top_k.ScaNN(lookup_model, **kwargs)
     scann.index(embeddings, candidates)
     _ = scann(tf.constant([sample_query]))
@@ -24,6 +24,7 @@ def generate_ann(
 
 
 def _get_models(input_dict) -> Tuple[Recommender, EmbeddingLookup]:
+    """Retrieves the two models used for the ScaNN building component"""
     model: Recommender = utils.load_model(input_dict['model'])
     lookup_model: EmbeddingLookup = utils.load_model(
         input_dict['lookup_model'], model_name='lookup_model')
@@ -45,11 +46,19 @@ class Executor(base_executor.BaseExecutor):
         self._log_startup(input_dict, output_dict, exec_properties)
 
         model, lookup_model = _get_models(input_dict)
-        candidates = _get_candidates(input_dict, exec_properties).map(lambda x: x[exec_properties['feature_key']])
+        # candidates must be of shape ()
+        candidates = _get_candidates(input_dict, exec_properties).map(
+            lambda x: x[exec_properties['feature_key']])
 
+        # TODO: store the original candidates dataset separately,
+        #  as `model.candidate_model` will expect all the features
+        #  used during training, after creating the tower models
         candidate_embeddings: tf.data.Dataset = candidates.batch(512).map(model.candidate_model)
         if len(list(candidate_embeddings.take(1))[0].shape) > 2:
             candidate_embeddings = candidate_embeddings.unbatch()
+
+        # retrieving the `sample_query` from the EmbeddingLookup
+        # model config file
         sample_query = lookup_model.get_config()['sample_query']
 
         scann = generate_ann(
