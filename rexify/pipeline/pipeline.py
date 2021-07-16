@@ -27,7 +27,7 @@ def build(
 
     components: List[BaseComponent] = list()
 
-    example_gen = CsvExampleGen(input_base=data_root)
+    example_gen = CsvExampleGen(input_base=data_root).with_id('event_gen')
     components.append(example_gen)
 
     trainer_args = dict(
@@ -39,7 +39,7 @@ def build(
     trainer = Trainer(**trainer_args)
     components.append(trainer)
 
-    item_gen = CsvExampleGen(input_base=items_root)
+    item_gen = CsvExampleGen(input_base=items_root).with_id('item_gen')
     components.append(item_gen)
 
     lookup_gen = LookupGen(
