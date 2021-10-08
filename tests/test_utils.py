@@ -7,14 +7,6 @@ from tfx.types import standard_artifacts
 from rexify import utils
 
 
-def test_read_examples():
-    example_uri = 'data/items'
-    feature_spec = {'itemId': tf.io.FixedLenFeature([], dtype=tf.int64)}
-
-    examples = utils.read_examples(example_uri, feature_spec)
-    assert isinstance(examples, tf.data.Dataset)
-
-
 def test_get_feature_spec():
     schema = {'itemId': 1}
     feature_spec = utils.get_feature_spec(schema)
