@@ -1,4 +1,4 @@
-from typing import Text, Dict, Any, List
+from typing import Text, Dict, Any, List, Union
 
 import os
 import json
@@ -9,8 +9,8 @@ from tfx.types import Artifact, artifact_utils
 
 
 def read_examples(
-        example_uri: Dict[Text, Text],
-        feature_spec: Dict[Text, Any]) -> Dict[Text, tf.data.Dataset]:
+        example_uri: Union[str, bytes, os.PathLike],
+        feature_spec: Dict[Text, Any]) -> tf.data.Dataset:
 
     def parse_examples(x):
         return tf.io.parse_example(x, features=feature_spec)
@@ -33,7 +33,7 @@ def load_model(artifact_list: List[Artifact], model_name: Text = 'Format-Serving
     return model
 
 
-def read_split_examples(artifact_list: List[Artifact], schema: Dict[Text, Text], split: Text = 'train'):
+def read_split_examples(artifact_list: List[Artifact], schema, split: Text = 'train'):
     feature_spec = get_feature_spec(json.loads(schema))
     examples_uri: Text = artifact_utils.get_split_uri(artifact_list, split)
     examples: tf.data.Dataset = read_examples(examples_uri, feature_spec=feature_spec)
