@@ -31,7 +31,7 @@ def build(pipeline_name: str,
 
     trainer_args = dict(
         run_fn=run_fn,
-        examples=event_gen.outputs.examples,
+        examples=event_gen.outputs['examples'],
         train_args=tfx.proto.trainer_pb2.TrainArgs(num_steps=1000),
         eval_args=tfx.proto.trainer_pb2.EvalArgs(num_steps=1000),
         custom_executor_spec=executor_spec.ExecutorClassSpec(trainer_executor.GenericExecutor))
@@ -42,23 +42,23 @@ def build(pipeline_name: str,
     components.append(item_gen)
 
     lookup_gen = rexify_components.LookupGen(
-        examples=item_gen.outputs.examples,
-        model=trainer.outputs.model,
+        examples=item_gen.outputs['examples'],
+        model=trainer.outputs['model'],
         query_model='candidate_model',
         feature_key='itemId',
         schema=json.dumps(schema))
     components.append(lookup_gen)
 
     scann_gen = rexify_components.ScaNNGen(
-        candidates=item_gen.outputs.examples,
-        model=trainer.outputs.model,
-        lookup_model=lookup_gen.outputs.lookup_model,
+        candidates=item_gen.outputs['examples'],
+        model=trainer.outputs['model'],
+        lookup_model=lookup_gen.outputs['lookup_model'],
         schema=json.dumps(schema),
         feature_key='itemId')
     components.append(scann_gen)
 
     pusher_args = dict(
-        model=scann_gen.outputs.index,
+        model=scann_gen.outputs['index'],
         push_destination=tfx.proto.pusher_pb2.PushDestination(
             filesystem=tfx.proto.pusher_pb2.PushDestination.Filesystem(
                 base_directory=serving_model_dir)))

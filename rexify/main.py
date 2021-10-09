@@ -8,11 +8,13 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-PIPELINE_NAME = config.get('PIPELINE', 'pipeline_name')
-PIPELINE_OUTPUT = os.path.join('.', config.get('PIPELINE', 'pipeline_output'))
 RUN_FN = config.get('PIPELINE', 'run_fn')
+PIPELINE_NAME = config.get('PIPELINE', 'pipeline_name')
+PIPELINE_OUTPUT = os.environ.get('REXIFY_PIPELINE_OUTPUT', config.get('PIPELINE', 'pipeline_output'))
+PIPELINE_OUTPUT = os.path.join('.', PIPELINE_OUTPUT)
 METADATA_PATH = os.path.join('metadata', PIPELINE_NAME, 'metadata.db')
-ENABLE_CACHE = True
+BACKEND_CONFIG = os.environ.get('REXIFY_BACKEND', config.get('PIPELINE', 'backend'))
+ENABLE_CACHE = False
 
 
 @click.group()
@@ -56,12 +58,13 @@ def run(events: Union[str, bytes, os.PathLike],
 
 
 def runner_factory():
-    backend = ...
-    if backend == 'kubeflow':
+    if BACKEND_CONFIG == 'kubeflow':
         from tfx.orchestration.kubeflow.kubeflow_dag_runner import KubeflowDagRunner
         return KubeflowDagRunner()
-    from tfx.orchestration.local.local_dag_runner import LocalDagRunner
-    return LocalDagRunner()
+    elif BACKEND_CONFIG == 'local':
+        from tfx.orchestration.local.local_dag_runner import LocalDagRunner
+        return LocalDagRunner()
+    raise ValueError('Invalid backend config')
 
 
 if __name__ == '__main__':
