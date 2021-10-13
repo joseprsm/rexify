@@ -26,18 +26,11 @@ class ScaNNGenComponentTest(tf.test.TestCase):
             schema=json.dumps({'userId': 1, 'itemId': 42}),
             feature_key='userId')
 
-        self.assertEqual(standard_artifacts.Examples.TYPE_NAME,
-                         scann_component.inputs.candidates.type_name)
-        self.assertIn('train',
-                      json.loads(scann_component.inputs.candidates.get()[0].split_names))
-
-        self.assertEqual(standard_artifacts.Model.TYPE_NAME,
-                         scann_component.inputs.model.type_name)
-        self.assertEqual(standard_artifacts.Model.TYPE_NAME,
-                         scann_component.inputs.lookup_model.type_name)
-
-        self.assertEqual(standard_artifacts.Model.TYPE_NAME,
-                         scann_component.outputs.index.type_name)
+        self.assertEqual(standard_artifacts.Examples.TYPE_NAME, scann_component.inputs['candidates'].type_name)
+        self.assertIn('train', json.loads(scann_component.inputs['candidates'].get()[0].split_names))
+        self.assertEqual(standard_artifacts.Model.TYPE_NAME, scann_component.inputs['model'].type_name)
+        self.assertEqual(standard_artifacts.Model.TYPE_NAME, scann_component.inputs['lookup_model'].type_name)
+        self.assertEqual(standard_artifacts.Model.TYPE_NAME, scann_component.outputs['index'].type_name)
 
 
 if __name__ == '__main__':

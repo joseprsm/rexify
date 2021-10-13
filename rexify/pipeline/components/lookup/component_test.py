@@ -25,16 +25,10 @@ class LookupGenComponentTest(tf.test.TestCase):
             feature_key='itemId',
             schema=json.dumps({'itemId': 'x'}))
 
-        self.assertEqual(standard_artifacts.Examples.TYPE_NAME,
-                         lookup_component.inputs.examples.type_name)
-        self.assertIn('train',
-                      json.loads(lookup_component.inputs.examples.get()[0].split_names))
-
-        self.assertEqual(standard_artifacts.Model.TYPE_NAME,
-                         lookup_component.inputs.model.type_name)
-
-        self.assertEqual(standard_artifacts.Model.TYPE_NAME,
-                         lookup_component.outputs.lookup_model.type_name)
+        self.assertEqual(standard_artifacts.Examples.TYPE_NAME, lookup_component.inputs['examples'].type_name)
+        self.assertIn('train', json.loads(lookup_component.inputs['examples'].get()[0].split_names))
+        self.assertEqual(standard_artifacts.Model.TYPE_NAME, lookup_component.inputs['model'].type_name)
+        self.assertEqual(standard_artifacts.Model.TYPE_NAME, lookup_component.outputs['lookup_model'].type_name)
 
 
 if __name__ == '__main__':

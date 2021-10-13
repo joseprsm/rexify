@@ -43,7 +43,6 @@ class Executor(base_executor.BaseExecutor):
            input_dict: Dict[Text, List[types.Artifact]],
            output_dict: Dict[Text, List[types.Artifact]],
            exec_properties: Dict[Text, Any]) -> Optional[execution_result_pb2.ExecutorOutput]:
-        self._log_startup(input_dict, output_dict, exec_properties)
 
         model, lookup_model = _get_models(input_dict)
         # candidates must be of shape ()
