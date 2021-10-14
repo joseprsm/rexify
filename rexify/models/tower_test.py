@@ -1,4 +1,3 @@
-
 import tempfile
 import tensorflow as tf
 import tensorflow_transform as tft
@@ -18,7 +17,7 @@ class TowerTest(tf.test.TestCase):
 
         def preprocessing_fn(inputs):
             x = tft.compute_and_apply_vocabulary(inputs['userId'])
-            return {'userId_transformed': x}
+            return {'userId': x}
 
         with tft_beam.Context(temp_dir=tempfile.mkdtemp()):
             transformed_dataset, transform_fn = (
@@ -26,12 +25,12 @@ class TowerTest(tf.test.TestCase):
                     tft_beam.AnalyzeAndTransformDataset(preprocessing_fn))
 
         transformed_data, transformed_metadata = transformed_dataset
-        self._inputs = {'userId_transformed': tf.constant([transformed_data[0]['userId_transformed']])}
+        self._inputs = {'userId': tf.constant([transformed_data[0]['userId']])}
 
         self._schema = {'userId': 'categorical'}
         self._params = {'userId': {'input_dim': 3, 'embedding_dim': 32}}
         self._layer_sizes = [64, 32]
-        self._tower = Tower(schema=self._schema, params=self._params, layer_sizes=self._layer_sizes, suffix='_transformed')
+        self._tower = Tower(schema=self._schema, params=self._params, layer_sizes=self._layer_sizes, activation='relu')
 
     def testCall(self):
         x = self._tower(self._inputs)
