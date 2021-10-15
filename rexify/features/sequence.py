@@ -13,11 +13,10 @@ def slide_transform(data: tf.data.Dataset,
     def reduce_fn(_, window):
         return window.batch(batch_size=window_size)
 
-    sliding_window = data.apply(
-        tf.data.experimental.group_by_window(
+    sliding_window = data.group_by_window(
             key_func=key_fn,
             reduce_func=reduce_fn,
-            window_size=window_size))
+            window_size=window_size)
 
     return sliding_window.map(_filter_by_keys(schema))
 
