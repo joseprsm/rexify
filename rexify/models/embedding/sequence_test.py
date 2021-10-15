@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from rexify.models.sequence import SequenceModel
+from rexify.models.embedding.sequence import SequenceModel
 
 
 class SequenceModelTest(tf.test.TestCase):

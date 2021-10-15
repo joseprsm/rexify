@@ -1,4 +1,3 @@
-import pprint
 import tempfile
 
 import tensorflow as tf
@@ -21,11 +20,11 @@ class CategoricalModelTest(tf.test.TestCase):
             return {'userId_transformed': x}
 
         with tft_beam.Context(temp_dir=tempfile.mkdtemp()):
-            transformed_dataset, transform_fn = (
+            transformed_dataset, _ = (
                     (raw_data, raw_data_metadata) |
                     tft_beam.AnalyzeAndTransformDataset(preprocessing_fn))
 
-        transformed_data, transformed_metadata = transformed_dataset
+        transformed_data = transformed_dataset[0]
         self._inputs = transformed_data[0]['userId_transformed']
         self._model = CategoricalModel(1, 32)
 

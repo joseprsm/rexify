@@ -20,12 +20,11 @@ class TowerTest(tf.test.TestCase):
             return {'userId': x}
 
         with tft_beam.Context(temp_dir=tempfile.mkdtemp()):
-            transformed_dataset, transform_fn = (
+            transformed_dataset, _ = (
                     (raw_data, raw_data_metadata) |
                     tft_beam.AnalyzeAndTransformDataset(preprocessing_fn))
 
-        transformed_data, transformed_metadata = transformed_dataset
-        self._inputs = {'userId': tf.constant([transformed_data[0]['userId']])}
+        self._inputs = {'userId': tf.constant([transformed_dataset[0][0]['userId']])}
 
         self._schema = {'userId': 'categorical'}
         self._params = {'userId': {'input_dim': 3, 'embedding_dim': 32}}

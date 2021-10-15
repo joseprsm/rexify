@@ -40,7 +40,6 @@ class RecommenderTest(tf.test.TestCase):
     def testConfig(self):
         rex = recommender.build(50, 50)
         self.assertIsInstance(rex.get_config(), dict)
-        self.assertEqual(rex.get_config(), dict())
 
 
 if __name__ == '__main__':

@@ -1,9 +1,10 @@
 from typing import List, Dict, Any
+from abc import abstractmethod
 
 import tensorflow as tf
 
 from rexify.models.base import BaseModel
-from rexify.models.features import CategoricalModel
+from rexify.models.embedding import CategoricalModel
 
 
 class Tower(BaseModel):
@@ -28,12 +29,6 @@ class Tower(BaseModel):
         # if there is more than one feature, concatenate embeddings, else retrieve the single tensor
         x = tf.concat(x, axis=1) if len(x) > 1 else x[0]
         return self.dense_layers(x)
-
-    def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
-        return [
-            model(inputs[feature_name])
-            for feature_name, model
-            in self.feature_models.items()]
 
     @staticmethod
     def _get_dense_layers(layer_sizes: List[int], activation: str) -> tf.keras.Model:
@@ -62,3 +57,7 @@ class Tower(BaseModel):
             'schema': self._schema, 'params': self._params,
             'activation': self._activation})
         return config
+
+    @abstractmethod
+    def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
+        pass
