@@ -2,7 +2,6 @@ from typing import Dict, Any, List
 
 import tensorflow as tf
 
-from rexify.models.embedding import CategoricalModel
 from rexify.models.tower import Tower
 
 
@@ -14,14 +13,13 @@ class CandidateModel(Tower):
                  layer_sizes: List[int],
                  activation: str = 'relu'):
 
-        self.item_model = CategoricalModel(**params['itemId'])
-        _ = params.pop('itemId')
-
         super(CandidateModel, self).__init__(
             schema=schema,
             params=params,
             layer_sizes=layer_sizes,
             activation=activation)
+
+        self.item_model = self.feature_models.pop('itemId')
 
     def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
         item_embeddings: tf.Tensor = self.item_model(inputs['itemId'])

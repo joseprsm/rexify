@@ -13,7 +13,7 @@ class EmbeddingLookupTest(tf.test.TestCase):
 
     def testCall(self):
         model = EmbeddingLookup(vocabulary=self._vocabulary, embeddings=self._embeddings)
-        inputs = tf.constant([self._vocabulary[0]])
+        inputs = tf.constant([str(self._vocabulary[0])])
         x = model.call(inputs)
         self.assertIsInstance(x, tf.Tensor)
         self.assertEqual(x.shape, tf.TensorShape([32]))

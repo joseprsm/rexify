@@ -13,7 +13,7 @@ class QueryModelTest(tf.test.TestCase):
                 tf.keras.layers.Lambda(lambda x: tf.reshape(x, (1, 1, 16)))]),
             schema={'userId': 'categorical'},
             params={'userId': {'input_dim': 10, 'embedding_dim': 16}},
-            recurrent_layers=[64, 32], layer_type='LSTM', ff_layers=[45, 12])
+            recurrent_layers=[64, 32], layer_type='LSTM', layer_sizes=[45, 12])
 
         inputs = {'userId': tf.constant([1]), 'sequence': tf.constant('1')}
         output = model(inputs)

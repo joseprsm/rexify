@@ -18,7 +18,7 @@ def generate_ann(
         sample_query: Text, **kwargs) -> tf.keras.Model:
     """Generates a ScaNN TensorFlow model"""
     scann = tfrs.layers.factorized_top_k.ScaNN(lookup_model, **kwargs)
-    scann.index(embeddings, candidates)
+    scann.index(embeddings, candidates.map(lambda x: x['itemId']))
     _ = scann(tf.constant([sample_query]))
     return scann
 
@@ -46,12 +46,8 @@ class Executor(base_executor.BaseExecutor):
 
         model, lookup_model = _get_models(input_dict)
         # candidates must be of shape ()
-        candidates = _get_candidates(input_dict, exec_properties).map(
-            lambda x: x[exec_properties['feature_key']])
+        candidates = _get_candidates(input_dict, exec_properties)
 
-        # TODO: store the original candidates dataset separately,
-        #  as `model.candidate_model` will expect all the features
-        #  used during training, after creating the tower models
         candidate_embeddings: tf.data.Dataset = candidates.batch(512).map(model.candidate_model)
         if len(list(candidate_embeddings.take(1))[0].shape) > 2:
             candidate_embeddings = candidate_embeddings.unbatch()

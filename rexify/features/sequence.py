@@ -18,7 +18,9 @@ def slide_transform(data: tf.data.Dataset,
             reduce_func=reduce_fn,
             window_size=window_size)
 
-    return sliding_window.map(_filter_by_keys(schema))
+    return sliding_window.\
+        map(_filter_by_keys(schema)).\
+        filter(lambda x: len(x['sequence']) == window_size - 1)
 
 
 def _filter_by_keys(schema: Dict[str, Union[dict, str]]):
@@ -39,9 +41,9 @@ def _filter_by_keys(schema: Dict[str, Union[dict, str]]):
             'userId': x['userId'][0],
             'sequence': x['itemId'][:-1],
             'date': x['date'][-1],
-            'target': x['itemId'][-1]}
+            'itemId': x['itemId'][-1]}
 
-        header.update({key: x[key][-1] for key in keys})
+        header.update({key: x[key][-1] for key in keys if key not in ['userId', 'itemId', 'sequence']})
         return header
 
     return filter_fn
