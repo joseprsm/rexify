@@ -7,11 +7,14 @@ class CategoricalModel(tf.keras.Model):
         super(CategoricalModel, self).__init__(**kwargs)
         self._input_dim = input_dim
         self._embedding_dim = embedding_dim
-        self.embedding_layer = tf.keras.layers.Embedding(
-            input_dim=input_dim, output_dim=embedding_dim)
 
-    def call(self, inputs, training=None, mask=None):
-        return self.embedding_layer(inputs)
+        self.hashing_layer = tf.keras.layers.Hashing(input_dim)
+        self.embedding_layer = tf.keras.layers.Embedding(input_dim, embedding_dim)
+
+    def call(self, inputs, *_):
+        x = self.hashing_layer(inputs)
+        x = self.embedding_layer(x)
+        return x
 
     def get_config(self):
         return {
