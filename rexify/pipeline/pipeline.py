@@ -11,7 +11,7 @@ from tfx.components.trainer import executor as trainer_executor
 from tfx.dsl.components.base.base_component import BaseComponent
 from tfx.dsl.components.base import executor_spec
 
-from rexify.pipeline import components as rexify_components
+from rexify.pipeline import steps as rexify_components
 
 
 def build(pipeline_name: str,
