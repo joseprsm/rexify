@@ -11,7 +11,7 @@ def slide_transform(data: tf.data.Dataset,
         return elem['userId']
 
     def reduce_fn(_, window):
-        return window.batch(batch_size=window_size)
+        return get_sliding_batches(window, window_size)
 
     sliding_window = data.group_by_window(
             key_func=key_fn,
@@ -47,3 +47,16 @@ def _filter_by_keys(schema: Dict[str, Union[dict, str]]):
         return header
 
     return filter_fn
+
+
+# this fn doesn't work properly in `group_by_window`
+# for some reason. fix later.
+def get_sliding_batches(window: tf.data.Dataset,
+                        window_size: int = 3):
+
+    ds = window.batch(window_size)
+    for i in range(1, window_size):
+        ds = ds.concatenate(
+            window.skip(i).batch(window_size))
+
+    return ds
