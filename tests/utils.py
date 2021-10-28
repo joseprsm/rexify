@@ -1,7 +1,6 @@
 from typing import Dict, Union, Any
 
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 
 from rexify.models import Recommender, EmbeddingLookup
@@ -9,15 +8,17 @@ from rexify.models import Recommender, EmbeddingLookup
 
 def load_mock_events():
 
-    events = pd.DataFrame({
-        'userId': [1, 2, 1, 1, 2, 2],
-        'itemId': [3, 3, 4, 5, 4, 6],
-        'date': [1, 2, 3, 4, 5, 6]})
+    header = ['userId', 'itemId', 'date']
+    events = np.array([
+        [1, 2, 1, 1, 2, 2],
+        [3, 3, 4, 5, 4, 6],
+        [1, 2, 3, 4, 5, 6]]).transpose()
 
+    @tf.autograph.experimental.do_not_convert
     def add_header(x):
-        return {events.columns[i]: x[i] for i in range(len(events.columns))}
+        return {header[i]: x[i] for i in range(len(header))}
 
-    return tf.data.Dataset.from_tensor_slices(events.values).map(add_header)
+    return tf.data.Dataset.from_tensor_slices(events).map(add_header)
 
 
 def get_sample_data():
