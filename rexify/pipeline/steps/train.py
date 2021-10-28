@@ -1,4 +1,4 @@
-from typing import Text, List
+from typing import Text, List, Dict, Any
 
 import tensorflow as tf
 import tensorflow_transform as tft
@@ -21,13 +21,13 @@ def _input_fn(file_pattern: List[Text],
     ).repeat()
 
 
-def run_fn(fn_args: tfx.components.FnArgs):
+def run_fn(fn_args: tfx.components.FnArgs,
+           custom_config: Dict[str, Any]):
 
-    # todo: read from custom config
-    schema = ...
-    params = ...
-    layer_sizes = ...
-    activation = ...
+    schema = custom_config['schema']
+    params = custom_config['params']
+    layer_sizes = custom_config['layer_sizes']
+    activation = custom_config['activation']
 
     tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
     training_data: tf.data.Dataset = _input_fn(

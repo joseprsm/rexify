@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
 import tensorflow as tf
 import tensorflow_transform as tft
@@ -10,9 +10,10 @@ DATE_KEY: str = ...
 NUM_OOV_BUCKETS = 1
 
 
-def preprocessing_fn(inputs: Dict[str, tf.Tensor]):
+def preprocessing_fn(inputs: Dict[str, tf.Tensor],
+                     custom_config: Dict[str, Any]):
 
-    schema = ...  # todo: read from custom config
+    schema = custom_config['schema']
     outputs = {}
 
     for key in NUMERIC_FEATURE_KEYS:
