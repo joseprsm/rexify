@@ -6,6 +6,14 @@ import tensorflow as tf
 from rexify.models import Recommender, EmbeddingLookup
 
 
+def get_header(schema: Dict[str, Dict[str, str]]) -> Dict[str, str]:
+    header = dict()
+    keys = list(schema.keys())
+    for key in keys:
+        header.update(schema[key])
+    return header
+
+
 def load_mock_events():
 
     header = ['userId', 'itemId', 'date']

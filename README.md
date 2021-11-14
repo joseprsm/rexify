@@ -54,14 +54,10 @@ in the future.
 
 Then, we got to set up our runs.
 
-```
-rexify config --schema path/to/schema/json
-```
-
 And finally, now that we have everything set up, all we got to do is run `rexify run`, 
 and point to the path where the CSV are stored like so:
 
 ```
-rexify run -e path/to/events/csv 
+rexify run -e path/to/events/csv -s path/to/schema/json 
 ```
 

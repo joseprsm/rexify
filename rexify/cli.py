@@ -14,6 +14,7 @@ PIPELINE_OUTPUT = os.environ.get('REXIFY_PIPELINE_OUTPUT', config.get('PIPELINE'
 PIPELINE_OUTPUT = os.path.join('.', PIPELINE_OUTPUT)
 METADATA_PATH = os.path.join('metadata', PIPELINE_NAME, 'metadata.db')
 BACKEND_CONFIG = os.environ.get('REXIFY_BACKEND', config.get('PIPELINE', 'backend'))
+SCHEMA_PATH = os.environ.get('SCHEMA_PATH')
 ENABLE_CACHE = False
 
 
@@ -62,6 +63,7 @@ def _runner_factory():
     if BACKEND_CONFIG == 'kubeflow':
         from tfx.orchestration.kubeflow.kubeflow_dag_runner import KubeflowDagRunner
         return KubeflowDagRunner()
+
     elif BACKEND_CONFIG == 'local':
         from tfx.orchestration.local.local_dag_runner import LocalDagRunner
         return LocalDagRunner()
