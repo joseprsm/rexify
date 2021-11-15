@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -10,7 +10,7 @@ router = APIRouter()
 
 class Event(BaseModel):
 
-    id: int
+    id: Optional[int]
     user_id: int
     item_id: int
 

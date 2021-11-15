@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -9,8 +9,7 @@ router = APIRouter()
 
 class User(BaseModel):
 
-    id: int
-    name: str
+    id: Optional[int]
 
 
 class Users(BaseModel):
@@ -24,11 +23,9 @@ def get_users():
 
 
 @router.post('/users')
-def create_users(*, user_in: User):
+def create_users():
     new_entry_id = len(USERS) + 1
-    user_entry = User(
-        id=new_entry_id,
-        name=user_in.name)
+    user_entry = User(id=new_entry_id)
     USERS.append(user_entry.dict())
     return user_entry
 
