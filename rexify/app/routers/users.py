@@ -1,28 +1,21 @@
-from typing import List, Optional
 from fastapi import APIRouter
-from pydantic import BaseModel
+
+from rexify.app.schemas import User
 
 USERS = []
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/users',
+    tags=['users']
+)
 
 
-class User(BaseModel):
-
-    id: Optional[int]
-
-
-class Users(BaseModel):
-
-    users: List[User]
-
-
-@router.get('/users')
+@router.get('/')
 def get_users():
     return {'users': USERS}
 
 
-@router.post('/users')
+@router.post('/')
 def create_users():
     new_entry_id = len(USERS) + 1
     user_entry = User(id=new_entry_id)
@@ -30,18 +23,18 @@ def create_users():
     return user_entry
 
 
-@router.get('/users/{user_id}')
+@router.get('/{user_id}')
 def get_user(*, user_id: int):
     result = [user for user in USERS if user["id"] == user_id]
     if result:
         return result[0]
 
 
-@router.delete('/users/{user_id}')
+@router.delete('/{user_id}')
 def delete_user(*, user_id: int):
     return {'msg': f'User {user_id} deleted'}
 
 
-@router.put('/users/{user_id}')
+@router.put('/{user_id}')
 def update_user(*, user_id: int):
     return {'msg': f'User {user_id} updated'}

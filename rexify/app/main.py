@@ -2,13 +2,13 @@ import uvicorn
 
 from fastapi import FastAPI
 
-from rexify.app.routes import user_router, item_router, event_router, model_router
+from rexify.app.routers import users, items, models, events
 
 app = FastAPI(title='Rexify')
-app.include_router(user_router)
-app.include_router(item_router)
-app.include_router(event_router)
-app.include_router(model_router)
+app.include_router(users.router)
+app.include_router(items.router)
+app.include_router(events.router)
+app.include_router(models.router)
 
 if __name__ == '__main__':
     # noinspection PyTypeChecker

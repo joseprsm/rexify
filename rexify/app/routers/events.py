@@ -1,31 +1,21 @@
-from typing import List, Optional
-
 from fastapi import APIRouter
-from pydantic import BaseModel
+
+from rexify.app.schemas import Event
 
 EVENTS = []
 
-router = APIRouter()
+router = APIRouter(
+    prefix='/events',
+    tags=['events']
+)
 
 
-class Event(BaseModel):
-
-    id: Optional[int]
-    user_id: int
-    item_id: int
-
-
-class Events(BaseModel):
-
-    events: List[Event]
-
-
-@router.get('/events')
+@router.get('/')
 def get_events():
     return {'events': EVENTS}
 
 
-@router.post('/events')
+@router.post('/')
 def create_events(*, event: Event):
     new_entry_id = len(EVENTS) + 1
     event_entry = Event(
@@ -36,19 +26,19 @@ def create_events(*, event: Event):
     return event_entry
 
 
-@router.get('/events/{event_id}')
+@router.get('/{event_id}')
 def get_event(*, event_id: int):
     result = [recipe for recipe in EVENTS if recipe["id"] == event_id]
     if result:
         return result[0]
 
 
-@router.put('/events/{event_id}')
+@router.put('/{event_id}')
 def update_event(*, event_id: int):
     return {'msg': f'Event {event_id} updated'}
 
 
-@router.delete('/events/{event_id}')
+@router.delete('/{event_id}')
 def delete_event(*, event_id: int):
     return {'msg': f'Event {event_id} deleted'}
 
