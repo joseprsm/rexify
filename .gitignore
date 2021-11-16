@@ -9,3 +9,4 @@ UNKNOWN.egg-info/
 metadata
 pipelines
 serving_model
+/.env

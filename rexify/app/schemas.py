@@ -42,3 +42,9 @@ class User(BaseModel):
 class Users(BaseModel):
 
     users: List[User]
+
+
+class Feature(BaseModel):
+
+    id: Optional[int]
+    key: str

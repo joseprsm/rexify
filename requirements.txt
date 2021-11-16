@@ -13,3 +13,4 @@ fastapi~=0.70.0
 rexify~=0.0.1
 uvicorn~=0.15.0
 setuptools~=58.2.0
+sqlalchemy
