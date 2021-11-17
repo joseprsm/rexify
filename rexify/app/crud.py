@@ -30,13 +30,13 @@ def get_users(db: Session, skip: int = 0, limit: int = 100):
 def create_user(db: Session, user: schemas.BaseTarget):
     db_user = models.User(external_id=user.external_id)
     db.add(db_user)
-
-    for feature in user.features:
-        if bool(get_feature_id(db, feature.key)):
-            create_user_feature(db, db_user.id, feature)
-
     db.commit()
     db.refresh(db_user)
+
+    for feature in user.features:
+        if bool(get_feature_by_key(db, feature.key)):
+            create_user_feature(db, db_user.id, feature)
+
     return db_user
 
 
@@ -55,13 +55,13 @@ def get_items(db: Session, skip: int = 0, limit: int = 100):
 def create_item(db: Session, item: schemas.BaseTarget):
     db_item = models.Item(external_id=item.external_id)
     db.add(db_item)
-
-    for feature in item.features:
-        if bool(get_feature_id(db, feature.key)):
-            create_item_feature(db, db_item.id, feature)
-
     db.commit()
     db.refresh(db_item)
+
+    for feature in item.features:
+        if bool(get_feature_by_key(db, feature.key)):
+            create_item_feature(db, db_item.id, feature)
+
     return db_item
 
 
@@ -77,7 +77,7 @@ def get_events(db: Session, skip: int = 0, limit: int = 100):
     return _get_target_list(db, models.Event, skip, limit)
 
 
-def get_feature_id(db: Session, key: str):
+def get_feature_by_key(db: Session, key: str):
     return db.query(models.Feature).filter(models.Feature.key == key).first()
 
 
@@ -86,7 +86,7 @@ def get_feature(db: Session, feature_id: int):
 
 
 def get_features(db: Session, skip: int = 0, limit: int = 100):
-    return _get_target_list(db, models.Item, skip, limit)
+    return _get_target_list(db, models.Feature, skip, limit)
 
 
 def create_feature(db: Session, feature: schemas.BaseFeature):
@@ -98,7 +98,7 @@ def create_feature(db: Session, feature: schemas.BaseFeature):
 
 
 def create_user_feature(db: Session, user_id: int, feature: schemas.Feature):
-    feature_id = get_feature_id(db, key=feature.key)
+    feature_id = get_feature_by_key(db, key=feature.key).id
     user_feature = models.UserFeature(
         user_id=user_id,
         feature_id=feature_id,
@@ -114,7 +114,7 @@ def get_user_features(db: Session, user_id: int):
 
 
 def create_item_feature(db: Session, item_id: int, feature: schemas.Feature):
-    feature_id = get_feature_id(db, key=feature.key)
+    feature_id = get_feature_by_key(db, key=feature.key).id
     item_feature = models.ItemFeature(
         item_id=item_id,
         feature_id=feature_id,
