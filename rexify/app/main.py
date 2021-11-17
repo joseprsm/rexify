@@ -2,7 +2,11 @@ import uvicorn
 
 from fastapi import FastAPI
 
+from rexify.app.db import engine
+from rexify.app.models import Base
 from rexify.app.routers import users, items, models, events
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title='Rexify')
 app.include_router(users.router)
