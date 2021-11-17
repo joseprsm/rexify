@@ -77,6 +77,19 @@ def get_events(db: Session, skip: int = 0, limit: int = 100):
     return _get_target_list(db, models.Event, skip, limit)
 
 
+def create_event(db: Session, event: schemas.BaseEvent):
+    db_event = models.Event(user_id=event.user_id, item_id=event.item_id)
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+
+    for feature in event.context:
+        if bool(get_feature_by_key(db, feature.key)):
+            create_event_feature(db, db_event.id, feature)
+
+    return db_event
+
+
 def get_feature_by_key(db: Session, key: str):
     return db.query(models.Feature).filter(models.Feature.key == key).first()
 
@@ -127,5 +140,21 @@ def create_item_feature(db: Session, item_id: int, feature: schemas.Feature):
 
 def get_item_features(db: Session, item_id: int):
     return db.query(models.ItemFeature).filter(models.ItemFeature.item_id == item_id).all()
+
+
+def create_event_feature(db: Session, event_id: int, feature: schemas.Feature):
+    feature_id = get_feature_by_key(db, key=feature.key).id
+    event_feature = models.EventFeature(
+        event_id=event_id,
+        feature_id=feature_id,
+        value=feature.value)
+    db.add(event_feature)
+    db.commit()
+    db.refresh(event_feature)
+    return event_feature
+
+
+def get_event_features(db: Session, event_id: int):
+    return db.query(models.EventFeature).filter(models.EventFeature.event_id == event_id).all()
 
 

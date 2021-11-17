@@ -1,18 +1,15 @@
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from rexify.app import crud
 from rexify.app.db import get_db
-from rexify.app.schemas import Item, Feature, BaseTarget
-
-ITEMS = []
+from rexify.app.schemas import BaseTarget
 
 router = APIRouter(
     prefix='/items',
-    tags=['items']
-)
+    tags=['items'])
 
 
 @router.get('/')

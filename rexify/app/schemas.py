@@ -29,12 +29,16 @@ class Items(BaseModel):
     items: List[Item]
 
 
-class Event(BaseModel):
+class BaseEvent(BaseModel):
 
-    id: Optional[int]
     user_id: int
     item_id: int
     context: Optional[List[BaseFeature]]
+
+
+class Event(BaseEvent):
+
+    id: Optional[int]
 
 
 class Events(BaseModel):

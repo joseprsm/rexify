@@ -1,29 +1,25 @@
-from fastapi import APIRouter
+from typing import Optional
 
-from rexify.app.schemas import Event
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-EVENTS = []
+from rexify.app import crud
+from rexify.app.db import get_db
+from rexify.app.schemas import Event, BaseEvent
 
 router = APIRouter(
     prefix='/events',
-    tags=['events']
-)
+    tags=['events'])
 
 
 @router.get('/')
-def get_events():
-    return {'events': EVENTS}
+def get_events(skip: Optional[int] = 0, limit: Optional[int] = 10, db: Session = Depends(get_db)):
+    return crud.get_events(db, skip, limit)
 
 
 @router.post('/')
-def create_events(*, event: Event):
-    new_entry_id = len(EVENTS) + 1
-    event_entry = Event(
-        id=new_entry_id,
-        user_id=event.user_id,
-        item_id=event.item_id)
-    EVENTS.append(event_entry.dict())
-    return event_entry
+def create_event(event: BaseEvent, db: Session = Depends(get_db)):
+    return crud.create_event(db, event)
 
 
 @router.get('/{event_id}')
