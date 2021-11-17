@@ -2,18 +2,26 @@ from typing import Optional, List
 from pydantic import BaseModel
 
 
-class Feature(BaseModel):
+class BaseFeature(BaseModel):
 
-    id: Optional[int]
     key: str
     value: str
 
 
-class Item(BaseModel):
+class Feature(BaseFeature):
 
-    id: Optional[int]
+    id: int
+
+
+class BaseTarget(BaseModel):
+
     external_id: str
-    features: Optional[List[Feature]]
+    features: Optional[List[BaseFeature]]
+
+
+class Item(BaseTarget):
+
+    id: int
 
 
 class Items(BaseModel):
@@ -26,7 +34,7 @@ class Event(BaseModel):
     id: Optional[int]
     user_id: int
     item_id: int
-    context: Optional[List[Feature]]
+    context: Optional[List[BaseFeature]]
 
 
 class Events(BaseModel):
@@ -44,11 +52,9 @@ class Models(BaseModel):
     models: List[Model]
 
 
-class User(BaseModel):
+class User(BaseTarget):
 
-    id: Optional[int]
-    external_id: str
-    features: Optional[List[Feature]]
+    id: int
 
 
 class Users(BaseModel):
