@@ -8,8 +8,6 @@ from rexify.app import crud
 from rexify.app.db import get_db
 from rexify.app.schemas import User
 
-USERS = []
-
 router = APIRouter(
     prefix='/users',
     tags=['users']
