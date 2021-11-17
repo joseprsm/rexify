@@ -5,7 +5,7 @@ from pydantic import BaseModel
 class BaseFeature(BaseModel):
 
     key: str
-    value: str
+    value: Optional[str]
 
 
 class Feature(BaseFeature):

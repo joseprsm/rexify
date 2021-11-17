@@ -20,7 +20,7 @@ def get_features(skip: Optional[int] = 0, limit: Optional[int] = 10, db: Session
 
 @router.post('/')
 def create_feature(feature: BaseFeature, db: Session = Depends(get_db)):
-    db_feature = crud.get_feature_id(db, feature.key)
+    db_feature = crud.get_feature_by_key(db, feature.key)
     if db_feature:
         raise HTTPException(status_code=400, detail="Feature already registered")
     return crud.create_feature(db, feature)
