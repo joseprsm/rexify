@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from rexify.app import crud
 from rexify.app.db import get_db
-from rexify.app.schemas import User
+from rexify.app.schemas import BaseTarget
 
 router = APIRouter(
     prefix='/users',
@@ -19,9 +19,9 @@ def get_users(skip: Optional[int] = 0, limit: Optional[int] = 10, db: Session = 
     return crud.get_users(db, skip, limit)
 
 
-@router.post('/', response_model=User)
-def create_user(user: User, db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_external_id(db, user.external_id)
+@router.post('/')
+def create_user(user: BaseTarget, db: Session = Depends(get_db)):
+    db_user = crud.get_user_id(db, user.external_id)
     if db_user:
         raise HTTPException(status_code=400, detail="User already registered")
     return crud.create_user(db, user)

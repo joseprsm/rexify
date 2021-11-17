@@ -1,6 +1,8 @@
+from typing import List, Optional
+
 from fastapi import APIRouter
 
-from rexify.app.schemas import Item
+from rexify.app.schemas import Item, Feature, BaseTarget
 
 ITEMS = []
 
@@ -16,12 +18,12 @@ def get_items():
 
 
 @router.post('/')
-def create_items():
-    new_entry_id = len(ITEMS) + 1
-    user_entry = Item(
-        id=new_entry_id)
-    ITEMS.append(user_entry.dict())
-    return user_entry
+def create_items(external_id: str, features: Optional[List[Feature]] = None):
+    item_entry = BaseTarget(
+        external_id=external_id,
+        features=features)
+    ITEMS.append(item_entry.dict())
+    return item_entry
 
 
 @router.get('/{item_id}')
