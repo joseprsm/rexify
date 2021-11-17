@@ -1,7 +1,10 @@
 from typing import List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
+from rexify.app import crud
+from rexify.app.db import get_db
 from rexify.app.schemas import Item, Feature, BaseTarget
 
 ITEMS = []
@@ -13,24 +16,24 @@ router = APIRouter(
 
 
 @router.get('/')
-def get_items():
-    return {'items': ITEMS}
+def get_items(skip: Optional[int] = 0, limit: Optional[int] = 10, db: Session = Depends(get_db)):
+    return crud.get_items(db, skip, limit)
 
 
 @router.post('/')
-def create_items(external_id: str, features: Optional[List[Feature]] = None):
-    item_entry = BaseTarget(
-        external_id=external_id,
-        features=features)
-    ITEMS.append(item_entry.dict())
-    return item_entry
+def create_item(item: BaseTarget, db: Session = Depends(get_db)):
+    db_item = crud.get_item_id(db, item.external_id)
+    if db_item:
+        raise HTTPException(status_code=400, detail="Item already registered")
+    return crud.create_item(db, item)
 
 
 @router.get('/{item_id}')
-def get_item(*, item_id: int):
-    result = [recipe for recipe in ITEMS if recipe["id"] == item_id]
-    if result:
-        return result[0]
+def get_item(item_id: int, db: Session = Depends(get_db)):
+    item = crud.get_item(db, item_id=item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
 
 
 @router.put('/{item_id}')
