@@ -32,7 +32,7 @@ class Feature(Base):
     key = Column(String)
 
 
-class UserFeatures(Base):
+class UserFeature(Base):
 
     __tablename__ = 'user_features'
     id = Column(Integer, primary_key=True, index=True)
@@ -41,7 +41,7 @@ class UserFeatures(Base):
     value = Column(String)
 
 
-class ItemFeatures(Base):
+class ItemFeature(Base):
 
     __tablename__ = 'item_features'
     id = Column(Integer, primary_key=True, index=True)
@@ -50,10 +50,17 @@ class ItemFeatures(Base):
     value = Column(String)
 
 
-class EventFeatures(Base):
+class EventFeature(Base):
 
     __tablename__ = 'event_features'
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey('events.id'))
     feature_id = Column(Integer, ForeignKey('features.id'))
     value = Column(String)
+
+
+class Model(Base):
+
+    __tablename__ = 'models'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
