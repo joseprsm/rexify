@@ -10,7 +10,6 @@ click==7.1.2
 pyjwt==1.7.1
 pydantic~=1.8.2
 fastapi~=0.70.0
-rexify~=0.0.1
 uvicorn~=0.15.0
 setuptools~=58.2.0
 sqlalchemy
