@@ -31,3 +31,4 @@ def update(db: Session, user_id: int, feature_list: List[schemas.Feature]):
 
 def delete(db: Session, feature_id: int):
     db.query(models.Feature).filter(models.Feature.id == feature_id).delete()
+    db.commit()

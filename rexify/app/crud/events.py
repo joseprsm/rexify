@@ -7,7 +7,17 @@ from rexify.app.crud import features
 
 
 def get(db: Session, event_id: int):
-    return db.query(models.Event).filter(models.Event.id == event_id).first()
+    event_features = get_features(db, event_id)
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    return {
+        'id': event.id,
+        'user_id': event.user_id,
+        'item_id': event.item_id,
+        'features': [
+            {features.get(db, feature.id).key: feature.value}
+            for feature in event_features
+        ]
+    }
 
 
 def get_list(db: Session, skip: int = 0, limit: int = 20):
@@ -32,7 +42,9 @@ def update(db: Session, user_id: int, feature_list: List[schemas.Feature]):
 
 
 def delete(db: Session, event_id: int):
+    db.query(models.EventFeature).filter(models.EventFeature.event_id == event_id).delete()
     db.query(models.Event).filter(models.Event.id == event_id).delete()
+    db.commit()
 
 
 def get_features(db: Session, event_id: int):

@@ -44,7 +44,21 @@ def update(db: Session, user_id: int, feature_list: List[schemas.Feature]):
 
 
 def delete(db: Session, user_id: int):
+    # deletes all user features
+    db.query(models.UserFeature).filter(models.UserFeature.user_id == user_id).delete()
+
+    # deletes all event features with the deleted user_id
+    event_features = get_features(db, user_id)
+    for event_feature in event_features:
+        db.query(models.EventFeature).filter(models.EventFeature.id == event_feature.id).delete()
+
+    # deletes all events with the deleted user_id
+    db.query(models.Event).filter(models.Event.user_id == user_id).delete()
+
+    # deletes the user
     db.query(models.User).filter(models.User.id == user_id).delete()
+
+    db.commit()
 
 
 def get_features(db: Session, user_id: int):
@@ -63,3 +77,7 @@ def create_feature(db: Session, user_id: int, feature: schemas.Feature):
     db.commit()
     db.refresh(user_feature)
     return user_feature
+
+
+def get_events(db: Session, user_id: int):
+    return db.query(models.Event).filter(models.Event.user_id == user_id).all()

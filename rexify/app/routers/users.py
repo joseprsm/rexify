@@ -37,10 +37,10 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete('/{user_id}')
-def delete_user(*, user_id: int):
-    return {'msg': f'User {user_id} deleted'}
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    return crud.users.delete(db, user_id=user_id)
 
 
 @router.put('/{user_id}')
 def update_user(user_id: int, db: Session = Depends(get_db)):
-    return crud.users.delete(db, user_id=user_id)
+    return {'msg': f'User {user_id} updated'}
