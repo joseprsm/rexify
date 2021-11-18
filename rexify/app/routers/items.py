@@ -1,11 +1,14 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+
 from sqlalchemy.orm import Session
 
 from rexify.app import crud
 from rexify.app.db import get_db
 from rexify.app.schemas import BaseTarget
+
+import rexify.app.crud.items
 
 router = APIRouter(
     prefix='/items',
@@ -14,20 +17,20 @@ router = APIRouter(
 
 @router.get('/')
 def get_items(skip: Optional[int] = 0, limit: Optional[int] = 10, db: Session = Depends(get_db)):
-    return crud.get_items(db, skip, limit)
+    return crud.items.get_list(db, skip, limit)
 
 
 @router.post('/')
 def create_item(item: BaseTarget, db: Session = Depends(get_db)):
-    db_item = crud.get_item_id(db, item.external_id)
+    db_item = crud.items.get_id(db, external_id=item.external_id)
     if db_item:
         raise HTTPException(status_code=400, detail="Item already registered")
-    return crud.create_item(db, item)
+    return crud.items.create(db, item)
 
 
 @router.get('/{item_id}')
 def get_item(item_id: int, db: Session = Depends(get_db)):
-    item = crud.get_item(db, item_id=item_id)
+    item = crud.items.get(db, item_id=item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
     return item
@@ -38,6 +41,6 @@ def update_item(*, item_id: int):
     return {'msg': f'Item {item_id} updated'}
 
 
-@router.delete('/items/{item_id}')
-def delete_item(*, item_id: int):
-    return {'msg': f'Item {item_id} deleted'}
+@router.delete('/{item_id}')
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    return crud.items.delete(db, item_id=item_id)
