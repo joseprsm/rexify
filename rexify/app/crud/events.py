@@ -55,7 +55,7 @@ def create_feature(db: Session, event_id: int, feature: schemas.Feature):
     feature_id: int = features.get_by_key(db, key=feature.key).id
 
     event_feature = models.EventFeature(
-        item_id=event_id,
+        event_id=event_id,
         feature_id=feature_id,
         value=feature.value)
 
