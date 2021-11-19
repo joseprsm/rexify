@@ -22,7 +22,7 @@ RUN pip install --user -e .
 
 FROM python:3.8-slim-buster AS backend
 
-RUN pip install fastapi pydantic sqlalchemy pandas uvicorn
+RUN pip install fastapi pydantic sqlalchemy pandas uvicorn apache-airflow
 
 RUN apt-get update \
     && apt-get -y install libpq-dev gcc \
