@@ -10,3 +10,4 @@ metadata
 pipelines
 serving_model
 /.env
+*/.ipynb_checkpoints/
