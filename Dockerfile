@@ -5,11 +5,19 @@ RUN pip install mlflow
 EXPOSE 5000
 
 
-FROM python:3.8-slim-buster AS training_pipeline
+FROM puckel/docker-airflow AS airflow
+
+WORKDIR /usr/local/airflow
 
 COPY requirements.txt requirements.txt
 
-RUN pip install -r requirements.txt
+RUN pip install --user -r requirements.txt
+
+COPY setup.py .
+COPY setup.cfg .
+COPY rexify .
+
+RUN pip install --user -e .
 
 
 FROM python:3.8-slim-buster AS backend
