@@ -7,7 +7,7 @@ EXPOSE 5000
 
 FROM puckel/docker-airflow AS airflow
 
-WORKDIR /usr/local/airflow
+COPY dags dags
 
 COPY requirements.txt requirements.txt
 
@@ -15,7 +15,7 @@ RUN pip install --user -r requirements.txt
 
 COPY setup.py .
 COPY setup.cfg .
-COPY rexify .
+COPY rexify rexify
 
 RUN pip install --user -e .
 

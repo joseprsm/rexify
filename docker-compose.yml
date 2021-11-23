@@ -31,20 +31,13 @@ services:
     container_name: airflow
     restart: always
     environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=rexify
+      - POSTGRES_PASSWORD=rexify
+      - POSTGRES_DB=rexify
       - LOAD_EX=n
       - EXECUTOR=Local
     depends_on:
-      - airflow-db
-    volumes:
-      - ./dags:/usr/local/airflow/dags
+      - db
     ports:
       - "8080:8080"
-
-  # todo: find how to use only one image
-  airflow-db:
-    image: postgres
-    container_name: airflow-db
-    environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
