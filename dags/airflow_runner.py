@@ -21,8 +21,7 @@ METADATA_PATH = os.path.join('metadata', PIPELINE_NAME, 'metadata.db')
 events = os.path.join('data', 'events')
 items = os.path.join('data', 'items')
 
-with open(os.path.join('data', 'schema.json'), 'r') as f:
-    schema = json.load(f)
+schema = {"itemId": "categorical"}
 
 ppl = pipeline.build(
     run_fn=RUN_FN,
