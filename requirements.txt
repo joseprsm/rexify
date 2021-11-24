@@ -12,4 +12,6 @@ pydantic~=1.8.2
 fastapi~=0.70.0
 uvicorn~=0.15.0
 setuptools~=58.2.0
+keras==2.6.0
 sqlalchemy
+apache-airflow

@@ -4,7 +4,7 @@ services:
 
   db:
     image: postgres
-    container_name: 'db'
+    container_name: db
     environment:
       - POSTGRES_USER=rexify
       - POSTGRES_PASSWORD=rexify
@@ -14,12 +14,30 @@ services:
 
   backend:
     build:
-      context: '.'
-      target: 'backend'
-    container_name: 'backend'
+      context: .
+      target: backend
+    container_name: backend
     depends_on:
       - db
     environment:
       - DB_URL=postgresql://rexify:rexify@db:5432/rexify
     ports:
       - "8001:8001"
+
+  airflow:
+    build:
+      context: .
+      target: airflow
+    container_name: airflow
+    restart: always
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=rexify
+      - POSTGRES_PASSWORD=rexify
+      - POSTGRES_DB=rexify
+      - LOAD_EX=n
+      - EXECUTOR=Local
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
