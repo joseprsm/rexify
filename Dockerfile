@@ -7,8 +7,6 @@ EXPOSE 5000
 
 FROM puckel/docker-airflow AS airflow
 
-COPY dags dags
-
 COPY requirements.txt requirements.txt
 
 RUN pip install --user -r requirements.txt

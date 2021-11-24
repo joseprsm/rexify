@@ -37,6 +37,8 @@ services:
       - POSTGRES_DB=rexify
       - LOAD_EX=n
       - EXECUTOR=Local
+    volumes:
+      - ./dags:/usr/local/airflow/dags
     depends_on:
       - db
     ports:

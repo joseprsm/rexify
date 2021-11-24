@@ -1,7 +1,7 @@
 venv
 data
 .idea
-__pycache__
+*/__pycache__/*
 UNKNOWN.egg-info/
 
 .coverage
