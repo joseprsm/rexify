@@ -3,22 +3,21 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-from rexify.models.base import BaseModel
 from rexify.models.embedding import CategoricalModel
 
 
-class Tower(BaseModel):
+class Tower(tf.keras.Model):
 
     def __init__(self,
                  schema: Dict[str, str],
                  params: Dict[str, Dict[str, Any]],
                  layer_sizes: List[int],
                  activation: str):
-        super(Tower, self).__init__(
-            layer_sizes=layer_sizes)
+        super(Tower, self).__init__()
         self._schema = schema
         self._params = params
         self._activation = activation
+        self._layer_sizes = layer_sizes
 
         self.dense_layers = self._get_dense_layers(layer_sizes, activation=activation)
         self.feature_models: Dict[str, tf.keras.Model] = self._feature_factory(schema, params)
@@ -52,11 +51,11 @@ class Tower(BaseModel):
         }
 
     def get_config(self):
-        config = super().get_config().copy()
-        config.update({
+        return {
+            'layer_sizes': self._layer_sizes,
             'schema': self._schema, 'params': self._params,
-            'activation': self._activation})
-        return config
+            'activation': self._activation
+        }
 
     @abstractmethod
     def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
