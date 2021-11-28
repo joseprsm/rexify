@@ -53,8 +53,7 @@ class Executor(base_executor.BaseExecutor):
         embedding_model: tf.keras.Model = getattr(model, query_model)
 
         # using the .predict method of the models to return numpy arrays
-        embeddings: np.array = embedding_model.predict(
-            batched_examples.map(lambda x: x[feature_key]))
+        embeddings: np.array = embedding_model.predict(batched_examples).squeeze()
 
         vocabulary: np.array = tf.keras.Sequential([
             tf.keras.layers.Lambda(lambda x: x[feature_key])

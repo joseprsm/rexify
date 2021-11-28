@@ -25,12 +25,12 @@ def get_mock_candidates(*_):
 class ScannExecutorTest(tf.test.TestCase):
 
     def testGenerateANN(self):
-        sample_query = list(mock_candidates.take(1))[0]['itemId'].numpy().decode()
+        sample_query = list(mock_candidates.take(1))[0]['itemId'].numpy()
         scann = executor.generate_ann(
             mock_lookup,
             mock_embeddings,
-            mock_candidates.map(lambda x: x['itemId']),
-            sample_query,
+            mock_candidates,
+            str(sample_query),
             num_leaves=10)
         self.assertIsInstance(scann, tfrs.layers.factorized_top_k.ScaNN)
 

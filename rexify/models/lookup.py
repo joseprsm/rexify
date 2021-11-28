@@ -24,7 +24,7 @@ class EmbeddingLookup(tf.keras.Model):
         super(EmbeddingLookup, self).__init__(**kwargs)
         self.vocabulary = vocabulary  # sets the attribute by default
         # guarantee the tensor's/array's items are strings
-        if type(vocabulary) == np.ndarray:
+        if isinstance(vocabulary, np.ndarray):
             self.vocabulary = vocabulary.astype(str)
         else:
             if vocabulary.dtype.name != 'string':
