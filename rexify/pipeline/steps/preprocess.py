@@ -4,6 +4,7 @@ import tensorflow as tf
 import tensorflow_transform as tft
 
 NUM_OOV_BUCKETS = 1
+SCHEMA_TYPES = ['categorical', 'numeric', 'text', 'date']
 
 
 def preprocessing_fn(inputs: Dict[str, tf.Tensor],
@@ -19,16 +20,12 @@ def preprocessing_fn(inputs: Dict[str, tf.Tensor],
         for dtype in set(flat_schema.values())
     }
 
-    categorical_feature_keys = feature_keys.pop('categorical')
-    numeric_feature_keys = feature_keys.pop('numeric')
-    # date_feature_key = feature_keys.pop('timestamp')
-
     outputs = {}
 
-    for key in numeric_feature_keys:
+    for key in feature_keys['numeric']:
         outputs[key] = tft.scale_to_0_1(inputs[key])
 
-    for key in categorical_feature_keys:
+    for key in feature_keys['categorical']:
         outputs[key] = tft.compute_and_apply_vocabulary(
             tf.strings.strip(inputs[key]),
             num_oov_buckets=NUM_OOV_BUCKETS,
@@ -37,9 +34,9 @@ def preprocessing_fn(inputs: Dict[str, tf.Tensor],
     # todo: add cyclical transform for date features
 
     # passing remaining features as they will be transformed during training
-    # todo: add schema validation
+    untransformed_features = feature_keys['categorical'] + feature_keys['numeric']
     for key in inputs.keys():
-        if key not in categorical_feature_keys + numeric_feature_keys and key in flat_schema.keys():
+        if key not in untransformed_features and key in flat_schema.keys():
             outputs[key] = inputs[key]
 
     return outputs

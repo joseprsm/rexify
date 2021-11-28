@@ -14,6 +14,7 @@ PIPELINE_OUTPUT = os.environ.get('REXIFY_PIPELINE_OUTPUT', config.get('PIPELINE'
 PIPELINE_OUTPUT = os.path.join('.', PIPELINE_OUTPUT)
 METADATA_PATH = os.path.join('metadata', PIPELINE_NAME, 'metadata.db')
 BACKEND_CONFIG = os.environ.get('REXIFY_BACKEND', config.get('PIPELINE', 'backend'))
+SCHEMA_PATH = os.environ.get('SCHEMA_PATH')
 ENABLE_CACHE = False
 
 
@@ -24,21 +25,22 @@ def cli():
 
 
 @cli.command()
-@click.option('--events', required=True, help='Path to events CSV')
-@click.option('--users', help='Path to users CSV')
-@click.option('--items', help='Path to items CSV')
-@click.option('--schema', help='Path to schema JSON')
-@click.option('--output', help='Output artifacts locations')
+@click.option('-e', '--events', required=True, help='Path to events CSV')
+@click.option('-u', '--users', help='Path to users CSV')
+@click.option('-i', '--items', help='Path to items CSV')
+@click.option('-s', '--schema', help='Path to schema JSON')
+@click.option('-o', '--output', help='Output artifacts locations')
 def run(events: Union[str, bytes, os.PathLike],
         users: Optional[Union[str, bytes, os.PathLike]] = None,
         items: Optional[Union[str, bytes, os.PathLike]] = None,
         schema: Optional[Union[str, bytes, os.PathLike]] = None,
         output: Optional[Union[str, bytes, os.PathLike]] = None):
+
     """
     Run a Rexify pipeline.
     """
 
-    runner = runner_factory()
+    runner = _runner_factory()
     with open(schema, 'r') as f:
         schema = json.load(f)
 
@@ -57,10 +59,11 @@ def run(events: Union[str, bytes, os.PathLike],
     runner.run(ppl)
 
 
-def runner_factory():
+def _runner_factory():
     if BACKEND_CONFIG == 'kubeflow':
         from tfx.orchestration.kubeflow.kubeflow_dag_runner import KubeflowDagRunner
         return KubeflowDagRunner()
+
     elif BACKEND_CONFIG == 'local':
         from tfx.orchestration.local.local_dag_runner import LocalDagRunner
         return LocalDagRunner()

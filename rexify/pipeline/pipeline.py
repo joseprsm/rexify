@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 import json
 
@@ -18,7 +18,7 @@ def build(pipeline_name: str,
           pipeline_root: str,
           data_root: str,
           items_root: str,
-          schema: Dict[str, str],
+          schema: str,
           run_fn: str,
           serving_model_dir: str,
           metadata_path: str,
@@ -46,14 +46,14 @@ def build(pipeline_name: str,
         model=trainer.outputs['model'],
         query_model='candidate_model',
         feature_key='itemId',
-        schema=json.dumps(schema))
+        schema=json.loads(schema))
     components.append(lookup_gen)
 
     scann_gen = rexify_components.ScaNNGen(
         candidates=item_gen.outputs['examples'],
         model=trainer.outputs['model'],
         lookup_model=lookup_gen.outputs['lookup_model'],
-        schema=json.dumps(schema),
+        schema=json.loads(schema),
         feature_key='itemId')
     components.append(scann_gen)
 

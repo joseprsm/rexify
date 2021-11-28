@@ -1,13 +1,16 @@
 from typing import Text, List, Dict, Any
 
+import os
 import tensorflow as tf
 import tensorflow_transform as tft
 import tfx.components
 
 from tfx_bsl.public import tfxio
 
-from rexify.features.sequence import slide_transform
 from rexify.models import Recommender
+from rexify.features.sequence import slide_transform
+
+BATCH_SIZE = os.environ.get('BATCH_SIZE', 512)
 
 
 def _input_fn(file_pattern: List[Text],
@@ -17,8 +20,7 @@ def _input_fn(file_pattern: List[Text],
     return data_accessor.tf_dataset_factory(
         file_pattern,
         tfxio.TensorFlowDatasetOptions(batch_size=batch_size),
-        tf_transform_output.transformed_metadata.schema
-    ).repeat()
+        tf_transform_output.transformed_metadata.schema).repeat()
 
 
 def run_fn(fn_args: tfx.components.FnArgs,
@@ -39,10 +41,8 @@ def run_fn(fn_args: tfx.components.FnArgs,
     # todo: move sliding window to Transform step?
     training_data = slide_transform(training_data, schema)
 
-    model: tf.keras.Model = Recommender(
-        schema=schema,
-        params=params,
-        layer_sizes=layer_sizes,
-        activation=activation)
+    model: Recommender = Recommender(
+        schema=schema, params=params,
+        layer_sizes=layer_sizes, activation=activation)
     model.fit(training_data, steps_per_epoch=fn_args.train_steps)
     model.save(fn_args.serving_model_dir, save_format='tf')
