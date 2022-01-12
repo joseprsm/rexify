@@ -16,9 +16,7 @@ from rexify.pipeline import steps as rexify_components
 
 def build(pipeline_name: str,
           pipeline_root: str,
-          data_root: str,
-          items_root: str,
-          schema: Dict[str, str],
+          schema: Dict[str, Dict[str, str]],
           run_fn: str,
           serving_model_dir: str,
           metadata_path: str,
@@ -26,20 +24,52 @@ def build(pipeline_name: str,
 
     components: List[BaseComponent] = list()
 
-    event_gen = tfx.components.CsvExampleGen(input_base=data_root).with_id('EventGen')
+    event_downloader = rexify_components.Downloader(
+        table='events',
+        features_table='events_features'
+    ).with_id('EventDownloader')
+    components.append(event_downloader)
+
+    event_gen = tfx.components.CsvExampleGen(
+        input_base=event_downloader.outputs['output_path']
+    ).with_id('EventGen')
     components.append(event_gen)
+
+    user_downloader = rexify_components.Downloader(
+        table='users',
+        features_table='users_features'
+    ).with_id('UserDownloader')
+    components.append(user_downloader)
+
+    user_gen = tfx.components.CsvExampleGen(
+        input_base=user_downloader.outputs['output_path']
+    ).with_id('UserGen')
+    components.append(user_gen)
+
+    item_downloader = rexify_components.Downloader(
+        table='items',
+        features_tables='items_features'
+    ).with_id('ItemDownloader')
+    components.append(item_downloader)
+
+    item_gen = tfx.components.CsvExampleGen(
+        input_base=item_downloader.outputs['output_path']
+    ).with_id('ItemGen')
+    components.append(item_gen)
+
+    transform_args = dict()
+    transform = tfx.components.Transform(**transform_args)
+    components.append(transform)
 
     trainer_args = dict(
         run_fn=run_fn,
         examples=event_gen.outputs['examples'],
-        train_args=tfx.proto.trainer_pb2.TrainArgs(num_steps=1000),
-        eval_args=tfx.proto.trainer_pb2.EvalArgs(num_steps=1000),
+        transform_graph=transform.outputs['transform_graph'],
+        train_args=tfx.proto.TrainArgs(num_steps=1000),
+        eval_args=tfx.proto.EvalArgs(num_steps=1000),
         custom_executor_spec=executor_spec.ExecutorClassSpec(trainer_executor.GenericExecutor))
     trainer = tfx.components.Trainer(**trainer_args)
     components.append(trainer)
-
-    item_gen = tfx.components.CsvExampleGen(input_base=items_root).with_id('ItemGen')
-    components.append(item_gen)
 
     lookup_gen = rexify_components.LookupGen(
         examples=item_gen.outputs['examples'],
