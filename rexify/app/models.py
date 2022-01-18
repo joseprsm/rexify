@@ -30,6 +30,7 @@ class Feature(Base):
     __tablename__ = 'features'
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String)
+    dtype = Column(String)
 
 
 class UserFeature(Base):
