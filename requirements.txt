@@ -1,4 +1,4 @@
-tensorflow==2.6.0
+tensorflow==2.6.1
 tensorflow_recommenders==0.5.2
 tensorflow_transform
 tensorflow_metadata
@@ -10,3 +10,11 @@ coverage==6.0.1
 pytest==6.2.5
 click==7.1.2
 pyjwt==1.7.1
+pydantic~=1.8.2
+fastapi~=0.70.0
+uvicorn~=0.15.0
+setuptools~=58.2.0
+keras==2.6.0
+sqlalchemy
+apache-airflow
+pandas
