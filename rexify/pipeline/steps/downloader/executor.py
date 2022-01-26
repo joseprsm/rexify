@@ -34,7 +34,7 @@ class Executor(base_executor.BaseExecutor):
         features = self._get('features')  # (id, key)
 
         context = context.merge(features, left_on='feature_id', right_on='id')  # (feature_id, event_id, key, value)
-        context.drop('feature_id', inplace=True)
+        context.drop('feature_id', axis=1, inplace=True)
 
         context_g = context.groupby('event_id').agg({'key': list, 'value': list})
 
@@ -47,7 +47,7 @@ class Executor(base_executor.BaseExecutor):
         contexts = pd.concat(contexts).reset_index()
         contexts['event_id'] = contexts.pop('index')
 
-        events = events.merge(contexts, left_on='id', right_on='event_id').drop('id', axis=1)
+        events = events.merge(contexts, left_on='id', right_on='event_id').drop('id', axis=1).set_index('event_id')
 
     @staticmethod
     def _get(table) -> pd.DataFrame:
