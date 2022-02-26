@@ -13,7 +13,7 @@ top of [Tensorflow Recommenders](https://github.com/tensorflow/recommenders) mod
 
 For now, you can only install Rexify from source:
 ```shell
-pip install git+https://www.github.com/joseprsm/rexify
+$ pip install git+https://www.github.com/joseprsm/rexify
 ```
 
 ## Quick start
@@ -30,7 +30,7 @@ All you need to set up your model is interaction data - something that kind of l
 
 Additionally, we'll have to have configured a schema for the data.
 This schema is what will allow Rexify to generate a dynamic model and preprocessing steps.
-The schema should be comprised of three dictionaries: `user`, `ìtem`, `context`. 
+The schema should be comprised of three dictionaries: `user`, `ìtem`, `context`.
 
 Each of these dictionaries should consist of features and internal data types, 
 such as: `categorical`, `continuous`, `timestamp`, `text`. More data types will be available 
@@ -57,7 +57,14 @@ Then, we got to set up our runs.
 And finally, now that we have everything set up, all we got to do is run `rexify run`, 
 and point to the path where the CSV are stored like so:
 
-```
-rexify run -e path/to/events/csv -s path/to/schema/json 
+```shell
+$ rexify run -e path/to/events/csv -s path/to/schema/json 
 ```
 
+Additionally, you can just run:
+
+```shell
+$ docker-compose up -d
+```
+
+Which will spin up the necessary Docker images.
