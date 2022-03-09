@@ -6,8 +6,10 @@ import pandas as pd
 import sqlalchemy as db
 
 from tfx import types
+from tfx.dsl.io import fileio
 from tfx.dsl.components.base import base_executor
 from tfx.proto.orchestration import execution_result_pb2
+from tfx.types import artifact_utils
 
 DB_USER = os.environ.get('DB_USER')
 DB_PASS = os.environ.get('DB_PASS')
@@ -29,28 +31,49 @@ class Executor(base_executor.BaseExecutor):
            output_dict: Dict[str, List[types.Artifact]],
            exec_properties: Dict[str, Any]) -> Optional[execution_result_pb2.ExecutorOutput]:
 
-        events = self._get('events')  # (id, user_id, item_id)
-        context = self._get('event_features')  # (id, event_id, feature_id, value)
-        features = self._get('features')  # (id, key)
+        events: pd.DataFrame = self.get('event')    # (event_id, user_id, item_id, *context)
+        users: pd.DataFrame = self.get('user')      # (user_id, *user_features)
+        items: pd.DataFrame = self.get('item')      # (item_id, *item_features)
 
-        context = context.merge(features, left_on='feature_id', right_on='id')  # (feature_id, event_id, key, value)
-        context.drop('feature_id', axis=1, inplace=True)
+        events = events.merge(users, on='user_id')  # (event_id, user_id, item_id, *context, *user_features)
+        events = events.merge(items, on='item_id')  # (event_id, user_id, item_id, *context, *all_features)
 
-        context_g = context.groupby('event_id').agg({'key': list, 'value': list})
+        self.save(events, artifact_utils.get_single_uri(output_dict['events_path']), 'events.csv')
+        self.save(events, artifact_utils.get_single_uri(output_dict['users_path']), 'users.csv')
+        self.save(events, artifact_utils.get_single_uri(output_dict['items_path']), 'items.csv')
 
-        contexts = list()
-        for event_id in context_g.index:
-            a = pd.DataFrame(np.stack(context_g.loc[event_id].values)).T.set_index(0).T
-            a.index = [event_id]
-            contexts.append(a)
+    def get(self, table: str) -> pd.DataFrame:
 
-        contexts = pd.concat(contexts).reset_index()
-        contexts['event_id'] = contexts.pop('index')
+        if table not in ['event', 'user', 'item']:
+            raise Exception('Table not found')
 
-        events = events.merge(contexts, left_on='id', right_on='event_id').drop('id', axis=1).set_index('event_id')
+        data = self.query(table + 's')
+        context = self.query(f'{table}_features')
+        features = self.query('features')
+
+        context = context.merge(features, left_on='feature_id', right_on='id')
+        context = context[[f'{table}_id', 'key', 'value']]
+        context = context.groupby(f'{table}_id').agg({'key': list, 'value': list})
+        context = pd.concat([self.explode(id_, context) for id_ in context.index]).reset_index()
+
+        context[f'{table}_id'] = context.pop('index')
+
+        return data.merge(context, left_on='id', right_on=f'{table}_id')\
+            .drop('id', axis=1).set_index(f'{table}_id')
 
     @staticmethod
-    def _get(table) -> pd.DataFrame:
+    def save(data: pd.DataFrame, path: str, name: str):
+        fileio.makedirs(os.path.dirname(path))
+        data.to_csv(os.path.join(path, name))
+
+    @staticmethod
+    def query(table) -> pd.DataFrame:
         events = db.Table(table, metadata, autoload=True, autoload_with=engine)
         query = db.select([events])
         return pd.DataFrame(conn.execute(query).fetchall())
+
+    @staticmethod
+    def explode(id_, df: pd.DataFrame) -> pd.DataFrame:
+        features = pd.DataFrame(np.stack(df.loc[id_].values)).T.set_index(0).T
+        features.index = [id_]
+        return features
