@@ -24,37 +24,13 @@ def build(pipeline_name: str,
 
     components: List[BaseComponent] = list()
 
-    event_downloader = rexify_components.Downloader(
-        table='events',
-        features_table='events_features'
-    ).with_id('EventDownloader')
-    components.append(event_downloader)
+    downloader = rexify_components.Downloader()
+    components.append(downloader)
 
-    event_gen = tfx.components.CsvExampleGen(
-        input_base=event_downloader.outputs['output_path']
-    ).with_id('EventGen')
+    event_gen = tfx.components.CsvExampleGen(downloader.outputs['events_path']).with_id('EventGen')
     components.append(event_gen)
 
-    user_downloader = rexify_components.Downloader(
-        table='users',
-        features_table='users_features'
-    ).with_id('UserDownloader')
-    components.append(user_downloader)
-
-    user_gen = tfx.components.CsvExampleGen(
-        input_base=user_downloader.outputs['output_path']
-    ).with_id('UserGen')
-    components.append(user_gen)
-
-    item_downloader = rexify_components.Downloader(
-        table='items',
-        features_tables='items_features'
-    ).with_id('ItemDownloader')
-    components.append(item_downloader)
-
-    item_gen = tfx.components.CsvExampleGen(
-        input_base=item_downloader.outputs['output_path']
-    ).with_id('ItemGen')
+    item_gen = tfx.components.CsvExampleGen(downloader.outputs['items_path']).with_id('ItemGen')
     components.append(item_gen)
 
     transform_args = dict()
@@ -72,10 +48,10 @@ def build(pipeline_name: str,
     components.append(trainer)
 
     lookup_gen = rexify_components.LookupGen(
-        examples=item_gen.outputs['examples'],
+        examples=event_gen.outputs['examples'],
         model=trainer.outputs['model'],
-        query_model='candidate_model',
-        feature_key='itemId',
+        query_model='query_model',
+        feature_key='user_id',
         schema=json.dumps(schema))
     components.append(lookup_gen)
 
@@ -84,7 +60,7 @@ def build(pipeline_name: str,
         model=trainer.outputs['model'],
         lookup_model=lookup_gen.outputs['lookup_model'],
         schema=json.dumps(schema),
-        feature_key='itemId')
+        feature_key='item_id')
     components.append(scann_gen)
 
     pusher_args = dict(
