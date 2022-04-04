@@ -6,7 +6,7 @@ import tensorflow_transform.beam as tft_beam
 
 from tensorflow_transform.tf_metadata import dataset_metadata, schema_utils
 
-from rexify.models.embedding.categorical import CategoricalModel
+from rexify.models.categorical import CategoricalModel
 
 
 class CategoricalModelTest(tf.test.TestCase):
