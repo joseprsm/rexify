@@ -19,11 +19,8 @@ class CandidateModel(Tower):
             layer_sizes=layer_sizes,
             activation=activation)
 
-        self.item_model = self.feature_models.pop('itemId')
-
     def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
-        item_embeddings: tf.Tensor = self.item_model(inputs['itemId'])
-        feature_embeddings: List[tf.Tensor] = [
+        return [
             model(inputs[feature_name])
-            for feature_name, model in self.feature_models.items()]
-        return [item_embeddings] + feature_embeddings
+            for feature_name, model in self.feature_models.items()
+        ]

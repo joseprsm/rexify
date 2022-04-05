@@ -19,12 +19,8 @@ class QueryModel(Tower):
             layer_sizes=layer_sizes,
             activation=activation)
 
-        self.user_model = self.feature_models.pop('userId')
-
     def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
-        user_embeddings = self.user_model(inputs['userId'])
-        feature_embeddings: List[tf.Tensor] = [
+        return [
             model(inputs[feature_name])
-            for feature_name, model in self.feature_models.items()]
-        sequence_embeddings: tf.Tensor = self.sequence_model(inputs['sequence'])
-        return [user_embeddings] + feature_embeddings + [sequence_embeddings]
+            for feature_name, model in self.feature_models.items()
+        ]
