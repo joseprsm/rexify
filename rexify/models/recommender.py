@@ -3,7 +3,7 @@ from typing import Optional, List, Dict, Union, Any
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
-from rexify.models.embedding import CategoricalModel
+from rexify.models.categorical import CategoricalModel
 from rexify.models.query import QueryModel
 from rexify.models.candidate import CandidateModel
 

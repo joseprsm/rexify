@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-from rexify.models.embedding import CategoricalModel
+from rexify.models.categorical import CategoricalModel
 
 
 class Tower(tf.keras.Model):

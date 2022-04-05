@@ -1,4 +1,4 @@
-from typing import Dict, Text, List, Any, Optional, Tuple
+from typing import Dict, Text, List, Any, Optional
 
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
