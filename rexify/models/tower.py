@@ -53,7 +53,8 @@ class Tower(tf.keras.Model):
     def get_config(self):
         return {
             'layer_sizes': self._layer_sizes,
-            'schema': self._schema, 'params': self._params,
+            'schema': self._schema,
+            'params': self._params,
             'activation': self._activation
         }
 
