@@ -6,6 +6,9 @@ import tensorflow_recommenders as tfrs
 from rexify.models.query import QueryModel
 from rexify.models.candidate import CandidateModel
 
+USER_FEATURES = ['userId']
+ITEM_FEATURES = ['itemId']
+
 
 class Recommender(tfrs.Model):
 
@@ -32,8 +35,8 @@ class Recommender(tfrs.Model):
         return loss
 
     def call(self, inputs, *_):
-        query_embeddings: tf.Tensor = self.query_model(inputs)
-        candidate_embeddings: tf.Tensor = self.candidate_model(inputs)
+        query_embeddings: tf.Tensor = self.query_model({feature: inputs[feature] for feature in USER_FEATURES})
+        candidate_embeddings: tf.Tensor = self.candidate_model({feature: inputs[feature] for feature in ITEM_FEATURES})
         return query_embeddings, candidate_embeddings
 
     def get_config(self):
