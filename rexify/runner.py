@@ -14,6 +14,7 @@ from tfx.orchestration.kubeflow import kubeflow_dag_runner
 from tfx.orchestration.kubeflow.proto import kubeflow_pb2
 from tfx.orchestration.pipeline import Pipeline
 
+from rexify.pipeline.lookup import LookupGen
 from rexify.pipeline.scann import ScaNNGen
 
 config = configparser.ConfigParser()
@@ -50,13 +51,25 @@ def create_pipeline(events_root: str,
     trainer = tfx.components.Trainer(**trainer_args)
     components.append(trainer)
 
+    user_gen = tfx.components.CsvExampleGen(input_base=items_root).with_id('UserGen')
+    components.append(user_gen)
+
+    lookup_gen = LookupGen(
+        examples=user_gen.outputs['examples'],
+        model=trainer.outputs['model'],
+        query_model='query_model',
+        feature_key='userId',
+        schema=str({'userId': 'categorical'}))
+    components.append(lookup_gen)
+
     item_gen = tfx.components.CsvExampleGen(input_base=items_root).with_id('ItemGen')
     components.append(item_gen)
 
     scann_gen = ScaNNGen(
         candidates=item_gen.outputs['examples'],
         model=trainer.outputs['model'],
-        schema=str(schema),
+        lookup_model=lookup_gen.outputs['lookup_model'],
+        schema=str({'itemId': 'categorical'}),
         feature_key='itemId')
     components.append(scann_gen)
 

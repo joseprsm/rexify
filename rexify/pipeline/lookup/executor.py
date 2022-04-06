@@ -49,11 +49,12 @@ class Executor(base_executor.BaseExecutor):
     def get_lookup_params(examples, model, query_model, feature_key) -> Tuple[np.array, np.array]:
         """Retrieves and computes the parameters for the EmbeddingLookup Model."""
 
-        batched_examples = examples.batch(512)
+        # todo: fix training input data
+        batched_examples = examples.batch(1).batch(512)
         embedding_model: tf.keras.Model = getattr(model, query_model)
 
         # using the .predict method of the models to return numpy arrays
-        embeddings: np.array = embedding_model.predict(batched_examples).squeeze()
+        embeddings: np.array = np.concatenate(list(batched_examples.map(embedding_model).as_numpy_iterator()))
 
         vocabulary: np.array = tf.keras.Sequential([
             tf.keras.layers.Lambda(lambda x: x[feature_key])

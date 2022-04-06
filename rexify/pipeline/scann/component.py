@@ -13,6 +13,7 @@ class ScaNNGenSpec(ComponentSpec):
     INPUTS = {
         "candidates": ChannelParameter(standard_artifacts.Examples),
         "model": ChannelParameter(standard_artifacts.Model),
+        "lookup_model": ChannelParameter(standard_artifacts.Model),
     }
 
     OUTPUTS = {
@@ -33,6 +34,7 @@ class ScaNNGen(BaseComponent):
     def __init__(self,
                  candidates: Channel,
                  model: Channel,
+                 lookup_model: Channel,
                  index: Optional[Channel] = None,
                  schema: Optional[Text] = None,
                  feature_key: Optional[Text] = None):
@@ -40,6 +42,7 @@ class ScaNNGen(BaseComponent):
         spec = ScaNNGenSpec(
             candidates=candidates,
             model=model,
+            lookup_model=lookup_model,
             index=index,
             schema=schema,
             feature_key=feature_key)
