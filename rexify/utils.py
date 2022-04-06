@@ -1,7 +1,7 @@
 from typing import Text, Dict, Any, List, Union
+from ast import literal_eval
 
 import os
-import json
 import tensorflow as tf
 from tfx.dsl.io import fileio
 
@@ -34,7 +34,7 @@ def load_model(artifact_list: List[Artifact], model_name: Text = 'Format-Serving
 
 
 def read_split_examples(artifact_list: List[Artifact], schema, split: Text = 'train'):
-    feature_spec = get_feature_spec(json.loads(schema))
+    feature_spec = get_feature_spec(literal_eval(schema))
     examples_uri: Text = artifact_utils.get_split_uri(artifact_list, split)
     examples: tf.data.Dataset = read_examples(examples_uri, feature_spec=feature_spec)
     return examples
