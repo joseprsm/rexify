@@ -1,5 +1,6 @@
-from typing import Dict, Text, List, Any, Optional
+from typing import Dict, Text, List, Any, Optional, Union, Tuple
 
+import numpy as np
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
@@ -8,23 +9,15 @@ from tfx.dsl.components.base import base_executor
 from tfx.proto.orchestration import execution_result_pb2
 
 from rexify import utils
-from rexify.models import Recommender
-
-SAMPLE_QUERY = '42'
+from rexify.models import Recommender, EmbeddingLookup
 
 
-def generate_ann(
-        lookup_model: tf.keras.Model,
-        embeddings: tf.data.Dataset,
-        candidates: tf.data.Dataset,
-        sample_query: str,
-        feature_key: str, **kwargs) -> tf.keras.Model:
-    """Generates a ScaNN TensorFlow model"""
-    scann = tfrs.layers.factorized_top_k.ScaNN(lookup_model, **kwargs)
-    # noinspection PyTypeChecker
-    scann.index(embeddings, candidates.map(lambda x: x[feature_key]))
-    _ = scann(tf.constant([sample_query]))
-    return scann
+def _get_models(input_dict) -> Tuple[Recommender, EmbeddingLookup]:
+    """Retrieves the two models used for the ScaNN building component"""
+    model: Recommender = utils.load_model(input_dict['model'])
+    lookup_model: EmbeddingLookup = utils.load_model(
+        input_dict['lookup_model'], model_name='lookup_model')
+    return model, lookup_model
 
 
 class Executor(base_executor.BaseExecutor):
@@ -34,21 +27,36 @@ class Executor(base_executor.BaseExecutor):
            output_dict: Dict[Text, List[types.Artifact]],
            exec_properties: Dict[Text, Any]) -> Optional[execution_result_pb2.ExecutorOutput]:
 
-        model: Recommender = utils.load_model(input_dict['model'])
+        model, lookup_model = _get_models(input_dict)
         candidates = utils.read_split_examples(input_dict['candidates'], schema=exec_properties['schema'])
+        vocabulary: np.array = tf.keras.Sequential([
+            tf.keras.layers.Lambda(lambda x: x['itemId'])
+        ]).predict(candidates).reshape(-1)
 
-        candidate_embeddings: tf.data.Dataset = candidates.batch(512).map(model.candidate_model)
-        if len(list(candidate_embeddings.take(1))[0].shape) > 2:
-            candidate_embeddings = candidate_embeddings.unbatch()
+        # todo: fix training input data
+        candidate_embeddings = np.concatenate(list(
+            candidates.batch(1).batch(512).map(model.candidate_model).as_numpy_iterator()))
+        candidate_embeddings = candidate_embeddings.reshape((-1, candidate_embeddings.shape[-1]))
+        sample_query = tf.constant([lookup_model.get_config()['sample_query']])
 
-        scann = generate_ann(
-            lookup_model=model.query_model,
-            candidates=candidates,
+        scann = self._generate_ann(
+            lookup_model=lookup_model,
             embeddings=candidate_embeddings,
-            sample_query=SAMPLE_QUERY,
-            feature_key=exec_properties['feature_key'],
-            **exec_properties.get('custom_config', {}))
+            candidates=vocabulary,
+            sample_query=sample_query)
 
         utils.export_model(
             output_dict['index'], scann, 'index',
             options=tf.saved_model.SaveOptions(namespace_whitelist=['Scann']))
+
+    @staticmethod
+    def _generate_ann(
+            lookup_model: EmbeddingLookup,
+            embeddings: Union[tf.Tensor, np.ndarray],
+            candidates: Union[tf.Tensor, np.ndarray],
+            sample_query: Dict[str, tf.Tensor], **kwargs) -> tf.keras.Model:
+        """Generates a ScaNN TensorFlow model"""
+        scann = tfrs.layers.factorized_top_k.ScaNN(lookup_model, **kwargs)
+        scann.index(embeddings, candidates)
+        _ = scann(sample_query)
+        return scann
