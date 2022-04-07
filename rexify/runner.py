@@ -31,6 +31,7 @@ schema = {"itemId": "categorical", 'userId': 'categorical'}
 
 def create_pipeline(events_root: str,
                     items_root: str,
+                    users_root: str,
                     serving_model_dir: str,
                     run_fn: Optional[str] = RUN_FN,
                     pipeline_name: Optional[str] = PIPELINE_NAME,
@@ -51,7 +52,7 @@ def create_pipeline(events_root: str,
     trainer = tfx.components.Trainer(**trainer_args)
     components.append(trainer)
 
-    user_gen = tfx.components.CsvExampleGen(input_base=items_root).with_id('UserGen')
+    user_gen = tfx.components.CsvExampleGen(input_base=users_root).with_id('UserGen')
     components.append(user_gen)
 
     lookup_gen = LookupGen(
@@ -102,6 +103,7 @@ if __name__ == '__main__':
     pipeline_args = dict(
         events_root=os.environ.get('EVENTS_ROOT', os.path.join(DATA_ROOT, 'events')),
         items_root=os.environ.get('ITEMS_ROOT', os.path.join(DATA_ROOT, 'items')),
+        users_root=os.environ.get('USERS_ROOT', os.path.join(DATA_ROOT, 'users')),
         serving_model_dir=os.path.join(PIPELINE_ROOT, 'serving_model'))
     pipeline = create_pipeline(**pipeline_args)
     config = kubeflow_dag_runner.KubeflowDagRunnerConfig(kubeflow_metadata_config=get_kubeflow_metadata_config())
