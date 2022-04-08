@@ -14,6 +14,8 @@ from tfx.orchestration.kubeflow import kubeflow_dag_runner
 from tfx.orchestration.kubeflow.proto import kubeflow_pb2
 from tfx.orchestration.pipeline import Pipeline
 
+from kfp import onprem
+
 from rexify.pipeline.lookup import LookupGen
 from rexify.pipeline.scann import ScaNNGen
 
@@ -24,9 +26,12 @@ RUN_FN = config.get('PIPELINE', 'run_fn')
 PIPELINE_NAME = config.get('PIPELINE', 'pipeline_name')
 PIPELINE_ROOT = config.get('PIPELINE', 'pipeline_root')
 DATA_ROOT = config.get('PIPELINE', 'data_root')
+OUTPUT_BUCKET = config.get('PIPELINE', 'output_bucket')
 
 # todo: make this a parameter
 schema = {"itemId": "categorical", 'userId': 'categorical'}
+
+mount_volume_op = onprem.mount_pvc('refixy-pvc', 'shared-volume', OUTPUT_BUCKET)
 
 
 def create_pipeline(events_root: str,
@@ -100,13 +105,16 @@ def get_kubeflow_metadata_config() -> kubeflow_pb2.KubeflowMetadataConfig:
 
 
 if __name__ == '__main__':
+    data_root = os.path.join(OUTPUT_BUCKET, 'data')
     pipeline_args = dict(
-        events_root=os.environ.get('EVENTS_ROOT', os.path.join(DATA_ROOT, 'events')),
-        items_root=os.environ.get('ITEMS_ROOT', os.path.join(DATA_ROOT, 'items')),
-        users_root=os.environ.get('USERS_ROOT', os.path.join(DATA_ROOT, 'users')),
+        events_root=os.environ.get('EVENTS_ROOT', os.path.join(data_root, 'events')),
+        items_root=os.environ.get('ITEMS_ROOT', os.path.join(data_root, 'items')),
+        users_root=os.environ.get('USERS_ROOT', os.path.join(data_root, 'users')),
         serving_model_dir=os.path.join(PIPELINE_ROOT, 'serving_model'))
     pipeline = create_pipeline(**pipeline_args)
-    config = kubeflow_dag_runner.KubeflowDagRunnerConfig(kubeflow_metadata_config=get_kubeflow_metadata_config())
+    config = kubeflow_dag_runner.KubeflowDagRunnerConfig(
+        kubeflow_metadata_config=get_kubeflow_metadata_config(),
+        pipeline_operator_funcs=[mount_volume_op])
     kubeflow_dag_runner.KubeflowDagRunner(config=config).run(pipeline)
 
 
