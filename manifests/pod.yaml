@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  name: streamlit-app
+  namespace: kubeflow
+spec:
+  volumes:
+  - name: data-vol
+    persistentVolumeClaim:
+      claimName: rexify-pvc
+  containers:
+  - image: joseprsm/rexify
+    name: streamlit-app
+    volumeMounts:
+    - mountPath: rexify/data
+      name: data-vol
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
