@@ -11,5 +11,5 @@ COPY rexify rexify
 
 RUN pip install -e .
 
-CMD streamlit run rexify/app.py
+CMD python -m streamlit run rexify/app.py
 
