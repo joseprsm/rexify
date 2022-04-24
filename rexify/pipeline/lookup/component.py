@@ -12,17 +12,15 @@ class EmbeddingLookupSpec(ComponentSpec):
 
     INPUTS = {
         "examples": ChannelParameter(type=standard_artifacts.Examples),
-        "model": ChannelParameter(type=standard_artifacts.Model)
+        "model": ChannelParameter(type=standard_artifacts.Model),
     }
 
-    OUTPUTS = {
-        "lookup_model": ChannelParameter(type=standard_artifacts.Model)
-    }
+    OUTPUTS = {"lookup_model": ChannelParameter(type=standard_artifacts.Model)}
 
     PARAMETERS = {
         "query_model": ExecutionParameter(type=Text),
         "feature_key": ExecutionParameter(type=Text),
-        "schema": ExecutionParameter(type=Text)
+        "schema": ExecutionParameter(type=Text),
     }
 
 
@@ -31,20 +29,25 @@ class LookupGen(BaseComponent):
     SPEC_CLASS = EmbeddingLookupSpec
     EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
 
-    def __init__(self,
-                 examples: Channel,
-                 model: Channel,
-                 lookup_model: Channel = None,
-                 query_model: Optional[Text] = None,
-                 feature_key: Optional[Text] = None,
-                 schema: Optional[Text] = None):
+    def __init__(
+        self,
+        examples: Channel,
+        model: Channel,
+        lookup_model: Channel = None,
+        query_model: Optional[Text] = None,
+        feature_key: Optional[Text] = None,
+        schema: Optional[Text] = None,
+    ):
 
-        lookup_model = lookup_model or channel_utils.as_channel([standard_artifacts.Model()])
+        lookup_model = lookup_model or channel_utils.as_channel(
+            [standard_artifacts.Model()]
+        )
         spec = EmbeddingLookupSpec(
             examples=examples,
             model=model,
             lookup_model=lookup_model,
             query_model=query_model,
             feature_key=feature_key,
-            schema=schema)
+            schema=schema,
+        )
         super(LookupGen, self).__init__(spec=spec)

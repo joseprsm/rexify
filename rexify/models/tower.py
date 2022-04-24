@@ -7,12 +7,13 @@ from rexify.models.categorical import CategoricalModel
 
 
 class Tower(tf.keras.Model):
-
-    def __init__(self,
-                 schema: Dict[str, str],
-                 params: Dict[str, Dict[str, Any]],
-                 layer_sizes: List[int],
-                 activation: str):
+    def __init__(
+        self,
+        schema: Dict[str, str],
+        params: Dict[str, Dict[str, Any]],
+        layer_sizes: List[int],
+        activation: str,
+    ):
         super(Tower, self).__init__()
         self._schema = schema
         self._params = params
@@ -20,7 +21,9 @@ class Tower(tf.keras.Model):
         self._layer_sizes = layer_sizes
 
         self.dense_layers = self._get_dense_layers(layer_sizes, activation=activation)
-        self.feature_models: Dict[str, tf.keras.Model] = self._feature_factory(schema, params)
+        self.feature_models: Dict[str, tf.keras.Model] = self._feature_factory(
+            schema, params
+        )
 
     def call(self, inputs: Dict[str, tf.Tensor], *_):
         # retrieves the respective embedding for each feature present
@@ -38,11 +41,11 @@ class Tower(tf.keras.Model):
         return model
 
     @staticmethod
-    def _feature_factory(schema: Dict[str, str],
-                         params: Dict[str, Dict[str, Any]]) -> Dict[str, tf.keras.Model]:
-
+    def _feature_factory(
+        schema: Dict[str, str], params: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, tf.keras.Model]:
         def get_model(feature_name: str, dtype: str) -> tf.keras.Model:
-            if dtype == 'categorical':
+            if dtype == "categorical":
                 return CategoricalModel(**params[feature_name])
 
         return {
@@ -52,10 +55,10 @@ class Tower(tf.keras.Model):
 
     def get_config(self):
         return {
-            'layer_sizes': self._layer_sizes,
-            'schema': self._schema,
-            'params': self._params,
-            'activation': self._activation
+            "layer_sizes": self._layer_sizes,
+            "schema": self._schema,
+            "params": self._params,
+            "activation": self._activation,
         }
 
     @abstractmethod

@@ -6,5 +6,5 @@ class CandidateTestCase(tf.test.TestCase):
         self.assertEqual(True, True)  # add assertion here
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

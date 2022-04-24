@@ -2,7 +2,6 @@ import tensorflow as tf
 
 
 class CategoricalModel(tf.keras.Model):
-
     def __init__(self, input_dim: int, embedding_dim: int, **kwargs):
         super(CategoricalModel, self).__init__(**kwargs)
         self._input_dim = input_dim
@@ -17,7 +16,4 @@ class CategoricalModel(tf.keras.Model):
         return x
 
     def get_config(self):
-        return {
-            'input_dim': self._input_dim,
-            'embedding_dim': self._embedding_dim
-        }
+        return {"input_dim": self._input_dim, "embedding_dim": self._embedding_dim}

@@ -16,13 +16,11 @@ class ScaNNGenSpec(ComponentSpec):
         "lookup_model": ChannelParameter(standard_artifacts.Model),
     }
 
-    OUTPUTS = {
-        "index": ChannelParameter(standard_artifacts.Model)
-    }
+    OUTPUTS = {"index": ChannelParameter(standard_artifacts.Model)}
 
     PARAMETERS = {
         "schema": ExecutionParameter(Text),
-        "feature_key": ExecutionParameter(Text)
+        "feature_key": ExecutionParameter(Text),
     }
 
 
@@ -31,13 +29,15 @@ class ScaNNGen(BaseComponent):
     SPEC_CLASS = ScaNNGenSpec
     EXECUTOR_SPEC = executor_spec.ExecutorClassSpec(executor.Executor)
 
-    def __init__(self,
-                 candidates: Channel,
-                 model: Channel,
-                 lookup_model: Channel,
-                 index: Optional[Channel] = None,
-                 schema: Optional[Text] = None,
-                 feature_key: Optional[Text] = None):
+    def __init__(
+        self,
+        candidates: Channel,
+        model: Channel,
+        lookup_model: Channel,
+        index: Optional[Channel] = None,
+        schema: Optional[Text] = None,
+        feature_key: Optional[Text] = None,
+    ):
         index = index or channel_utils.as_channel([standard_artifacts.Model()])
         spec = ScaNNGenSpec(
             candidates=candidates,
@@ -45,5 +45,6 @@ class ScaNNGen(BaseComponent):
             lookup_model=lookup_model,
             index=index,
             schema=schema,
-            feature_key=feature_key)
+            feature_key=feature_key,
+        )
         super().__init__(spec=spec)
