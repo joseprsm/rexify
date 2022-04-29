@@ -1,0 +1,25 @@
+name: Train
+description: ""
+
+inputs:
+  - {name: input_dir, type: String}
+  - {name: activation, type: String, default: "leaky_relu"}
+  - {name: layer_sizes, optional: true}
+  - {name: batch_size, optional: true, default: "512"}
+  - {name: epochs, optional: true, default: "100"}
+
+outputs:
+  - {name: output_dir, type: String}
+
+implementation:
+  container:
+    image: joseprsm/rexify-train
+    command: [python, train.py]
+    args: [
+      --input-dir, {inputPath: input_dir},
+      --output-dir, {outputPath: output_dir},
+      --activation, {inputValue: activation},
+      --layer-sizes, {inputValue: layer_sizes},
+      --batch-size, {inputValue: batch_size},
+      --epochs, {inputValue: epochs},
+    ]
