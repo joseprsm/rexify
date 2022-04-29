@@ -1,8 +1,14 @@
-FROM python:3.8-slim-buster
+FROM python:3.8-slim-buster AS preprocess
 
-COPY requirements.txt requirements.txt
+RUN pip install scikit-learn==1.0.2
 
-RUN pip install --user -r requirements.txt
+WORKDIR src
+
+COPY rexify/components/preprocess/task.py ./preprocess.py
+
+ENTRYPOINT ["python", "-m", "preprocess.py"]
+
+FROM python:3.8-slim-buster AS train
 
 COPY config.ini .
 COPY setup.py .
@@ -11,5 +17,8 @@ COPY rexify rexify
 
 RUN pip install -e .
 
-CMD python -m streamlit run rexify/app.py
+WORKDIR src
 
+COPY rexify/components/train/task.py ./train.py
+
+ENTRYPOINT ["python", "-m", "train.py"]
