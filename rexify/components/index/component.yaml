@@ -1,0 +1,16 @@
+name: Preprocess
+
+inputs:
+  - {name: model_dir, type: String}
+
+outputs:
+  - {name: output_dir, type: String}
+
+implementation:
+  container:
+    image: joseprsm/rexify-index
+    command: [python, index.py]
+    args: [
+      --model-dir, {inputPath: model_dir},
+      --output-dir, {outputPath: output_dir}
+    ]
