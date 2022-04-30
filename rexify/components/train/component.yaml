@@ -3,10 +3,14 @@ description: ""
 
 inputs:
   - {name: input_dir, type: String}
-  - {name: activation, type: String, default: "leaky_relu"}
+  - {name: schema_dir, optional: false}
+  - {name: activation, optional: true, type: String, default: "leaky_relu"}
   - {name: layer_sizes, optional: true}
-  - {name: batch_size, optional: true, default: "512"}
-  - {name: epochs, optional: true, default: "100"}
+  - {name: batch_size, optional: true, type: Integer, default: "512"}
+  - {name: epochs, optional: true, type: Integer, default: "100"}
+  - {name: learning_rate, optional: true, type: Float, default: "0.2"}
+  - {name: user_id, optional: true, type: Float, default: "0.2"}
+  - {name: item_id, optional: true, type: Float, default: "0.2"}
 
 outputs:
   - {name: output_dir, type: String}
@@ -17,9 +21,12 @@ implementation:
     command: [python, train.py]
     args: [
       --input-dir, {inputPath: input_dir},
+      --schema, {inputPath: schema_dir}
       --output-dir, {outputPath: output_dir},
       --activation, {inputValue: activation},
       --layer-sizes, {inputValue: layer_sizes},
       --batch-size, {inputValue: batch_size},
       --epochs, {inputValue: epochs},
+      --user-id, {inputValue: user_id},
+      --item-id, {inputValue: item_id}
     ]
