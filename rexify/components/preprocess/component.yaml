@@ -1,9 +1,7 @@
 name: Preprocess
-description: ""
 
 inputs:
-  - {name: event_dir, type: String}
-  - {name: test_size, type: Float}
+  - {name: test_size, type: Float, default: "0.3"}
 
 outputs:
   - {name: output_dir, type: String}
@@ -12,7 +10,4 @@ implementation:
   container:
     image: joseprsm/rexify-preprocess
     command: [python, preprocess.py]
-    args: [
-      --input-dir, {inputPath: input_dir},
-      --output-dir, {outputPath: output_dir}
-    ]
+    args: [--output-dir, {outputPath: output_dir}]

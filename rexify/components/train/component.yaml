@@ -13,7 +13,7 @@ inputs:
   - {name: item_id, optional: true, type: Float, default: "0.2"}
 
 outputs:
-  - {name: output_dir, type: String}
+  - {name: model_dir, type: String}
 
 implementation:
   container:
@@ -21,8 +21,8 @@ implementation:
     command: [python, train.py]
     args: [
       --input-dir, {inputPath: input_dir},
-      --schema, {inputPath: schema_dir}
-      --output-dir, {outputPath: output_dir},
+      --schema, {inputPath: schema_dir},
+      --model-dir, {outputPath: output_dir},
       --activation, {inputValue: activation},
       --layer-sizes, {inputValue: layer_sizes},
       --batch-size, {inputValue: batch_size},
