@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 import pandas as pd
 import streamlit as st
@@ -7,7 +6,7 @@ import streamlit as st
 host = st.sidebar.text_input("Kubeflow Pipelines Endpoint", "http://localhost:3000")
 events_file = st.sidebar.file_uploader("Upload event data", "csv")
 
-OUTPUT_DIR = os.path.join("rexify", "data")
+OUTPUT_DIR = "data"
 EVENT_PATH = os.path.join(OUTPUT_DIR, "events")
 USER_PATH = os.path.join(OUTPUT_DIR, "users")
 ITEM_PATH = os.path.join(OUTPUT_DIR, "items")
@@ -15,9 +14,9 @@ ITEM_PATH = os.path.join(OUTPUT_DIR, "items")
 
 def _trigger_pipeline():
     import kfp
+    from rexify.pipeline import pipeline_fn
 
-    subprocess.run(["python", "rexify/runner.py"])
-    kfp.Client(host=host).create_run_from_pipeline_package("rexify.tar.gz", {})
+    kfp.Client(host=host).create_run_from_pipeline_func(pipeline_fn, arguments={})
 
 
 btn = st.sidebar.button("Run", disabled=events_file is None)
