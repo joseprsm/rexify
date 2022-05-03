@@ -10,7 +10,7 @@ spec:
     persistentVolumeClaim:
       claimName: rexify-pvc
   containers:
-  - image: joseprsm/rexify
+  - image: joseprsm/rexify-app
     name: streamlit-app
     volumeMounts:
     - mountPath: rexify/data
