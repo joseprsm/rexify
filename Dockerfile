@@ -2,7 +2,7 @@ FROM python:3.8-slim-buster AS base
 
 WORKDIR src
 
-FROM base AS frontend
+FROM base AS app
 
 RUN pip install streamlit pandas
 COPY rexify/app.py ./app.py
