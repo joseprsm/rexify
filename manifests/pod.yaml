@@ -13,7 +13,7 @@ spec:
   - image: joseprsm/rexify-app
     name: streamlit-app
     volumeMounts:
-    - mountPath: rexify/data
+    - mountPath: /mnt/data
       name: data-vol
   dnsPolicy: ClusterFirst
   restartPolicy: Always

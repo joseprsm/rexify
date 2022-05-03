@@ -1,15 +1,15 @@
 import os
-
 import pandas as pd
 import streamlit as st
 
 host = st.sidebar.text_input("Kubeflow Pipelines Endpoint", "http://localhost:3000")
 events_file = st.sidebar.file_uploader("Upload event data", "csv")
 
-OUTPUT_DIR = "data"
-EVENT_PATH = os.path.join(OUTPUT_DIR, "events")
-USER_PATH = os.path.join(OUTPUT_DIR, "users")
-ITEM_PATH = os.path.join(OUTPUT_DIR, "items")
+BASE_DIR = "/mnt/data"
+OUTPUT_DIR = os.path.join(BASE_DIR, "raw")
+
+if OUTPUT_DIR not in [os.path.join(BASE_DIR, d) for d in os.listdir(BASE_DIR)]:
+    os.makedirs(OUTPUT_DIR)
 
 
 def _trigger_pipeline():
@@ -27,30 +27,23 @@ if events_file is not None:
     events.columns = ["userId", "itemId"]
 
     col1, col2, col3 = st.columns([1.5, 1, 1])
-    dir_list = os.listdir(OUTPUT_DIR)
 
     with col1:
         st.text("Events")
         st.write(events)
-        if "events" not in dir_list:
-            os.makedirs(EVENT_PATH)
-        events.to_csv(os.path.join(EVENT_PATH, "events.csv"))
+        events.to_csv(os.path.join(OUTPUT_DIR, "events.csv"))
 
     with col2:
         st.text("Users")
         users = pd.DataFrame(events.userId.unique(), columns=["userId"])
         st.write(users)
-        if "users" not in dir_list:
-            os.makedirs(USER_PATH)
-        users.to_csv(os.path.join(USER_PATH, "users.csv"))
+        users.to_csv(os.path.join(OUTPUT_DIR, "users.csv"))
 
     with col3:
         st.text("Items")
         items = pd.DataFrame(events.itemId.unique(), columns=["itemId"])
         st.write(items)
-        if "items" not in dir_list:
-            os.makedirs(ITEM_PATH)
-        items.to_csv(os.path.join(ITEM_PATH, "items.csv"))
+        items.to_csv(os.path.join(OUTPUT_DIR, "items.csv"))
 
     if btn:
         _trigger_pipeline()
