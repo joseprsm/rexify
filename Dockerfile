@@ -4,7 +4,7 @@ WORKDIR src
 
 FROM base AS app
 
-RUN pip install streamlit pandas
+RUN pip install streamlit pandas kfp
 COPY rexify/app.py ./app.py
 CMD python -m streamlit run app.py
 
