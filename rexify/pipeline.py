@@ -22,17 +22,17 @@ deploy_op = _load_component("deploy")
 @kfp.dsl.pipeline()
 def pipeline_fn():
     preprocess_task = preprocess_op()
-    preprocess_task.apply(mount_pvc('rexify-pvc', 'data-vol', '/mnt/data'))
+    preprocess_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
 
     train_task = train_op(input_dir=preprocess_task.outputs["output_dir"])
-    train_task.apply(mount_pvc('rexify-pvc', 'data-vol', '/mnt/data'))
+    train_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
 
     index_task = index_op(model_dir=train_task.outputs["model_dir"])
-    index_task.apply(mount_pvc('rexify-pvc', 'data-vol', '/mnt/data'))
+    index_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
 
     deploy_task = deploy_op(index_dir=index_task.outputs["index_dir"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     client = kfp.Client(host=KFP_HOST)
     client.create_run_from_pipeline_func(pipeline_fn, arguments={})
