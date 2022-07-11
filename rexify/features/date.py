@@ -19,18 +19,24 @@ class DateEncoder(BaseEstimator, TransformerMixin):
         drop_columns: bool = True,
     ):
         super(DateEncoder, self).__init__()
-        self.attrs = date_attrs or ["year", "month", "day"]
+        self.get_time = get_time
 
-        time_attrs = time_attrs or ["hour", "minute", "second"]
-        self.attrs += time_attrs if get_time else []
+        self.attrs = self.date_attrs = date_attrs or ["year", "month", "day"]
+
+        self.time_attrs = time_attrs or ["hour", "minute", "second"]
+        self.attrs += self.time_attrs if self.get_time else []
 
         self.drop_columns = drop_columns
 
     def fit(self, X, *_):
-        self.range = range(X.shape[1])
+        self.range = range(1) if len(X.shape) < 2 else range(X.shape[1])
         return self
 
+    # noinspection PyPep8Naming
     def transform(self, X):
+        X = X.values if type(X) != np.ndarray else X
+        X = X.reshape(-1, 1) if self.range.stop == 1 else X
+
         transformed_data = np.concatenate(
             [self._encode_dates(X[:, i]) for i in self.range], axis=1
         )
