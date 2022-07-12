@@ -63,22 +63,33 @@ class DateTransformer(TupleTransformer):
         date_encoder = DateEncoder(date_attrs, time_attrs, get_time, drop_columns)
 
         cyclical_features = [attr for attr in date_encoder.attrs if attr != "year"]
-        cyclical_index = np.argwhere([a in cyclical_features for a in date_encoder.attrs]).reshape(-1)
+        cyclical_index = np.argwhere(
+            [a in cyclical_features for a in date_encoder.attrs]
+        ).reshape(-1)
 
         date_bins = {"month": 12, "day": 30, "hour": 24, "minute": 60, "second": 60}
 
         return make_union(
             make_pipeline(
                 date_encoder,
-                make_column_transformer((
-                    make_union(
-                        *[
-                            make_column_transformer((
-                                CyclicalTransformer(num_bins=date_bins[feature], drop_columns=False), [i]
-                            )) for i, feature in enumerate(cyclical_features)
-                        ]
+                make_column_transformer(
+                    (
+                        make_union(
+                            *[
+                                make_column_transformer(
+                                    (
+                                        CyclicalTransformer(
+                                            num_bins=date_bins[feature],
+                                            drop_columns=False,
+                                        ),
+                                        [i],
+                                    )
+                                )
+                                for i, feature in enumerate(cyclical_features)
+                            ]
+                        ),
+                        cyclical_index,
                     ),
-                    cyclical_index),
                     remainder="passthrough",
                 ),
             ),
@@ -88,8 +99,8 @@ class DateTransformer(TupleTransformer):
                     MinMaxScaler(feature_range=feature_range),
                     make_pipeline(
                         KBinsDiscretizer(n_bins=n_bins, encode=encode),
-                        OneHotEncoder(dtype=np.int64)
-                    )
+                        OneHotEncoder(dtype=np.int64),
+                    ),
                 ),
             ),
         )
@@ -127,15 +138,17 @@ class PreprocessingPipeline(ColumnTransformer):
         self.date_args = date_args.copy()
         self.categorical_args = categorical_args.copy()
 
-        self.embedding_features = embedding_args.pop('features')
-        self.numerical_features = numerical_args.pop('features')
-        self.date_features = date_args.pop('features')
-        self.categorical_features = categorical_args.pop('features')
+        self.embedding_features = embedding_args.pop("features")
+        self.numerical_features = numerical_args.pop("features")
+        self.date_features = date_args.pop("features")
+        self.categorical_features = categorical_args.pop("features")
 
         super(PreprocessingPipeline, self).__init__(
             transformers=[
-                ("embedding_pipeline",) + EmbeddingTransformer(self.embedding_features, **embedding_args),
-                ("numerical_pipeline",) + NumericalTransformer(self.numerical_features, **numerical_args),
+                ("embedding_pipeline",)
+                + EmbeddingTransformer(self.embedding_features, **embedding_args),
+                ("numerical_pipeline",)
+                + NumericalTransformer(self.numerical_features, **numerical_args),
                 ("date_pipeline",) + DateTransformer(self.date_features, **date_args),
                 ("categorical_pipeline",)
                 + CategoricalTransformer(self.categorical_features, **categorical_args),
