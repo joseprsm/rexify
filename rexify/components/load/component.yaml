@@ -8,6 +8,6 @@ outputs:
 
 implementation:
   container:
-    image: joseprsm/rexify-preprocess
-    command: [python, preprocess.py]
+    image: ...
+    command: [python, load.py]
     args: [--output-dir, {outputPath: output_dir}]
