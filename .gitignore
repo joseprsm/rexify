@@ -7,7 +7,6 @@ UNKNOWN.egg-info/
 .coverage
 
 metadata
-pipelines
 serving_model
 /.env
 */.ipynb_checkpoints/
