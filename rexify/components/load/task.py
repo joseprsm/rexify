@@ -1,26 +1,18 @@
-from typing import Union, Dict, List, Optional
+from typing import Dict, List
 
-import os
 import json
 import click
-import pickle
 
 import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
 
-from rexify.features.transformers import PreprocessingPipeline, ColumnTransformer
 from rexify.utils import flatten
-
-INPUT_DIR = "/mnt/data"
-SCHEMA_PATH = os.path.join(INPUT_DIR, "schema.json")
+from rexify.features.transformers import PreprocessingPipeline
 
 
-# noinspection PyTypeChecker
-def _create_pipeline(
-    schema: Dict[str, Union[Dict[str, str]], str]
-) -> ColumnTransformer:
+def _create_pipeline(schema):
 
     categorical_args = _get_features(schema, value="categorical")
     numerical_args = _get_features(schema, value="numerical")
@@ -35,10 +27,7 @@ def _create_pipeline(
     )
 
 
-def _get_features(
-    schema: Optional[Dict[str, Dict[str, str]]] = None,
-    value: Optional[Union[str, List[str]]] = None,
-) -> Dict[str, List[str]]:
+def _get_features(schema, value) -> Dict[str, List[str]]:
 
     return {
         "features": list(
@@ -61,36 +50,50 @@ def _get_features(
 
 # noinspection PyPep8Naming
 @click.command()
-@click.option("--output-dir", type=str)
+@click.option("--events-path", type=str)
+@click.option("--users-path", type=str)
+@click.option("--items-path", type=str)
 @click.option("--schema-path", type=str)
+@click.option("--train-data-path", type=str)
+@click.option("--test-data-path", type=str)
 @click.option("--test-size", type=float, default=0.3)
 def load(
-    output_dir: Union[str, bytes, os.PathLike],
-    schema_path: Union[str, bytes, os.PathLike] = SCHEMA_PATH,
+    events_path: str,
+    users_path: str,
+    items_path: str,
+    schema_path: str,
+    train_data_path: str,
+    test_data_path: str,
     test_size: float = 0.3,
 ):
 
-    event_path = os.path.join(INPUT_DIR, "events.csv")
-    events = pd.read_csv(event_path)
+    events = pd.read_csv(events_path)
+    users = pd.read_csv(users_path)
+    items = pd.read_csv(items_path)
 
     with open(schema_path, "r") as f:
         schema = json.load(f)
 
+    users = users.loc[:, list(schema["user"].keys())]
+    items = items.loc[:, list(schema["item"].keys())]
+
+    user_feature = _get_features(schema, value="userId")["features"][0]
+    item_feature = _get_features(schema, value="itemId")["features"][0]
+    features = list(...)
+
+    events = events.merge(users, on=user_feature).merge(items, on=item_feature)
+    events = events[[features]]
+
     ppl = _create_pipeline(schema)
 
     events = events[~np.any(pd.isnull(events), axis=1), :]
-    X_train, X_test = train_test_split(events, test_size=test_size)
+    train, test = train_test_split(events, test_size=test_size)
 
-    X_train = ppl.fit_transform(X_train)
-    X_test = ppl.transform(X_test)
+    train = ppl.fit_transform(train)
+    test = ppl.transform(test)
 
-    X_train.to_csv(os.path.join(output_dir, "train.csv"))
-    X_test.to_csv(os.path.join(output_dir, "test.csv"))
-
-    pipeline_output_path = os.path.join(output_dir, "pipelines.pkl")
-
-    with open(pipeline_output_path, "wb") as f:
-        pickle.dump(ppl, f)
+    np.savetxt(train_data_path, train)
+    np.savetxt(test_data_path, test)
 
 
 if __name__ == "__main__":
