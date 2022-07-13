@@ -12,7 +12,7 @@ def _load_component(task: str):
     return load_component_from_file(os.path.join(BASE_PATH, task, "component.yaml"))
 
 
-preprocess_op = _load_component("preprocess")
+load_op = _load_component("load")
 train_op = _load_component("train")
 index_op = _load_component("index")
 deploy_op = _load_component("deploy")
@@ -21,10 +21,10 @@ deploy_op = _load_component("deploy")
 # noinspection PyUnusedLocal
 @kfp.dsl.pipeline()
 def pipeline_fn():
-    preprocess_task = preprocess_op()
-    preprocess_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
+    load_task = load_op()
+    load_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
 
-    train_task = train_op(input_dir=preprocess_task.outputs["output_dir"])
+    train_task = train_op(input_dir=load_task.outputs["output_dir"])
     train_task.apply(mount_pvc("rexify-pvc", "data-vol", "/mnt/data"))
 
     index_task = index_op(model_dir=train_task.outputs["model_dir"])
