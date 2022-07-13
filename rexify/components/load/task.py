@@ -79,9 +79,11 @@ def load(
     ppl = _create_pipeline(schema)
 
     events = events[~np.any(pd.isnull(events), axis=1), :]
-    X = ppl.fit_transform(events)
+    X_train, X_test = train_test_split(events, test_size=test_size)
 
-    X_train, X_test = train_test_split(X, test_size=test_size)
+    X_train = ppl.fit_transform(X_train)
+    X_test = ppl.transform(X_test)
+
     X_train.to_csv(os.path.join(output_dir, "train.csv"))
     X_test.to_csv(os.path.join(output_dir, "test.csv"))
 
