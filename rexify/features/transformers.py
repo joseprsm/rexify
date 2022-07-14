@@ -171,11 +171,11 @@ class PreprocessingPipeline(ColumnTransformer):
     def _get_date_feature_names(self):
 
         base_features = self.transformers_[2][2]
-        date_encoder = self.transformers_[2][1].transformer_list[0][1]
+        date_encoder = self.transformers_[2][1].transformer_list[0][1].steps[0][1]
 
         def get_date_encoder_features():
             date_features = self.date_features if not date_encoder.drop_columns else []
-            date_features += date_encoder.attrs
+            date_features += date_encoder.attrs if len(base_features) != 0 else []
             return date_features
 
         def get_timestamp_features():
