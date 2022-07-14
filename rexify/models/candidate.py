@@ -1,25 +1,39 @@
-from typing import Dict, Any, List
+from typing import List
 
 import tensorflow as tf
 
-from rexify.models.tower import Tower
 
-
-class CandidateModel(Tower):
+class CandidateModel(tf.keras.Model):
     def __init__(
         self,
-        schema: Dict[str, str],
-        params: Dict[str, Dict[str, Any]],
-        layer_sizes: List[int],
-        activation: str = "relu",
+        n_items: int,
+        item_id: str,
+        embedding_dim: int = 32,
+        layer_sizes: List[int] = None,
     ):
 
-        super(CandidateModel, self).__init__(
-            schema=schema, params=params, layer_sizes=layer_sizes, activation=activation
-        )
+        super(CandidateModel, self).__init__()
+        self._item_id = item_id
+        self._n_items = n_items
+        self._embedding_dim = embedding_dim
+        self._layer_sizes = layer_sizes
 
-    def call_feature_models(self, inputs: Dict[str, tf.Tensor]) -> List[tf.Tensor]:
-        return [
-            model(inputs[feature_name])
-            for feature_name, model in self.feature_models.items()
+        self.embedding_layer = tf.keras.layers.Embedding(n_items, embedding_dim)
+
+        self.dense_layers = [
+            tf.keras.layers.Dense(num_neurons) for num_neurons in layer_sizes
         ]
+
+    def call(self, inputs: tf.Tensor):
+        x = self.embedding_layer(inputs[self._item_id])
+        for layer in self.dense_layers:
+            x = layer(x)
+        return x
+
+    def get_config(self):
+        return {
+            "n_items": self._n_items,
+            "item_id": self._item_id,
+            "embedding_dim": self._embedding_dim,
+            "layer_sizes": self._layer_sizes,
+        }

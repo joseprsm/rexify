@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
@@ -6,27 +6,29 @@ import tensorflow_recommenders as tfrs
 from rexify.models.query import QueryModel
 from rexify.models.candidate import CandidateModel
 
-USER_FEATURES = ["userId"]
-ITEM_FEATURES = ["itemId"]
-
 
 class Recommender(tfrs.Model):
     def __init__(
         self,
-        query_params: Dict[str, Any],
-        candidate_params: Dict[str, Any],
+        n_unique_items: int,
+        n_unique_users: int,
+        user_features: List[str],
+        item_features: List[str],
         layer_sizes: Optional[List[int]] = None,
-        activation: Optional[str] = "relu",
     ):
         super(Recommender, self).__init__()
         layer_sizes = layer_sizes if layer_sizes else [64, 32]
-        self._query_params = query_params
-        self._candidate_params = candidate_params
-        self._layer_sizes = layer_sizes
-        self._activation = activation
+        self._user_features = user_features
+        self._item_features = item_features
 
-        self.candidate_model = CandidateModel(**self._candidate_params)
-        self.query_model = QueryModel(**self._query_params)
+        self._layer_sizes = layer_sizes
+
+        self.candidate_model = CandidateModel(
+            n_unique_items, self._item_features[0], layer_sizes=layer_sizes
+        )
+        self.query_model = QueryModel(
+            n_unique_users, self._user_features[0], layer_sizes=layer_sizes
+        )
 
         self.task: tfrs.tasks.Task = tfrs.tasks.Retrieval()
 
@@ -36,12 +38,8 @@ class Recommender(tfrs.Model):
         return loss
 
     def call(self, inputs, *_):
-        query_embeddings: tf.Tensor = self.query_model(
-            {feature: inputs[feature] for feature in USER_FEATURES}
-        )
-        candidate_embeddings: tf.Tensor = self.candidate_model(
-            {feature: inputs[feature] for feature in ITEM_FEATURES}
-        )
+        query_embeddings: tf.Tensor = self.query_model(inputs["query"])
+        candidate_embeddings: tf.Tensor = self.candidate_model(inputs["candidate"])
         return query_embeddings, candidate_embeddings
 
     def get_config(self):
@@ -49,5 +47,4 @@ class Recommender(tfrs.Model):
             "query_params": self._query_params,
             "candidate_params": self._candidate_params,
             "layer_sizes": self._layer_sizes,
-            "activation": self._activation,
         }
