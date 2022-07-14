@@ -1,7 +1,6 @@
-from typing import Optional, Callable
+from typing import Optional
 
 import numpy as np
-import pandas as pd
 
 from rexify.features.base import BaseTransformer
 
