@@ -7,12 +7,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 
-from rexify.utils import flatten
+from rexify.utils import flatten, get_target_id
 
 
 @click.command()
 @click.option("--events-path", type=str)
 @click.option("--schema-path", type=str)
+@click.option("--items-path", type=str)
 @click.option("--train-data-path", type=str)
 @click.option("--test-data-path", type=str)
 @click.option("--test-size", type=float, default=0.3)
@@ -21,6 +22,7 @@ def load(
     schema_path: str,
     train_data_path: str,
     test_data_path: str,
+    items_path: str,
     test_size: float = 0.3,
 ):
 
@@ -43,6 +45,10 @@ def load(
 
     np.savetxt(train_data_path, train, delimiter=",")
     np.savetxt(test_data_path, test, delimiter=",")
+
+    item_id = get_target_id(schema, 'item')
+    items = ppl.transform(events)[:, np.argwhere(events.columns == item_id)[0, 0]]
+    np.savetxt(items_path, items)
 
 
 if __name__ == "__main__":
