@@ -1,41 +1,47 @@
-from typing import Union, Optional
-
-import os
-
+import json
 import click
 import numpy as np
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
-import scann
+import scann as _
 
-from rexify.models import EmbeddingLookup
-
-
-def generate_ann(
-    lookup_model: EmbeddingLookup,
-    embeddings: Union[tf.data.Dataset, np.ndarray],
-    candidates: tf.data.Dataset,
-    sample_query: str,
-) -> tfrs.layers.factorized_top_k.ScaNN:
-    index = tfrs.layers.factorized_top_k.ScaNN(
-        lookup_model, k=50, num_reordering_candidates=1_000
-    )
-    # todo: fix data types
-    index.index(embeddings, candidates)
-    _ = index(tf.constant([sample_query]))
-    return index
+from rexify.utils import get_target_id
 
 
 @click.command()
-@click.option("--output-dir", type=str)
+@click.option("--items-path", type=str)
+@click.option("--schema-path", type=str)
+@click.option("--model-path", type=str)
+@click.option("--index-path", type=str)
 def index(
-    output_dir: Union[str, bytes, os.PathLike],
+    items_path: str,
+    schema_path: str,
+    model_path: str,
+    index_path: str,
 ):
-    lookup_model = EmbeddingLookup()
-    scann = generate_ann(...)
-    output_path: Union[str, bytes, os.PathLike] = os.path.join(output_dir, "scann")
-    scann.save(
-        output_path, options=tf.saved_model.SaveOptions(namespace_whitelist=["Scann"])
+    with open(schema_path, "r") as f:
+        schema = json.load(f)
+
+    user_id = get_target_id(schema, 'user')
+    item_id = get_target_id(schema, 'item')
+
+    items = np.loadtxt(items_path)
+    items = tf.data.Dataset.from_tensor_slices(items.reshape(-1, 1)).map(
+        lambda x: {item_id: x}
+    )
+
+    model = tf.keras.models.load_model(model_path)
+
+    item_embeddings = items.map(model.candidate_model)
+
+    scann = tfrs.layers.factorized_top_k.ScaNN(k=50, num_reordering_candidates=1_000)
+    scann.index_from_dataset(tf.data.Dataset.zip((items, item_embeddings)))
+    _ = scann(model.query_model({user_id: [42]}), k=1)
+
+    tf.keras.models.save_model(
+        scann,
+        index_path,
+        options=tf.saved_model.SaveOptions(namespace_whitelist=["Scann"]),
     )
 
 
