@@ -4,7 +4,7 @@ inputs:
 - {name: input_uri, type: String}
 
 outputs:
-- {name: data}
+- {name: data, type: CSV}
 
 implementation:
   container:

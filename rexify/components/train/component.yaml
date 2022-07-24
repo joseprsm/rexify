@@ -2,13 +2,13 @@ name: Train
 
 inputs:
   - {name: train_data}
-  - {name: schema_path}
+  - {name: schema}
   - {name: batch_size, type: Integer, default: "512"}
   - {name: epochs, type: Integer, default: "100"}
   - {name: learning_rate, type: Float, default: "0.1"}
 
 outputs:
-  - {name: model_path}
+  - {name: model, type: Model}
 
 implementation:
   container:
@@ -16,8 +16,8 @@ implementation:
     command: ["python", "train.py"]
     args: [
       --training-data-path, {inputPath: train_data},
-      --schema-path, {inputPath: schema_path},
-      --model-path, {outputPath: model_path},
+      --schema-path, {inputPath: schema},
+      --model-path, {outputPath: model},
       --batch-size, {inputValue: batch_size},
       --epochs, {inputValue: epochs},
       --learning-rate, {inputValue: learning_rate}

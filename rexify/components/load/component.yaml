@@ -6,8 +6,9 @@ inputs:
   - {name: test_size, type: Float, default: "0.3"}
 
 outputs:
-  - {name: train}
-  - {name: test}
+  - {name: train, type: CSV}
+  - {name: test, type: CSV}
+  - {name: items, type: CSV}
 
 implementation:
   container:
@@ -18,5 +19,6 @@ implementation:
       "--schema-path", {inputPath: schema},
       "--test-size", {inputValue: test_size},
       "--train-data-path", {outputPath: train},
-      "--test-data-path", {outputPath: test}
+      "--test-data-path", {outputPath: test},
+      "--items-path", {outputPath: items}
     ]
