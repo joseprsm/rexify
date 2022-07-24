@@ -18,6 +18,10 @@ class Recommender(tfrs.Model):
     ):
         super(Recommender, self).__init__()
         layer_sizes = layer_sizes if layer_sizes else [64, 32]
+
+        self._n_unique_items = n_unique_items
+        self._n_unique_users = n_unique_users
+
         self._user_features = user_features
         self._item_features = item_features
 
@@ -44,7 +48,9 @@ class Recommender(tfrs.Model):
 
     def get_config(self):
         return {
-            "query_params": self._query_params,
-            "candidate_params": self._candidate_params,
+            "n_unique_items": self._n_unique_items,
+            "n_unique_users": self._n_unique_users,
+            "user_features": self._user_features,
+            "item_features": self._item_features,
             "layer_sizes": self._layer_sizes,
         }
