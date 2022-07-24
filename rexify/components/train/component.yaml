@@ -1,4 +1,4 @@
-name: Train
+name: train
 
 inputs:
   - {name: train_data}

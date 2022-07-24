@@ -1,4 +1,4 @@
-name: Preprocess data
+name: load
 
 inputs:
   - {name: events}

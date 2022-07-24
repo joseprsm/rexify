@@ -1,4 +1,4 @@
-name: Data set download
+name: download
 
 inputs:
 - {name: input_uri, type: String}
