@@ -1,12 +1,11 @@
-venv
 data
 .idea
+.env
+
 */__pycache__/*
-UNKNOWN.egg-info/
+*/.ipynb_checkpoints/
+*.egg-info/
 
 .coverage
 
-metadata
-serving_model
-/.env
-*/.ipynb_checkpoints/
+outputs
