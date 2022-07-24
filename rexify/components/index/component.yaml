@@ -1,4 +1,4 @@
-name: Preprocess
+name: index
 
 inputs:
   - {name: items}
@@ -13,7 +13,7 @@ implementation:
     image: joseprsm/rexify-index
     command: [python, index.py]
     args: [
-      --schema-path, {inputPath: index},
+      --schema-path, {inputPath: schema},
       --items-path, {inputPath: items},
       --model-path, {inputPath: model},
       --index-path, {outputPath: index}
