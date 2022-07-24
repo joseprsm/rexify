@@ -16,6 +16,7 @@ def _load_component(task: str):
 download_op = _load_component("download")
 load_op = _load_component("load")
 train_op = _load_component("train")
+index_op = _load_component("index")
 
 
 @pipeline(name=PIPELINE_NAME, pipeline_root=PIPELINE_ROOT)
@@ -30,7 +31,13 @@ def pipeline_fn():
 
     train_task = train_op(
         train_data=load_task.outputs["train"],
-        schema_path=schema_downloader_task.outputs["data"],
+        schema=schema_downloader_task.outputs["data"],
+    )
+
+    index_task = index_op(
+        items=load_task.outputs["items"],
+        model=train_task.outputs["model"],
+        schema=schema_downloader_task.outputs["data"],
     )
 
 
