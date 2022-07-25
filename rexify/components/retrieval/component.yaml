@@ -12,6 +12,7 @@ outputs:
 implementation:
   container:
     image: joseprsm/rexify-retrieval
+    command: ['python', 'retrieval.py']
     args: [
       "--users-dir", {inputPath: users},
       "--schema-path", {inputPath: schema},
