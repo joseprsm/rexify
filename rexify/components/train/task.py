@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import json
 import click
 
@@ -8,22 +10,23 @@ from rexify.models import Recommender
 
 
 @click.command()
-@click.option("--training-data-path", type=str)
+@click.option("--training-data-dir", type=str)
 @click.option("--schema-path", type=str)
-@click.option("--model-path", type=str)
+@click.option("--model-dir", type=str)
 @click.option("--learning-rate", type=float, default=0.2)
 @click.option("--epochs", type=int, default=100)
 @click.option("--batch-size", type=int, default=512)
 def train(
-    training_data_path: str,
+    training_data_dir: str,
     schema_path: str,
-    model_path: str,
+    model_dir: str,
     learning_rate: float = 0.1,
     epochs: int = 100,
     batch_size: int = 512,
 ):
 
-    train_df: pd.DataFrame = pd.read_csv(training_data_path, header=None)
+    train_path = Path(training_data_dir) / 'train.csv'
+    train_df: pd.DataFrame = pd.read_csv(train_path, header=None)
 
     with open(schema_path, "r") as f:
         schema = json.load(f)
@@ -49,6 +52,8 @@ def train(
         ],
     )
 
+    Path(model_dir).mkdir(parents=True, exist_ok=True)
+    model_path = Path(model_dir) / 'model'
     model.save(model_path)
 
 

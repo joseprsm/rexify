@@ -15,9 +15,9 @@ implementation:
     image: joseprsm/rexify-train
     command: ["python", "train.py"]
     args: [
-      --training-data-path, {inputPath: train_data},
+      --training-data-dir, {inputPath: train_data},
       --schema-path, {inputPath: schema},
-      --model-path, {outputPath: model},
+      --model-dir, {outputPath: model},
       --batch-size, {inputValue: batch_size},
       --epochs, {inputValue: epochs},
       --learning-rate, {inputValue: learning_rate}
