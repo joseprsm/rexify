@@ -34,3 +34,9 @@ FROM rexify AS index
 COPY rexify/components/index/task.py ./index.py
 
 ENTRYPOINT ['python', '-m', 'index.py']
+
+FROM rexify AS retrieval
+
+COPY rexify/components/retrieval/task.py ./retrieval.py
+
+ENTRYPOINT ["python", '-m', 'retrieval.py']
