@@ -24,6 +24,7 @@ def load(
     train_data_dir: str,
     test_data_dir: str,
     items_dir: str,
+    users_dir: str,
     test_size: float = 0.3,
 ):
 
@@ -53,12 +54,21 @@ def load(
     np.savetxt(train_path, train, delimiter=",")
     np.savetxt(test_path, test, delimiter=",")
 
+    transformed_events = ppl.transform(events)
+
     item_id = get_target_id(schema, 'item')
-    items = ppl.transform(events)[:, np.argwhere(events.columns == item_id)[0, 0]]
+    items = transformed_events[:, np.argwhere(events.columns == item_id)[0, 0]]
 
     Path(items_dir).mkdir(parents=True, exist_ok=True)
     items_path = Path(items_dir) / 'items.csv'
     np.savetxt(items_path, items)
+
+    user_id = get_target_id(schema, 'user')
+    users = transformed_events[:, np.argwhere(events.columns == user_id)[0, 0]]
+
+    Path(users_dir).mkdir(parents=True, exist_ok=True)
+    users_path = Path(users_dir) / 'users.csv'
+    np.savetxt(users_path, users)
 
 
 if __name__ == "__main__":
