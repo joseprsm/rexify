@@ -25,7 +25,7 @@ def train(
     batch_size: int = 512,
 ):
 
-    train_path = Path(training_data_dir) / 'train.csv'
+    train_path = Path(training_data_dir) / "train.csv"
     train_df: pd.DataFrame = pd.read_csv(train_path, header=None)
 
     with open(schema_path, "r") as f:
@@ -53,7 +53,7 @@ def train(
     )
 
     Path(model_dir).mkdir(parents=True, exist_ok=True)
-    model_path = Path(model_dir) / 'model'
+    model_path = Path(model_dir) / "model"
     model.save(model_path)
 
 

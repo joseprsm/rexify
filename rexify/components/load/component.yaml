@@ -9,6 +9,7 @@ outputs:
   - {name: train}
   - {name: test}
   - {name: items}
+  - {name: users}
 
 implementation:
   container:
@@ -20,5 +21,6 @@ implementation:
       "--test-size", {inputValue: test_size},
       "--train-data-dir", {outputPath: train},
       "--test-data-dir", {outputPath: test},
-      "--items-dir", {outputPath: items}
+      "--items-dir", {outputPath: items},
+      "--users-dir", {outputPath: users}
     ]

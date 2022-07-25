@@ -24,15 +24,15 @@ def index(
     with open(schema_path, "r") as f:
         schema = json.load(f)
 
-    user_id = get_target_id(schema, 'user')
-    item_id = get_target_id(schema, 'item')
+    user_id = get_target_id(schema, "user")
+    item_id = get_target_id(schema, "item")
 
-    items_path = Path(items_dir) / 'items.csv'
+    items_path = Path(items_dir) / "items.csv"
     items = np.loadtxt(items_path)
     items = items[items != -1]  # remove unknown indices
     items = tf.data.Dataset.from_tensor_slices(items.reshape(-1, 1))
 
-    model_path = Path(model_dir) / 'model'
+    model_path = Path(model_dir) / "model"
     model = tf.keras.models.load_model(model_path)
 
     item_embeddings = items.map(lambda x: {item_id: x}).map(model.candidate_model)
@@ -43,7 +43,7 @@ def index(
 
     index_dir = Path(index_dir)
     index_dir.mkdir(parents=True, exist_ok=True)
-    index_path = index_dir / 'model'
+    index_path = index_dir / "model"
     tf.keras.models.save_model(
         scann,
         index_path,
