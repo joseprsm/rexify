@@ -1,0 +1,22 @@
+name: retrieval
+
+inputs:
+  - {name: users}
+  - {name: schema}
+  - {name: index}
+  - {name: k, type: Integer, default: "20"}
+
+outputs:
+  - {name: predictions}
+
+implementation:
+  container:
+    image: joseprsm/rexify-retrieval
+    args: [
+      "--users-dir", {inputPath: users},
+      "--schema-path", {inputPath: schema},
+      "--index_dir", {inputPath: index},
+      "--predictions-dir", {outputPath: predictions},
+      "--k", {inputValue: k}
+    ]
+
