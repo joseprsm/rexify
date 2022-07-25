@@ -29,14 +29,13 @@ def index(
 
     items_path = Path(items_dir) / 'items.csv'
     items = np.loadtxt(items_path)
-    items = tf.data.Dataset.from_tensor_slices(items.reshape(-1, 1)).map(
-        lambda x: {item_id: x}
-    )
+    items = items[items != -1]  # remove unknown indices
+    items = tf.data.Dataset.from_tensor_slices(items.reshape(-1, 1))
 
     model_path = Path(model_dir) / 'model'
     model = tf.keras.models.load_model(model_path)
 
-    item_embeddings = items.map(model.candidate_model)
+    item_embeddings = items.map(lambda x: {item_id: x}).map(model.candidate_model)
 
     scann = tfrs.layers.factorized_top_k.ScaNN(k=50, num_reordering_candidates=1_000)
     scann.index_from_dataset(tf.data.Dataset.zip((items, item_embeddings)))
