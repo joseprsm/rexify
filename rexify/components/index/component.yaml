@@ -14,7 +14,7 @@ implementation:
     command: [python, index.py]
     args: [
       --schema-path, {inputPath: schema},
-      --items-path, {inputPath: items},
-      --model-path, {inputPath: model},
-      --index-path, {outputPath: index}
+      --items-dir, {inputPath: items},
+      --model-dir, {inputPath: model},
+      --index-dir, {outputPath: index}
     ]
