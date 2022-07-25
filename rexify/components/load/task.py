@@ -4,6 +4,7 @@ import click
 import numpy as np
 import pandas as pd
 
+from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 
@@ -13,16 +14,16 @@ from rexify.utils import flatten, get_target_id
 @click.command()
 @click.option("--events-path", type=str)
 @click.option("--schema-path", type=str)
-@click.option("--items-path", type=str)
-@click.option("--train-data-path", type=str)
-@click.option("--test-data-path", type=str)
+@click.option("--items-dir", type=str)
+@click.option("--train-data-dir", type=str)
+@click.option("--test-data-dir", type=str)
 @click.option("--test-size", type=float, default=0.3)
 def load(
     events_path: str,
     schema_path: str,
-    train_data_path: str,
-    test_data_path: str,
-    items_path: str,
+    train_data_dir: str,
+    test_data_dir: str,
+    items_dir: str,
     test_size: float = 0.3,
 ):
 
@@ -43,11 +44,19 @@ def load(
     train = ppl.fit_transform(train)
     test = ppl.transform(test)
 
-    np.savetxt(train_data_path, train, delimiter=",")
-    np.savetxt(test_data_path, test, delimiter=",")
+    Path(train_data_dir).mkdir(parents=True, exist_ok=True)
+    Path(test_data_dir).mkdir(parents=True, exist_ok=True)
+
+    train_path = Path(train_data_dir) / 'train.csv'
+    test_path = Path(test_data_dir) / 'test.csv'
+
+    np.savetxt(train_path, train, delimiter=",")
+    np.savetxt(test_path, test, delimiter=",")
 
     item_id = get_target_id(schema, 'item')
     items = ppl.transform(events)[:, np.argwhere(events.columns == item_id)[0, 0]]
+
+    items_path = Path(items_dir) / 'items.csv'
     np.savetxt(items_path, items)
 
 
