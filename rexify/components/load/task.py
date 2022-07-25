@@ -56,6 +56,7 @@ def load(
     item_id = get_target_id(schema, 'item')
     items = ppl.transform(events)[:, np.argwhere(events.columns == item_id)[0, 0]]
 
+    Path(items_dir).mkdir(parents=True, exist_ok=True)
     items_path = Path(items_dir) / 'items.csv'
     np.savetxt(items_path, items)
 
