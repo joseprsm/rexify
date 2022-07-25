@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for TARGET in load train index
+for TARGET in load train index retrieval
 
 do
   export IMAGE_URI=joseprsm/rexify-$TARGET
