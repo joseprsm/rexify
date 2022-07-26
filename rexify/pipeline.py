@@ -17,6 +17,7 @@ download_op = _load_component("download")
 load_op = _load_component("load")
 train_op = _load_component("train")
 index_op = _load_component("index")
+retrieval_op = _load_component("retrieval")
 
 
 @pipeline(name=PIPELINE_NAME, pipeline_root=PIPELINE_ROOT)
@@ -38,6 +39,13 @@ def pipeline_fn():
         items=load_task.outputs["items"],
         model=train_task.outputs["model"],
         schema=schema_downloader_task.outputs["data"],
+    )
+
+    retrieval_task = retrieval_op(
+        users=load_task.outputs["users"],
+        schema=schema_downloader_task.outputs["data"],
+        index=index_task.outputs["index"],
+        model=train_task.outputs["model"],
     )
 
 
