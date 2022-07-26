@@ -17,7 +17,6 @@ from rexify.utils import get_target_id
 @click.option("--model-dir")
 @click.option("--index-dir")
 @click.option("--predictions-dir")
-@click.option("--k", default=20)
 @click.option("--batch-size", default=512)
 def retrieval(
     users_dir: str,
@@ -25,7 +24,6 @@ def retrieval(
     model_dir: str,
     index_dir: str,
     predictions_dir: str,
-    k: int = 20,
     batch_size: int = 512,
 ):
     users_path = Path(users_dir) / "users.csv"
@@ -59,7 +57,6 @@ def retrieval(
                         query_model=model.query_model,
                         index=index,
                         user_batch=user_batch,
-                        k=k,
                     )
                     for user_batch in list(users_tf)
                 ],
@@ -79,10 +76,9 @@ def get_recommendations(
     query_model: tf.keras.Model,
     index: tf.keras.Model,
     user_batch: Dict[str, tf.Tensor],
-    k: int = 20,
 ):
     user_embeddings = query_model(user_batch)
-    _, predictions = index(user_embeddings, k)
+    _, predictions = index(user_embeddings)
     return predictions
 
 
