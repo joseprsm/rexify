@@ -16,7 +16,7 @@ implementation:
     args: [
       "--users-dir", {inputPath: users},
       "--schema-path", {inputPath: schema},
-      "--model-dir", {inputPath: model}
+      "--model-dir", {inputPath: model},
       "--index-dir", {inputPath: index},
       "--predictions-dir", {outputPath: predictions},
     ]
