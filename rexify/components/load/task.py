@@ -58,14 +58,18 @@ def load(
     transformed_events = ppl.transform(events)
 
     item_id = get_target_id(schema, "item")
-    items = transformed_events[:, np.argwhere(events.columns == item_id)[0, 0]]
+    items = np.unique(
+        transformed_events[:, np.argwhere(events.columns == item_id)[0, 0]]
+    ).astype(int)
 
     Path(items_dir).mkdir(parents=True, exist_ok=True)
     items_path = Path(items_dir) / "items.csv"
     np.savetxt(items_path, items)
 
     user_id = get_target_id(schema, "user")
-    users = transformed_events[:, np.argwhere(events.columns == user_id)[0, 0]]
+    users = np.unique(
+        transformed_events[:, np.argwhere(events.columns == user_id)[0, 0]]
+    ).astype(int)
 
     Path(users_dir).mkdir(parents=True, exist_ok=True)
     users_path = Path(users_dir) / "users.csv"
