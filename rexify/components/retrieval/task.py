@@ -1,3 +1,4 @@
+from typing import Dict
 from pathlib import Path
 
 import json
@@ -29,6 +30,7 @@ def retrieval(
 ):
     users_path = Path(users_dir) / "users.csv"
     users = np.loadtxt(str(users_path), delimiter=",")
+    users = users[users != -1]
 
     model_path = Path(model_dir) / "model"
     model = tf.keras.models.load_model(model_path)
@@ -74,7 +76,10 @@ def retrieval(
 
 
 def get_recommendations(
-    query_model: tf.keras.Model, index: tf.keras.Model, user_batch, k: int = 20
+    query_model: tf.keras.Model,
+    index: tf.keras.Model,
+    user_batch: Dict[str, tf.Tensor],
+    k: int = 20,
 ):
     user_embeddings = query_model(user_batch)
     _, predictions = index(user_embeddings, k)
