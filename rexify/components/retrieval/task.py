@@ -13,6 +13,7 @@ from rexify.utils import get_target_id
 @click.command()
 @click.option("--users-dir")
 @click.option("--schema-path")
+@click.option("--model-dir")
 @click.option("--index-dir")
 @click.option("--predictions-dir")
 @click.option("--k")

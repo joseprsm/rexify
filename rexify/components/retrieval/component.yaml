@@ -3,6 +3,7 @@ name: retrieval
 inputs:
   - {name: users}
   - {name: schema}
+  - {name: model}
   - {name: index}
   - {name: k, type: Integer, default: "20"}
 
@@ -16,7 +17,8 @@ implementation:
     args: [
       "--users-dir", {inputPath: users},
       "--schema-path", {inputPath: schema},
-      "--index_dir", {inputPath: index},
+      "--model-dir", {inputPath: model},
+      "--index-dir", {inputPath: index},
       "--predictions-dir", {outputPath: predictions},
       "--k", {inputValue: k}
     ]
