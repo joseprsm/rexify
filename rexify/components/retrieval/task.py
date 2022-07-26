@@ -16,7 +16,8 @@ from rexify.utils import get_target_id
 @click.option("--model-dir")
 @click.option("--index-dir")
 @click.option("--predictions-dir")
-@click.option("--k")
+@click.option("--k", default=20)
+@click.option("--batch-size", default=512)
 def retrieval(
     users_dir: str,
     schema_path: str,
@@ -24,6 +25,7 @@ def retrieval(
     index_dir: str,
     predictions_dir: str,
     k: int = 20,
+    batch_size: int = 512,
 ):
     users_path = Path(users_dir) / "users.csv"
     users = np.loadtxt(str(users_path), delimiter=",")
@@ -40,16 +42,43 @@ def retrieval(
     user_id = get_target_id(schema, "user")
 
     def add_header(x):
-        return {user_id: x}
+        return {user_id: tf.cast(x, tf.float32)}
 
-    users = tf.data.Dataset.from_tensor_slices(users).map(add_header)
-    user_embeddings = model.query_model(users)
-    _, predictions = index(user_embeddings, k)
+    users_tf = (
+        tf.data.Dataset.from_tensor_slices(users).map(add_header).batch(batch_size)
+    )
+
+    predictions = np.concatenate(
+        [
+            users.reshape(-1, 1),
+            np.concatenate(
+                [
+                    get_recommendations(
+                        query_model=model.query_model,
+                        index=index,
+                        user_batch=user_batch,
+                        k=k,
+                    )
+                    for user_batch in list(users_tf)
+                ],
+                axis=0,
+            ),
+        ],
+        axis=1,
+    )
 
     predictions_dir = Path(predictions_dir)
     predictions_dir.mkdir(parents=True, exist_ok=True)
     predictions_path = predictions_dir / "preds.csv"
     np.savetxt(predictions_path, predictions)
+
+
+def get_recommendations(
+    query_model: tf.keras.Model, index: tf.keras.Model, user_batch, k: int = 20
+):
+    user_embeddings = query_model(user_batch)
+    _, predictions = index(user_embeddings, k)
+    return predictions
 
 
 if __name__ == "__main__":
