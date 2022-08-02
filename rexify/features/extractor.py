@@ -24,7 +24,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None, **fit_params):
         self._ppl = self._make_pipeline()
         self._ppl.fit(X, y, **fit_params)
-        self._model_params = {'hello': 'hello'}
         return self
 
     def transform(self, X):
