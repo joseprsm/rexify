@@ -55,4 +55,12 @@ either a Kubeflow Pipeline or Vertex AI Pipelines instance, and it should run se
 
 You can also check the [Kubeflow Pipeline](https://kubeflow-pipelines.readthedocs.io/en/latest/source/kfp.client.html#kfp.Client.create_run_from_pipeline_package)
 and [Vertex AI](https://cloud.google.com/vertex-ai/docs/pipelines/run-pipeline#create_a_pipeline_run) 
-documentation to learn how to submit these pipelines programmatically.  
+documentation to learn how to submit these pipelines programmatically.
+
+The prebuilt pipeline consists of 5 components:
+
+1. `download`, which downloads the event data from URLs set on the `$INPUT_DATA_URL` and `$SCHEMA_URL` environment variables
+2. `load`, which prepares the data downloaded in the previous step
+3. `train`, which trains a `Recommender` model on the preprocessed data
+4. `index`, which trains a [ScaNN](https://ai.googleblog.com/2020/07/announcing-scann-efficient-vector.html) model to retrieve the nearest neighbors
+5. `retrieval`, which basically retrieves the nearest _k_ neighbors for each of the known users
