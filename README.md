@@ -32,16 +32,16 @@ import pandas as pd
 from rexify.features import FeatureExtractor 
 from rexify.models import Recommender
 
-events = pd.read_csv('path/to/events/data')
+events = pd.read_csv('path/to/event/data')
 schema = json.load('path/to/schema')
 
 feat = FeatureExtractor(schema)
-preprocessed_data = feat.fit_transform(events)
+prep_data = feat.fit_transform(events)
+ds = feat.make_dataset(prep_data)
 
 model = Recommender(schema, **feat.model_params)
 model.compile()
-
-model.fit(preprocessed_data)
+model.fit(ds)
 ````
 
 ### As a prebuilt pipeline

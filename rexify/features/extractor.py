@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List, Any
+from typing import Dict, Any
 
 import numpy as np
 
@@ -7,19 +7,17 @@ from sklearn.compose import make_column_transformer
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
-from rexify.utils import get_target_id
+from rexify.features.dataset import TfDatasetGenerator
+from rexify.utils import get_target_ids
 
 
-class FeatureExtractor(BaseEstimator, TransformerMixin):
+class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
     _ppl: Pipeline
     _model_params: Dict[str, Any]
 
-    def __init__(
-        self, schema: Dict[str, Dict[str, str]], transform_: Optional[dict] = None
-    ):
-        self.schema = schema
-        self.transform_ = transform_
+    def __init__(self, schema: Dict[str, Dict[str, str]]):
+        super(FeatureExtractor, self).__init__(schema=schema)
 
     def fit(self, X, y=None, **fit_params):
         self._ppl = self._make_pipeline()
@@ -30,9 +28,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         return self._ppl.transform(X)
 
     def _make_pipeline(self) -> Pipeline:
-        id_features: List[str] = [
-            get_target_id(self.schema, target) for target in ["user", "item"]
-        ]
+        id_features = get_target_ids(self.schema)
         return make_pipeline(
             make_column_transformer(
                 (
@@ -44,7 +40,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
                     id_features,
                 ),
                 remainder="drop",
-            )
+            ),
         )
 
     @property
