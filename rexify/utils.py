@@ -10,3 +10,7 @@ def get_target_id(schema: dict, target: str):
         return x[1] == "id"
 
     return list(filter(mask, schema[target].items()))[0][0]
+
+
+def get_target_ids(schema: dict):
+    return [get_target_id(schema, target) for target in ["user", "item"]]
