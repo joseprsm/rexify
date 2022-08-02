@@ -1,4 +1,4 @@
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 
 import numpy as np
 
@@ -13,12 +13,13 @@ from rexify.utils import get_target_id
 class FeatureExtractor(BaseEstimator, TransformerMixin):
 
     _ppl: Pipeline
+    _model_params: Dict[str, Any]
 
     def __init__(
-        self, schema: Dict[str, Dict[str, str]], transform: Optional[dict] = None
+        self, schema: Dict[str, Dict[str, str]], transform_: Optional[dict] = None
     ):
-        self._schema = schema
-        self._transform = transform
+        self.schema = schema
+        self.transform_ = transform_
 
     def fit(self, X, y=None, **fit_params):
         self._ppl = self._make_pipeline()
@@ -30,7 +31,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
 
     def _make_pipeline(self) -> Pipeline:
         id_features: List[str] = [
-            get_target_id(self._schema, target) for target in ["user", "item"]
+            get_target_id(self.schema, target) for target in ["user", "item"]
         ]
         return make_pipeline(
             make_column_transformer(
@@ -45,3 +46,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
                 remainder="drop",
             )
         )
+
+    @property
+    def model_params(self):
+        return self._model_params
