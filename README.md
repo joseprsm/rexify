@@ -1,11 +1,57 @@
 # Rexify :t-rex:
 
-[![CircleCI](https://circleci.com/gh/joseprsm/rexify/tree/main.svg?style=shield&circle-token=d2f4a46a4daf02ba3c0e1968ebde4a0d2e50df36)](https://circleci.com/gh/joseprsm/rexify/tree/main)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2fa652f8d3564387acfbb085572d49f1)](https://www.codacy.com/gh/joseprsm/rexify/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=joseprsm/rexify&amp;utm_campaign=Badge_Grade)
 ![GitHub](https://img.shields.io/github/license/joseprsm/rexify)
 
 Rexify is a library to streamline recommender systems model development. It is built on
 top of [Tensorflow Recommenders](https://github.com/tensorflow/recommenders) models and 
-[TFX](https://github.com/tensorflow/tfx) pipelines.
+[Kubeflow](https://github.com/kubeflow/pipelines) pipelines.
 
+In essence, Rexify adapts dynamically to your data, and outputs high-performing TensorFlow
+models that may be used wherever you want, independently of your data. Rexify also includes modules to deal with feature engineering as Scikit-Learn Transformers 
+and Pipelines.  
+
+
+## Installation
+
+The easier way to install Rexify should be via pip:
+
+```shell
+$ pip install rexify
+```
+
+## Quickstart
+
+There are many ways you can use Rexify on your projects.
+
+### As a package
+
+````python
+import json
+import pandas as pd
+
+from rexify.features import FeatureExtractor 
+from rexify.models import Recommender
+
+events = pd.read_csv('path/to/events/data')
+schema = json.load('path/to/schema')
+
+feat = FeatureExtractor(schema)
+preprocessed_data = feat.fit_transform(events)
+
+model = Recommender(schema, **feat.model_params)
+model.compile()
+
+model.fit(preprocessed_data)
+````
+
+### As a prebuilt pipeline
+
+```shell
+$ python -m rexify/pipeline.py
+```
+
+Which should output a `pipeline.json` file. You can then upload this file manually to 
+either a Kubeflow Pipeline or Vertex AI Pipelines instance, and it should run seamlessly. 
+
+You can also check the [Kubeflow Pipeline]() and [Vertex AI]() documentation to learn how to 
+submit these pipelines programmatically.  
