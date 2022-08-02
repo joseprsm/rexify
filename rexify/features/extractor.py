@@ -1,7 +1,13 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, List
+
+import numpy as np
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
+from sklearn.compose import make_column_transformer
+from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.preprocessing import OrdinalEncoder
+
+from rexify.utils import get_target_id
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin):
@@ -19,8 +25,23 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         self._ppl.fit(X, y, **fit_params)
         return self
 
-    def transform(self):
-        raise NotImplementedError
+    def transform(self, X):
+        return self._ppl.transform(X)
 
     def _make_pipeline(self) -> Pipeline:
-        raise NotImplementedError
+        id_features: List[str] = [
+            get_target_id(self._schema, target) for target in ["user", "item"]
+        ]
+        return make_pipeline(
+            make_column_transformer(
+                (
+                    OrdinalEncoder(
+                        dtype=np.int64,
+                        handle_unknown="use_encoded_value",
+                        unknown_value=-1,
+                    ),
+                    id_features,
+                ),
+                remainder="drop",
+            )
+        )
