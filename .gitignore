@@ -9,3 +9,5 @@ data
 .coverage
 
 outputs
+
+pipeline.json
