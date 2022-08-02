@@ -47,7 +47,7 @@ model.fit(preprocessed_data)
 ### As a prebuilt pipeline
 
 ```shell
-$ python -m rexify/pipeline.py
+$ python -m rexify.pipeline
 ```
 
 Which should output a `pipeline.json` file. You can then upload this file manually to 
