@@ -13,10 +13,10 @@ and Pipelines.
 
 ## Installation
 
-The easier way to install Rexify should be via pip:
+For now, you'll have to install Rexify from source
 
 ```shell
-$ pip install rexify
+$ pip install git+https://github.com/joseprsm/rexify.git
 ```
 
 ## Quickstart
