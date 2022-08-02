@@ -53,5 +53,6 @@ $ python -m rexify/pipeline.py
 Which should output a `pipeline.json` file. You can then upload this file manually to 
 either a Kubeflow Pipeline or Vertex AI Pipelines instance, and it should run seamlessly. 
 
-You can also check the [Kubeflow Pipeline]() and [Vertex AI]() documentation to learn how to 
-submit these pipelines programmatically.  
+You can also check the [Kubeflow Pipeline](https://kubeflow-pipelines.readthedocs.io/en/latest/source/kfp.client.html#kfp.Client.create_run_from_pipeline_package)
+and [Vertex AI](https://cloud.google.com/vertex-ai/docs/pipelines/run-pipeline#create_a_pipeline_run) 
+documentation to learn how to submit these pipelines programmatically.  
