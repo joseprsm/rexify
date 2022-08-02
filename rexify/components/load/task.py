@@ -6,9 +6,9 @@ import pandas as pd
 
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OrdinalEncoder
 
 from rexify.utils import flatten, get_target_id
+from rexify.features import FeatureExtractor
 
 
 @click.command()
@@ -39,12 +39,10 @@ def load(
 
     train, test = train_test_split(events, test_size=test_size)
 
-    ppl = OrdinalEncoder(
-        dtype=np.int64, handle_unknown="use_encoded_value", unknown_value=-1
-    )
+    feat = FeatureExtractor(schema)
 
-    train = ppl.fit_transform(train)
-    test = ppl.transform(test)
+    train = feat.fit_transform(train)
+    test = feat.transform(test)
 
     Path(train_data_dir).mkdir(parents=True, exist_ok=True)
     Path(test_data_dir).mkdir(parents=True, exist_ok=True)
@@ -55,7 +53,7 @@ def load(
     np.savetxt(train_path, train, delimiter=",")
     np.savetxt(test_path, test, delimiter=",")
 
-    transformed_events = ppl.transform(events)
+    transformed_events = feat.transform(events)
 
     item_id = get_target_id(schema, "item")
     items = np.unique(
