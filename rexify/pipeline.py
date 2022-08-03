@@ -21,9 +21,13 @@ retrieval_op = _load_component("retrieval")
 
 
 @pipeline(name=PIPELINE_NAME, pipeline_root=PIPELINE_ROOT)
-def pipeline_fn():
-    events_downloader_task = download_op(input_uri=os.environ.get("INPUT_DATA_URL"))
-    schema_downloader_task = download_op(input_uri=os.environ.get("SCHEMA_URL"))
+def pipeline_fn(event_uri: str = None, schema_uri: str = None):
+    events_downloader_task = download_op(
+        input_uri=event_uri or os.environ.get("INPUT_DATA_URL")
+    )
+    schema_downloader_task = download_op(
+        input_uri=schema_uri or os.environ.get("SCHEMA_URL")
+    )
 
     load_task = load_op(
         events=events_downloader_task.outputs["data"],
@@ -49,5 +53,13 @@ def pipeline_fn():
     )
 
 
+def compile_(**ppl_params):
+    Compiler().compile(
+        pipeline_func=pipeline_fn,
+        package_path="pipeline.json",
+        pipeline_parameters=ppl_params,
+    )
+
+
 if __name__ == "__main__":
-    Compiler().compile(pipeline_func=pipeline_fn, package_path="pipeline.json")
+    compile_()
