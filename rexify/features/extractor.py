@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
 from rexify.features.dataset import TfDatasetGenerator
-from rexify.utils import get_target_ids
+from rexify.utils import get_target_ids, get_target_id
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
@@ -22,6 +22,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
     def fit(self, X, y=None, **fit_params):
         self._ppl = self._make_pipeline()
         self._ppl.fit(X, y, **fit_params)
+        self._model_params = self._get_model_params(X)
         return self
 
     def transform(self, X):
@@ -46,3 +47,17 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
     @property
     def model_params(self):
         return self._model_params
+
+    def _get_model_params(self, X):
+        user_id = get_target_id(self.schema, "user")
+        user_input_dim = X[user_id].nunique() + 1
+
+        item_id = get_target_id(self.schema, "item")
+        item_input_dim = X[item_id].nunique() + 1
+
+        return {
+            "n_unique_items": item_input_dim,
+            "item_id": item_id,
+            "n_unique_users": user_input_dim,
+            "user_id": user_id,
+        }

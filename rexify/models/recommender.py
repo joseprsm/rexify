@@ -12,8 +12,8 @@ class Recommender(tfrs.Model):
         self,
         n_unique_items: int,
         n_unique_users: int,
-        user_features: List[str],
-        item_features: List[str],
+        user_id: str,
+        item_id: str,
         layer_sizes: Optional[List[int]] = None,
     ):
         super(Recommender, self).__init__()
@@ -22,16 +22,16 @@ class Recommender(tfrs.Model):
         self._n_unique_items = n_unique_items
         self._n_unique_users = n_unique_users
 
-        self._user_features = user_features
-        self._item_features = item_features
+        self._user_id = user_id
+        self._item_id = item_id
 
         self._layer_sizes = layer_sizes
 
         self.candidate_model = CandidateModel(
-            n_unique_items, self._item_features[0], layer_sizes=layer_sizes
+            n_unique_items, self._item_id, layer_sizes=layer_sizes
         )
         self.query_model = QueryModel(
-            n_unique_users, self._user_features[0], layer_sizes=layer_sizes
+            n_unique_users, self._user_id, layer_sizes=layer_sizes
         )
 
         self.task: tfrs.tasks.Task = tfrs.tasks.Retrieval()
@@ -50,7 +50,7 @@ class Recommender(tfrs.Model):
         return {
             "n_unique_items": self._n_unique_items,
             "n_unique_users": self._n_unique_users,
-            "user_features": self._user_features,
-            "item_features": self._item_features,
+            "user_id": self._user_id,
+            "item_id": self._item_id,
             "layer_sizes": self._layer_sizes,
         }

@@ -40,7 +40,7 @@ feat = FeatureExtractor(schema)
 prep_data = feat.fit_transform(events)
 ds = feat.make_dataset(prep_data)
 
-model = Recommender(schema, **feat.model_params)
+model = Recommender(**feat.model_params)
 model.compile()
 model.fit(ds)
 ````

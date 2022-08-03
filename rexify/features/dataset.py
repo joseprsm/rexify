@@ -24,4 +24,3 @@ class TfDatasetGenerator:
             }
 
         return add_header
-
