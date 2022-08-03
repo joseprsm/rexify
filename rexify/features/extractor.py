@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import numpy as np
 
@@ -15,6 +15,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
     _ppl: Pipeline
     _model_params: Dict[str, Any]
+    _output_features: List[str]
 
     def __init__(self, schema: Dict[str, Dict[str, str]]):
         super(FeatureExtractor, self).__init__(schema=schema)
@@ -23,6 +24,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         self._ppl = self._make_pipeline()
         self._ppl.fit(X, y, **fit_params)
         self._model_params = self._get_model_params(X)
+        self._output_features = X.columns
         return self
 
     def transform(self, X):
@@ -44,10 +46,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             ),
         )
 
-    @property
-    def model_params(self):
-        return self._model_params
-
     def _get_model_params(self, X):
         user_id = get_target_id(self.schema, "user")
         user_input_dim = X[user_id].nunique() + 1
@@ -61,3 +59,11 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             "n_unique_users": user_input_dim,
             "user_id": user_id,
         }
+
+    @property
+    def model_params(self):
+        return self._model_params
+
+    @property
+    def output_features(self):
+        return self._output_features
