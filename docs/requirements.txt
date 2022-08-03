@@ -1,2 +1,2 @@
-Sphinx==3.2.1
+sphinx
 sphinx_material==0.0.30
