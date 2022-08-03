@@ -11,12 +11,12 @@ data_tab, schema_tab, pipeline_tab = st.tabs(["Data", "Schema", "Pipeline"])
 
 with data_tab:
 
-    uploaded_file = st.file_uploader('Upload events data')
+    uploaded_file = st.file_uploader("Upload events data")
     if uploaded_file:
         events = pd.read_csv(uploaded_file)
 
-    events_uri = st.text_input('Event data URL')
-    st.button('Upload')
+    events_uri = st.text_input("Event data URL")
+    st.button("Upload")
 
 
 with schema_tab:
@@ -72,5 +72,5 @@ with pipeline_tab:
             with open("pipeline.json") as f:
                 pipeline_spec = json.load(f)
 
-            with st.expander('Pipeline Spec'):
+            with st.expander("Pipeline Spec"):
                 st.code(json.dumps(pipeline_spec, indent=2))
