@@ -33,7 +33,8 @@ from rexify.features import FeatureExtractor
 from rexify.models import Recommender
 
 events = pd.read_csv('path/to/event/data')
-schema = json.load('path/to/schema')
+with open('path/to/schema') as f:
+    schema = json.load(f)
 
 feat = FeatureExtractor(schema)
 prep_data = feat.fit_transform(events)
@@ -45,6 +46,8 @@ model.fit(ds)
 ````
 
 ### As a prebuilt pipeline
+
+After cloning this project, you can run:
 
 ```shell
 $ python -m rexify.pipeline
