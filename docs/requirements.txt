@@ -1,2 +1,4 @@
 sphinx
 sphinx_material==0.0.30
+m2r2==0.2.5
+breathe==4.20.0
