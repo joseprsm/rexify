@@ -2,3 +2,4 @@ sphinx
 sphinx_material==0.0.30
 m2r2
 breathe
+sphinxcontrib-apidoc>=0.3.0
