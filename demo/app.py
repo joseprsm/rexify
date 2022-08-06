@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 import pandas as pd
@@ -7,18 +8,28 @@ import streamlit as st
 from rexify.pipeline import compile_
 
 events = None
+with open('demo/datasets.json', 'r') as f:
+    datasets = json.load(f)
 
 data_tab, schema_tab, pipeline_tab = st.tabs(["Data", "Schema", "Pipeline"])
 
 with data_tab:
 
-    event_url = st.text_input("Event data URL")
+    event_url = st.text_input("Input data URL")
+
+    st.write('Or select one of these datasets:')
+
+    for i, col in enumerate(st.columns(len(datasets))):
+        if col.button(list(datasets.keys())[i]):
+            event_url = list(datasets.values())[i]
+
     if st.button("Download"):
         response = requests.get(event_url)
         with open("events.csv", "w") as f:
             f.write(response.text)
 
-    events = pd.read_csv("events.csv")
+    if 'events.csv' in os.listdir('.'):
+        events = pd.read_csv("events.csv")
 
     if events is not None:
         st.dataframe(events)
