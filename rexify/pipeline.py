@@ -36,7 +36,7 @@ def pipeline_fn(event_uri: str = None, schema_uri: str = None):
 
     train_task = train_op(
         train_data=load_task.outputs["train"],
-        schema=schema_downloader_task.outputs["data"],
+        feat=load_task.outputs['feat']
     )
 
     index_task = index_op(
