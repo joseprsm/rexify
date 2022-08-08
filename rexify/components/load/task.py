@@ -1,3 +1,4 @@
+import ast
 import json
 import click
 import pickle
@@ -35,7 +36,10 @@ def load(
     events = pd.read_csv(events_path)
 
     with open(schema_path, "r") as f:
-        schema = json.load(f)
+        try:
+            schema = json.load(f)
+        except json.JSONDecodeError:
+            schema = ast.literal_eval(f.read())
 
     features = [list(schema[target].keys()) for target in ["user", "item"]]
     events = events.loc[~np.any(pd.isnull(events), axis=1), flatten(features)]
