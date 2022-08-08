@@ -37,7 +37,7 @@ def retrieval(
     index = tf.keras.models.load_model(index_path)
 
     with open(schema_path, "r") as f:
-        schema = json.load(f)
+        schema = json.loads(f.read().replace("'", '"'))
 
     user_id = get_target_id(schema, "user")
 

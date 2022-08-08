@@ -22,7 +22,7 @@ def index(
     index_dir: str,
 ):
     with open(schema_path, "r") as f:
-        schema = json.load(f)
+        schema = json.loads(f.read().replace("'", '"'))
 
     user_id = get_target_id(schema, "user")
     item_id = get_target_id(schema, "item")
