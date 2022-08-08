@@ -73,10 +73,12 @@ with schema_tab:
 
 with pipeline_tab:
 
+    epochs = st.slider("Epochs", 1, 100)
+
     if (event_url is not None) and (schema is not None):
         if st.button(
             "Compile pipeline",
-            on_click=compile_(event_uri=event_url, schema=schema),
+            on_click=compile_(event_uri=event_url, schema=schema, epochs=epochs),
         ):
 
             with open("pipeline.json") as f:
@@ -85,4 +87,8 @@ with pipeline_tab:
             with st.expander("Pipeline Spec"):
                 st.code(json.dumps(pipeline_spec, indent=2))
 
-            st.download_button('Download Pipeline Spec', json.dumps(pipeline_spec, indent=2), 'pipeline.json')
+            st.download_button(
+                "Download Pipeline Spec",
+                json.dumps(pipeline_spec, indent=2),
+                "pipeline.json",
+            )
