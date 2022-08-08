@@ -13,7 +13,6 @@ from rexify.models import Recommender
 
 @click.command()
 @click.option("--training-data-dir", type=str)
-@click.option("--schema-path", type=str)
 @click.option("--extractor-dir", type=str)
 @click.option("--model-dir", type=str)
 @click.option("--learning-rate", type=float, default=0.2)
