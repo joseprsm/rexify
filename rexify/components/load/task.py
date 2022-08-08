@@ -51,11 +51,11 @@ def load(
     Path(train_data_dir).mkdir(parents=True, exist_ok=True)
     Path(test_data_dir).mkdir(parents=True, exist_ok=True)
 
-    extractor_path = Path(extractor_dir) / 'feat.pkl'
+    extractor_path = Path(extractor_dir) / "feat.pkl"
     train_path = Path(train_data_dir) / "train.csv"
     test_path = Path(test_data_dir) / "test.csv"
 
-    with open(extractor_path, 'wb') as f:
+    with open(extractor_path, "wb") as f:
         pickle.dump(feat, f)
 
     np.savetxt(train_path, train, delimiter=",")

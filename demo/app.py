@@ -8,7 +8,7 @@ import streamlit as st
 from rexify.pipeline import compile_
 
 events = None
-with open('demo/datasets.json', 'r') as f:
+with open("demo/datasets.json", "r") as f:
     datasets = json.load(f)
 
 data_tab, schema_tab, pipeline_tab = st.tabs(["Data", "Schema", "Pipeline"])
@@ -17,7 +17,7 @@ with data_tab:
 
     event_url = st.text_input("Input data URL")
 
-    st.write('Or select one of these datasets:')
+    st.write("Or select one of these datasets:")
 
     for i, col in enumerate(st.columns(len(datasets))):
         if col.button(list(datasets.keys())[i]):
@@ -28,7 +28,7 @@ with data_tab:
         with open("events.csv", "w") as f:
             f.write(response.text)
 
-    if 'events.csv' in os.listdir('.'):
+    if "events.csv" in os.listdir("."):
         events = pd.read_csv("events.csv")
 
     if events is not None:
@@ -84,3 +84,5 @@ with pipeline_tab:
 
             with st.expander("Pipeline Spec"):
                 st.code(json.dumps(pipeline_spec, indent=2))
+
+            st.download_button('Download Pipeline Spec', json.dumps(pipeline_spec, indent=2), 'pipeline.json')
