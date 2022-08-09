@@ -1,0 +1,1 @@
+SUPPORTED_DATA_TYPES = ["id"]
