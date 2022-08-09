@@ -40,3 +40,12 @@ FROM rexify AS retrieval
 COPY rexify/components/retrieval/task.py ./retrieval.py
 
 ENTRYPOINT ["python", '-m', 'retrieval.py']
+
+
+FROM rexify AS demo
+
+RUN pip install streamlit==1.11.1
+
+COPY demo demo
+
+ENTRYPOINT ["streamlit", "run", "demo/app.py"]
