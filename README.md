@@ -5,7 +5,7 @@
 <p>
 
 <p align="center">
-    <a href="https://circleci.com/gh/huggingface/transformers">
+    <a href="https://circleci.com/gh/joseprsm/rexify">
         <img alt="Build" src="https://img.shields.io/circleci/build/github/joseprsm/rexify?style=flat-square">
     </a>
     <a href="https://github.com/huggingface/transformers/blob/main/LICENSE">
