@@ -15,9 +15,9 @@ feat.fit(events)
 
 def test_model_params():
     assert feat.model_params == {
-        "n_unique_items": 3047,
+        "n_unique_items": 3837,
         "item_id": "item_id",
-        "n_unique_users": 89088,
+        "n_unique_users": 199464,
         "user_id": "user_id",
     }
 
