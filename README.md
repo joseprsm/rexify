@@ -158,7 +158,7 @@ The key difference from this pipeline to the prebuilt one is that instead of usi
 ## Who is this for?
 
 Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
-mostly geared towards people with little to none machine learning knowledge, that want to implement
+mostly geared towards people with little to no machine learning knowledge, that want to implement
 somewhat scalable Recommender Systems in their applications.
 
 ## License
