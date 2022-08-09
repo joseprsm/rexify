@@ -1,12 +1,10 @@
 import tensorflow as tf
 
 from rexify.utils import get_target_ids
+from rexify.features.base import HasSchemaInput
 
 
-class TfDatasetGenerator:
-    def __init__(self, schema):
-        self.schema = schema
-
+class TfDatasetGenerator(HasSchemaInput):
     def make_dataset(self, X) -> tf.data.Dataset:
         ds = tf.data.Dataset.from_tensor_slices(X)
         ds = ds.map(self._get_header_fn(self.schema))
