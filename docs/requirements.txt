@@ -1,0 +1,6 @@
+sphinx
+sphinx_material==0.0.30
+m2r2
+breathe
+sphinxcontrib-apidoc>=0.3.0
+readthedocs-sphinx-search==0.1.0
