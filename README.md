@@ -1,6 +1,23 @@
-# Rexify :t-rex:
+<p align="center">
+    <br>
+    <img src="https://storage.googleapis.com/rexify/1659986918545.png" height="200"/>
+    <br>
+<p>
 
-![GitHub](https://img.shields.io/github/license/joseprsm/rexify)
+<p align="center">
+    <a href="https://circleci.com/gh/huggingface/transformers">
+        <img alt="Build" src="https://img.shields.io/circleci/build/github/joseprsm/rexify?style=flat-square">
+    </a>
+    <a href="https://github.com/huggingface/transformers/blob/main/LICENSE">
+        <img alt="License" src="https://img.shields.io/github/license/joseprsm/rexify?style=flat-square">
+    </a>
+    <a href="https://rexify.readthedocs.io">
+        <img alt="Documentation" src="https://img.shields.io/badge/documentation-online-success?style=flat-square">
+    </a>
+    <a href="https://github.com/joseprsm/rexify/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/v/release/joseprsm/rexify?style=flat-square">
+    </a>
+</p>
 
 Rexify is a library to streamline recommender systems model development. It is built on
 top of [Tensorflow Recommenders](https://github.com/tensorflow/recommenders) models and 
