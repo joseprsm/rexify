@@ -13,17 +13,59 @@ and Pipelines.
 
 ## Installation
 
-The easier way to install Rexify should be via pip:
+For now, you'll have to install Rexify from source:
 
 ```shell
-$ pip install rexify
+pip install git+https://github.com/joseprsm/rexify.git
 ```
 
-## Quickstart
+## Quick Tour
 
-There are many ways you can use Rexify on your projects.
+Rexify is meant to be usable right out of the box. All you need to set up your model is interaction data - something that kind of looks like this:
+
+| user_id | item_id | timestamp  | item_name   | event_type  |
+|---------|---------|------------|-------------|-------------|
+| 22      | 67      | 2021/05/13 | Blue Jeans  | Purchase    |
+| 37      | 9       | 2021/04/11 | White Shirt | Page View   |
+| 22      | 473     | 2021/04/11 | Red Purse   | Add to Cart |
+| ...     | ...     | ...        | ...         | ...         |
+| 358     | 51      | 2021/04/11 | Bracelet    | Purchase    |
+
+Additionally, we'll have to have configured a schema for the data.
+This schema is what will allow Rexify to generate a dynamic model and preprocessing steps.
+The schema should be comprised of three dictionaries: `user`, `ìtem`, `context`.
+
+Each of these dictionaries should consist of features and internal data types, 
+such as: `id`, `categorical`, `timestamp`, `text`. More data types will be available 
+in the future.
+
+```json
+{
+  "user": {
+    "user_id": "id"
+  },
+  "item": {
+    "item_id": "id",
+    "timestamp": "timestamp",
+    "item_name": "text"
+  },
+  "context": {
+    "event_type": "categorical"
+  }
+}
+```
+
+Essentially, what Rexify will do is take the schema, and dynamically adapt to the data.
 
 ### As a package
+
+There are two main components in Rexify workflows: `FeatureExtractor` and `Recommender`.
+
+The `FeatureExtractor` is a scikit-learn Transformer that basically takes the schema of the data, and transforms the event data accordingly. Another method `.make_dataset()`, converts the transformed data into a `tf.data.Dataset`, all correctly configured to be fed to the `Recommender` model. You can read more about how the `FeatureExtractor` works [here]().
+
+`Recommender` is a `tfrs.Model` that basically implements the Query and Candidate towers. During training, the Query tower will take the user ID, user features, and context, to learn an embedding; the Candidate tower will do the same for the item ID and its features. More information about the `Recommender` model can be found [here](). 
+
+A sample Rexify workflow should sort of look like this:
 
 ````python
 import json
@@ -33,21 +75,26 @@ from rexify.features import FeatureExtractor
 from rexify.models import Recommender
 
 events = pd.read_csv('path/to/events/data')
-schema = json.load('path/to/schema')
+with open('path/to/schema') as f:
+    schema = json.load(f)
 
 feat = FeatureExtractor(schema)
-preprocessed_data = feat.fit_transform(events)
+prep_data = feat.fit_transform(events)
+ds = feat.make_dataset(prep_data)
 
-model = Recommender(schema, **feat.model_params)
+model = Recommender(**feat.model_params)
 model.compile()
-
-model.fit(preprocessed_data)
+model.fit(ds)
 ````
+
+When training is complete, you'll have a trained `tf.keras.Model` ready to be used, as you normally would. 
 
 ### As a prebuilt pipeline
 
+After cloning this project and setting up the necessary environment variables, you can run:
+
 ```shell
-$ python -m rexify/pipeline.py
+python -m rexify.pipeline
 ```
 
 Which should output a `pipeline.json` file. You can then upload this file manually to 
@@ -55,4 +102,50 @@ either a Kubeflow Pipeline or Vertex AI Pipelines instance, and it should run se
 
 You can also check the [Kubeflow Pipeline](https://kubeflow-pipelines.readthedocs.io/en/latest/source/kfp.client.html#kfp.Client.create_run_from_pipeline_package)
 and [Vertex AI](https://cloud.google.com/vertex-ai/docs/pipelines/run-pipeline#create_a_pipeline_run) 
-documentation to learn how to submit these pipelines programmatically.  
+documentation to learn how to submit these pipelines programmatically.
+
+The prebuilt pipeline consists of 5 components:
+
+1. `download`, which downloads the event data from URLs set on the `$INPUT_DATA_URL` and `$SCHEMA_URL` environment variables
+2. `load`, which prepares the data downloaded in the previous step
+3. `train`, which trains a `Recommender` model on the preprocessed data
+4. `index`, which trains a [ScaNN](https://ai.googleblog.com/2020/07/announcing-scann-efficient-vector.html) model to retrieve the nearest neighbors
+5. `retrieval`, which basically retrieves the nearest _k_ neighbors for each of the known users
+
+
+### Via the demo application
+
+After cloning the project, install the demo dependencies and run the Streamlit application:
+
+```shell
+pip install -r demo/requirements.txt
+streamlit run demo/app.py
+```
+
+Or, if you're using docker:
+
+```shell
+docker run joseprsm/rexify-demo
+```
+
+You can then follow the steps [here]() to set up your pipeline. 
+
+During setup, you'll be asked to either input a publicly available dataset URL or use a sample data set.
+After that, you'll have a form to help you set up the schema for the data.
+
+Finally, after hitting "Compile", you'll have your Pipeline Spec ready. The resulting JSON file can then be uploaded to Vertex AI Pipelines or Kubeflow, seamlessly.
+
+The key difference from this pipeline to the prebuilt one is that instead of using the `download` component to download the schema, it will pass it as an argument to the pipeline, and then use a `copy` component to pass it down as an artifact.
+
+
+## Who is this for?
+
+Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
+mostly geared towards people with little to none machine learning knowledge, that want to implement
+somewhat scalable Recommender Systems in their applications.
+
+In essence, you should be able to 
+
+## License
+
+[MIT](https://github.com/joseprsm/rexify/blob/main/LICENSE)
