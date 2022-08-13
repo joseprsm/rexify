@@ -97,7 +97,7 @@ with open('path/to/schema') as f:
 
 feat = FeatureExtractor(schema)
 prep_data = feat.fit_transform(events)
-ds = feat.make_dataset(prep_data)
+ds = feat.make_dataset(prep_data).batch(512)
 
 model = Recommender(**feat.model_params)
 model.compile()
