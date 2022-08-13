@@ -7,13 +7,12 @@ html_theme = 'sphinx_material'
 
 extensions = [
     "sphinx.ext.autodoc",
-    # Creates .nojekyll config
     "sphinx.ext.githubpages",
-    # Converts markdown to rst
     "m2r2",
     "sphinx.ext.napoleon",
-    "sphinxcontrib.apidoc",  # automatically generate API docs, see https://github.com/rtfd/readthedocs.org/issues/1139
+    "sphinxcontrib.apidoc",
     "sphinx_search.extension",
+    "nbsphinx"
 ]
 source_suffix = [".rst", ".md"]
 
@@ -31,7 +30,7 @@ napoleon_use_rtype = False
 
 if html_theme == "sphinx_material":
     html_theme_options = {
-        "color_primary": "teal",
+        "color_primary": "cyan",
         "color_accent": "light-blue",
         "repo_url": "https://github.com/joseprsm/rexify",
         "repo_name": "Rexify",
@@ -45,3 +44,9 @@ if html_theme == "sphinx_material":
     html_theme_path = sphinx_material.html_theme_path()
     html_context = sphinx_material.get_html_context()
 
+
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
+
+nbsphinx_allow_errors = True
