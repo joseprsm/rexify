@@ -1,4 +1,10 @@
 .. toctree::
+   :hidden:
+
+   genindex
+
+
+.. toctree::
     :titlesonly:
     :caption: Documentation:
 
