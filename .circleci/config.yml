@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            poetry run pytest -m
+            poetry run pytest
 
 workflows:
   build:
