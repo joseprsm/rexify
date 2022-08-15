@@ -1,14 +1,14 @@
 build
+dist
 data
+
 .idea
 .env
+.coverage
 
 */__pycache__/*
 */.ipynb_checkpoints/
 *.egg-info/
 
-.coverage
-
 outputs
-
 pipeline.json
