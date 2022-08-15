@@ -53,7 +53,7 @@ def pipeline_fn(
         schema=schema_task.outputs["data"],
     )
 
-    retrieval_task = retrieval_op(
+    retrieval_task = retrieval_op(  # noqa: F841
         users=load_task.outputs["users"],
         schema=schema_task.outputs["data"],
         index=index_task.outputs["index"],
