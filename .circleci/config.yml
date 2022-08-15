@@ -4,19 +4,20 @@ orbs:
   python: circleci/python@1.2
 
 jobs:
-  build-and-test:
+  build:
     docker:
       - image: cimg/python:3.8
 
     steps:
       - checkout
       - python/install-packages:
-          pkg-manager: pip
+          pkg-manager: poetry
       - run:
           name: Run tests
-          command: coverage run -m pytest
+          command: |
+            poetry run pytest -m
 
 workflows:
   build:
     jobs:
-      - build-and-test
+      - build
