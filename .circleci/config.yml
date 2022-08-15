@@ -4,7 +4,7 @@ orbs:
   python: circleci/python@1.2
 
 jobs:
-  build:
+  test:
     docker:
       - image: cimg/python:3.8
 
@@ -15,9 +15,29 @@ jobs:
       - run:
           name: Run tests
           command: |
+            poetry run sh scripts/lint.sh
             poetry run pytest
+
+  publish:
+    docker:
+      - image: cimg/python:3.8
+
+    steps:
+      - run:
+          name: Build and publish
+          command: |
+            poetry build
+            poetry version $(git describe --tags --abbrev=0)
+            poetry publish
 
 workflows:
   build:
     jobs:
-      - build
+      - test
+      - publish:
+          requires:
+            - test
+          filters:
+            tags:
+              # regex that will fetch releases matching `1.2.3`
+              only: /^\d+\.\d+\.\d+$/
