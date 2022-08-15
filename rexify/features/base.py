@@ -1,17 +1,16 @@
 from abc import abstractmethod
 
 import numpy as np
-
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from rexify.constants import SUPPORTED_DATA_TYPES
 from rexify.exceptions.schema import (
-    EmptySchemaException,
-    MissingKeysSchemaException,
-    MissingIdSchemaException,
-    TooManyIdFeaturesSchemaException,
-    DataTypeNotSupportedSchemaException,
     ContextIdSchemaException,
+    DataTypeNotSupportedSchemaException,
+    EmptySchemaException,
+    MissingIdSchemaException,
+    MissingKeysSchemaException,
+    TooManyIdFeaturesSchemaException,
 )
 
 

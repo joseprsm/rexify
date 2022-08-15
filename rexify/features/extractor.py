@@ -1,14 +1,13 @@
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 import numpy as np
-
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_transformer
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
 from rexify.features.dataset import TfDatasetGenerator
-from rexify.utils import get_target_ids, get_target_id
+from rexify.utils import get_target_id, get_target_ids
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):

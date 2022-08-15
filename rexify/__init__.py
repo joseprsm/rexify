@@ -1,2 +1,2 @@
-from .models import Recommender
 from .features import FeatureExtractor
+from .models import Recommender

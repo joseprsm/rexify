@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-from rexify.utils import get_target_ids
 from rexify.features.base import HasSchemaInput
+from rexify.utils import get_target_ids
 
 
 class TfDatasetGenerator(HasSchemaInput):

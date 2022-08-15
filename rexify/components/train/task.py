@@ -1,9 +1,8 @@
+import os
+import pickle
 from pathlib import Path
 
-import os
 import click
-import pickle
-
 import pandas as pd
 import tensorflow as tf
 

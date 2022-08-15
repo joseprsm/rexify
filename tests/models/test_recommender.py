@@ -1,10 +1,10 @@
-import os
 import json
+import os
 
 import pandas as pd
 import tensorflow as tf
 
-from rexify import Recommender, FeatureExtractor
+from rexify import FeatureExtractor, Recommender
 
 EVENTS_PATH = os.path.join("tests", "data", "events.csv")
 SCHEMA_PATH = os.path.join("tests", "data", "schema.json")

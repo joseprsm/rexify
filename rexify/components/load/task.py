@@ -1,15 +1,14 @@
 import json
-import click
 import pickle
+from pathlib import Path
 
+import click
 import numpy as np
 import pandas as pd
-
-from pathlib import Path
 from sklearn.model_selection import train_test_split
 
-from rexify.utils import flatten, get_target_id
 from rexify.features import FeatureExtractor
+from rexify.utils import flatten, get_target_id
 
 
 @click.command()

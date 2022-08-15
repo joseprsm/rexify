@@ -1,9 +1,7 @@
 from typing import List
 
 import numpy as np
-
 from pandas import to_datetime
-
 from sklearn.base import BaseEstimator, TransformerMixin
 
 

@@ -1,10 +1,10 @@
-from typing import Optional, List
+from typing import List, Optional
 
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
-from rexify.models.query import QueryModel
 from rexify.models.candidate import CandidateModel
+from rexify.models.query import QueryModel
 
 
 class Recommender(tfrs.Model):

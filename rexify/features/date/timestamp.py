@@ -1,8 +1,8 @@
-import numpy as np
-
 from time import mktime
+
+import numpy as np
 from pandas import to_datetime
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class TimestampTransformer(BaseEstimator, TransformerMixin):

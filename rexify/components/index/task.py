@@ -1,11 +1,11 @@
+import json
 from pathlib import Path
 
-import json
 import click
 import numpy as np
+import scann as _  # noqa: F401
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
-import scann as _
 
 from rexify.utils import get_target_id
 
@@ -39,7 +39,7 @@ def index(
 
     scann = tfrs.layers.factorized_top_k.ScaNN(k=50, num_reordering_candidates=1_000)
     scann.index_from_dataset(tf.data.Dataset.zip((items, item_embeddings)))
-    _ = scann(model.query_model({user_id: [42]}), k=1)
+    scann(model.query_model({user_id: [42]}), k=1)
 
     index_dir = Path(index_dir)
     index_dir.mkdir(parents=True, exist_ok=True)

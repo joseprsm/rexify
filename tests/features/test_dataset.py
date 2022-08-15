@@ -1,6 +1,6 @@
+import os
 from typing import Callable
 
-import os
 import numpy as np
 import pandas as pd
 

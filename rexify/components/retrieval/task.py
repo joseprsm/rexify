@@ -1,12 +1,11 @@
-from typing import Dict
-from pathlib import Path
-
 import json
+from pathlib import Path
+from typing import Dict
+
 import click
 import numpy as np
+import scann  # noqa: F401
 import tensorflow as tf
-
-import scann
 
 from rexify.utils import get_target_id
 

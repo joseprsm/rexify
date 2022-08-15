@@ -1,15 +1,14 @@
 import pytest
 
-from rexify.features.base import BaseTransformer, HasSchemaInput
-
 from rexify.exceptions.schema import (
-    EmptySchemaException,
-    MissingKeysSchemaException,
-    TooManyIdFeaturesSchemaException,
     ContextIdSchemaException,
     DataTypeNotSupportedSchemaException,
+    EmptySchemaException,
     MissingIdSchemaException,
+    MissingKeysSchemaException,
+    TooManyIdFeaturesSchemaException,
 )
+from rexify.features.base import BaseTransformer, HasSchemaInput
 
 
 def test_fit():

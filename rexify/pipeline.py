@@ -1,8 +1,8 @@
 import os
 
-from kfp.v2.dsl import pipeline
-from kfp.v2.compiler import Compiler
 from kfp.components import load_component_from_file
+from kfp.v2.compiler import Compiler
+from kfp.v2.dsl import pipeline
 
 BASE_PATH = os.path.join("rexify", "components")
 PIPELINE_NAME = os.environ.get("PIPELINE_NAME")
