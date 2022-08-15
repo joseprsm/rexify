@@ -1,0 +1,60 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "rexify"
+version = "0.0.2"
+description = "Streamlined Recommender System workflows with TensorFlow and Kubeflow"
+authors = ["José Medeiros <joseprsm@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://rexify.readthedocs.io"
+packages = [
+    {include = "rexify"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+tensorflow = { version = "^2.6.0", markers = "sys_platform != 'darwin'" }
+tensorflow_metal = { version = "^0.5.0", markers = "sys_platform == 'darwin'"}
+tensorflow_macos = { version = "^2.6.0", markers = "sys_platform == 'darwin'"}
+tensorflow_recommenders = ">=0.3.0"
+kfp = "^1.8.0"
+scikit-learn = "1.*"
+
+[tool.poetry.dev-dependencies]
+scann = { version = "^1.2.0", markers = "sys_platform != 'darwin'" }
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+implicit_reexport = false
+strict_equality = true
