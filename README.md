@@ -14,7 +14,7 @@
     <a href="https://rexify.readthedocs.io">
         <img alt="Documentation" src="https://img.shields.io/badge/documentation-online-success?style=flat-square">
     </a>
-    <a href="https://github.com/joseprsm/rexify/releases">
+    <a href="https://pypi.org/project/rexify/">
         <img alt="GitHub release" src="https://img.shields.io/github/v/release/joseprsm/rexify?style=flat-square">
     </a>
 </p>
@@ -30,10 +30,10 @@ and Pipelines.
 
 ## Installation
 
-For now, you'll have to install Rexify from source:
+The easiest way to install Rexify is via `pip`:
 
 ```shell
-pip install git+https://github.com/joseprsm/rexify.git
+pip install rexify
 ```
 
 ## Quick Tour
