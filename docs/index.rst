@@ -16,7 +16,7 @@
     :caption: Guides and Examples
 
     Quickstart <tutorials/quickstart>
-    Using a pre-built pipeline <overview/overview.md>
-    Developing your own Kubeflow pipeline <overview/overview.md>
+    Using a pre-built pipeline <tutorials/prebuilt_pipeline>
+    Configuring your own Kubeflow pipeline <tutorials/configure_pipeline>
 
 .. mdinclude:: ../README.md
