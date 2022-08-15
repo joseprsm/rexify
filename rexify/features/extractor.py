@@ -28,7 +28,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         return self
 
     def transform(self, X):
-        return self._ppl.transform(X)
+        ds = self._ppl.transform(X)
+        return self.make_dataset(ds)
 
     def _make_pipeline(self) -> Pipeline:
         id_features = get_target_ids(self.schema)
