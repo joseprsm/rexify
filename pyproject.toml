@@ -38,6 +38,7 @@ tensorflow_macos = { version = "^2.6.0", markers = "sys_platform == 'darwin'"}
 tensorflow_recommenders = ">=0.3.0"
 kfp = "^1.8.0"
 scikit-learn = "1.*"
+pandas = "^1.4.0"
 
 [tool.poetry.dev-dependencies]
 scann = { version = "^1.2.0", markers = "sys_platform != 'darwin'" }
