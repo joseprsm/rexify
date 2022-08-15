@@ -52,6 +52,8 @@ workflows:
             tags:
               # regex that will fetch releases matching `1.2.3`
               only: /^\d+\.\d+\.\d+$/
+            branches:
+              only: main
       - build_docker:
           requires:
             - test
