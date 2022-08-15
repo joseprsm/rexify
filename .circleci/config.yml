@@ -30,6 +30,17 @@ jobs:
             poetry version $(git describe --tags --abbrev=0)
             poetry publish
 
+  build_docker:
+    docker:
+      - image: docker:17.05.0-ce-git
+
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Build and push Docker images
+          command: |
+            sh scripts/build.sh
+
 workflows:
   build:
     jobs:
@@ -41,3 +52,9 @@ workflows:
             tags:
               # regex that will fetch releases matching `1.2.3`
               only: /^\d+\.\d+\.\d+$/
+      - build_docker:
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
