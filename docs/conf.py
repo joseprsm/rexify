@@ -10,7 +10,6 @@ extensions = [
     "sphinx.ext.githubpages",
     "m2r2",
     "sphinx.ext.napoleon",
-    "sphinxcontrib.apidoc",
     "sphinx_search.extension",
     "nbsphinx"
 ]
@@ -50,5 +49,3 @@ html_sidebars = {
 }
 
 nbsphinx_allow_errors = True
-
-apidoc_module_dir = '../rexify'
