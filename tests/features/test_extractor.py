@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 from rexify.features import FeatureExtractor
 
@@ -15,9 +16,9 @@ feat.fit(events)
 
 def test_model_params():
     assert feat.model_params == {
-        "n_unique_items": 3837,
+        "n_unique_items": 535,
         "item_id": "item_id",
-        "n_unique_users": 199464,
+        "n_unique_users": 881,
         "user_id": "user_id",
     }
 
@@ -30,11 +31,29 @@ def test_fit():
     assert len(feat._ppl.steps) != 0
 
 
-def test_transform_output_shape():
+def test_transform_output_ids():
     features = feat.transform(events)
-    assert features.shape == events.shape
+    e = next(features.as_numpy_iterator())
+    assert isinstance(e["query"]["user_id"], np.int64)
+    assert isinstance(e["candidate"]["item_id"], np.int64)
+
+
+def test_transform_output_type():
+    features = feat.transform(events)
+    assert isinstance(features, tf.data.Dataset)
 
 
 def test_transform_nunique():
     features = feat.transform(events)
-    assert np.all(pd.DataFrame(features).nunique().values == events.nunique().values)
+    assert np.all(
+        pd.DataFrame(
+            list(
+                features.map(
+                    lambda x: [x["query"]["user_id"], x["candidate"]["item_id"]]
+                ).as_numpy_iterator()
+            )
+        )
+        .nunique()
+        .values
+        == events.nunique().values
+    )
