@@ -14,7 +14,7 @@
     <a href="https://rexify.readthedocs.io">
         <img alt="Documentation" src="https://img.shields.io/badge/documentation-online-success?style=flat-square">
     </a>
-    <a href="https://github.com/joseprsm/rexify/releases">
+    <a href="https://pypi.org/project/rexify/">
         <img alt="GitHub release" src="https://img.shields.io/github/v/release/joseprsm/rexify?style=flat-square">
     </a>
 </p>
@@ -24,16 +24,31 @@ top of [Tensorflow Recommenders](https://github.com/tensorflow/recommenders) mod
 [Kubeflow](https://github.com/kubeflow/pipelines) pipelines.
 
 In essence, Rexify adapts dynamically to your data, and outputs high-performing TensorFlow
-models that may be used wherever you want, independently of your data. Rexify also includes modules to deal with feature engineering as Scikit-Learn Transformers 
-and Pipelines.  
+models that may be used wherever you want, independently of your data. Rexify also includes
+modules to deal with feature engineering as Scikit-Learn Transformers and Pipelines.
 
+With Rexify, users may easily train Recommender Systems models, just by specifying what their
+data looks like. Rexify also comes equipped with pre-built machine learning pipelines which can
+be used serverlessly. 
+
+## What is Rexify?
+
+Rexify is a low-code personalization tool, that makes use of traditional machine learning 
+frameworks, such as Scikit-Learn and TensorFlow, and Kubeflow to create scalable Recommender Systems
+workflows that anyone can use.
+
+### Who is it for?
+
+Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
+mostly geared towards people with little to no machine learning knowledge, that want to implement
+somewhat scalable Recommender Systems in their applications.
 
 ## Installation
 
-For now, you'll have to install Rexify from source:
+The easiest way to install Rexify is via `pip`:
 
 ```shell
-pip install git+https://github.com/joseprsm/rexify.git
+pip install rexify
 ```
 
 ## Quick Tour
@@ -78,9 +93,11 @@ Essentially, what Rexify will do is take the schema, and dynamically adapt to th
 
 There are two main components in Rexify workflows: `FeatureExtractor` and `Recommender`.
 
-The `FeatureExtractor` is a scikit-learn Transformer that basically takes the schema of the data, and transforms the event data accordingly. Another method `.make_dataset()`, converts the transformed data into a `tf.data.Dataset`, all correctly configured to be fed to the `Recommender` model. You can read more about how the `FeatureExtractor` works [here]().
+The `FeatureExtractor` is a scikit-learn Transformer that basically takes the schema of the data, and transforms the event data accordingly. Another method `.make_dataset()`, converts the transformed data into a `tf.data.Dataset`, all correctly configured to be fed to the `Recommender` model.
 
-`Recommender` is a `tfrs.Model` that basically implements the Query and Candidate towers. During training, the Query tower will take the user ID, user features, and context, to learn an embedding; the Candidate tower will do the same for the item ID and its features. More information about the `Recommender` model can be found [here](). 
+`Recommender` is a `tfrs.Model` that basically implements the Query and Candidate towers. During training, the Query tower will take the user ID, user features, and context, to learn an embedding; the Candidate tower will do the same for the item ID and its features. 
+
+More information about how the `FeatureExtractor` and the `Recommender` works can be found [here](https://rexify.readthedocs.io/en/latest/overview/architecture.html). 
 
 A sample Rexify workflow should sort of look like this:
 
@@ -96,8 +113,7 @@ with open('path/to/schema') as f:
     schema = json.load(f)
 
 feat = FeatureExtractor(schema)
-prep_data = feat.fit_transform(events)
-ds = feat.make_dataset(prep_data)
+ds = feat.fit_transform(events).batch(512)
 
 model = Recommender(**feat.model_params)
 model.compile()
@@ -145,7 +161,7 @@ Or, if you're using docker:
 docker run joseprsm/rexify-demo
 ```
 
-You can then follow the steps [here]() to set up your pipeline. 
+You can then follow the steps here to set up your pipeline. 
 
 During setup, you'll be asked to either input a publicly available dataset URL or use a sample data set.
 After that, you'll have a form to help you set up the schema for the data.
@@ -153,13 +169,6 @@ After that, you'll have a form to help you set up the schema for the data.
 Finally, after hitting "Compile", you'll have your Pipeline Spec ready. The resulting JSON file can then be uploaded to Vertex AI Pipelines or Kubeflow, seamlessly.
 
 The key difference from this pipeline to the prebuilt one is that instead of using the `download` component to download the schema, it will pass it as an argument to the pipeline, and then use a `copy` component to pass it down as an artifact.
-
-
-## Who is this for?
-
-Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
-mostly geared towards people with little to no machine learning knowledge, that want to implement
-somewhat scalable Recommender Systems in their applications.
 
 ## License
 

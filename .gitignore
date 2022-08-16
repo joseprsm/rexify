@@ -12,3 +12,5 @@ data
 
 outputs
 pipeline.json
+
+/docs/_build/

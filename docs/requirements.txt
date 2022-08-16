@@ -1,6 +1,16 @@
 sphinx
+mock==1.0.1
+alabaster>=0.7,<0.8,!=0.7.5
+commonmark==0.8.1
+recommonmark==0.5.0
+sphinx-rtd-theme
+readthedocs-sphinx-ext<2.2
 sphinx_material==0.0.30
 m2r2
 breathe
 sphinxcontrib-apidoc>=0.3.0
 readthedocs-sphinx-search==0.1.0
+jinja2==3.1.2
+nbsphinx==0.8.2
+nbsphinx-link==1.1.0
+ipykernel

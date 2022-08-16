@@ -27,7 +27,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         return self
 
     def transform(self, X):
-        return self._ppl.transform(X)
+        ds = self._ppl.transform(X)
+        return self.make_dataset(ds)
 
     def _make_pipeline(self) -> Pipeline:
         id_features = get_target_ids(self.schema)
@@ -47,10 +48,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
     def _get_model_params(self, X):
         user_id = get_target_id(self.schema, "user")
-        user_input_dim = int(X[user_id].max() + 1)
+        user_input_dim = int(X[user_id].nunique() + 1)
 
         item_id = get_target_id(self.schema, "item")
-        item_input_dim = int(X[item_id].max() + 1)
+        item_input_dim = int(X[item_id].nunique() + 1)
 
         return {
             "n_unique_items": item_input_dim,
