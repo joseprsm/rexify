@@ -56,9 +56,9 @@ Essentially, what Rexify will do is take the schema, and dynamically adapt to th
 
 There are two main components in Rexify workflows: `FeatureExtractor` and `Recommender`.
 
-The `FeatureExtractor` is a scikit-learn Transformer that basically takes the schema of the data, and transforms the event data accordingly. Another method `.make_dataset()`, converts the transformed data into a `tf.data.Dataset`, all correctly configured to be fed to the `Recommender` model. You can read more about how the `FeatureExtractor` works [here](/overview/architecture).
+The `FeatureExtractor` is a scikit-learn Transformer that basically takes the schema of the data, and transforms the event data accordingly. Another method `.make_dataset()`, converts the transformed data into a `tf.data.Dataset`, all correctly configured to be fed to the `Recommender` model. You can read more about how the `FeatureExtractor` works here.
 
-`Recommender` is a `tfrs.Model` that basically implements the Query and Candidate towers. During training, the Query tower will take the user ID, user features, and context, to learn an embedding; the Candidate tower will do the same for the item ID and its features. More information about the `Recommender` model can be found [here](/overview/architecture). 
+`Recommender` is a `tfrs.Model` that basically implements the Query and Candidate towers. During training, the Query tower will take the user ID, user features, and context, to learn an embedding; the Candidate tower will do the same for the item ID and its features. More information about the `Recommender` model can be found here. 
 
 A sample Rexify workflow should sort of look like this:
 
@@ -123,7 +123,7 @@ Or, if you're using docker:
 docker run joseprsm/rexify-demo
 ```
 
-You can then follow the steps [here]() to set up your pipeline. 
+You can then follow the steps here to set up your pipeline. 
 
 During setup, you'll be asked to either input a publicly available dataset URL or use a sample data set.
 After that, you'll have a form to help you set up the schema for the data.
