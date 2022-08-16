@@ -50,3 +50,5 @@ html_sidebars = {
 }
 
 nbsphinx_allow_errors = True
+
+apidoc_module_dir = '../rexify'
