@@ -24,9 +24,24 @@ top of [Tensorflow Recommenders](https://github.com/tensorflow/recommenders) mod
 [Kubeflow](https://github.com/kubeflow/pipelines) pipelines.
 
 In essence, Rexify adapts dynamically to your data, and outputs high-performing TensorFlow
-models that may be used wherever you want, independently of your data. Rexify also includes modules to deal with feature engineering as Scikit-Learn Transformers 
-and Pipelines.  
+models that may be used wherever you want, independently of your data. Rexify also includes
+modules to deal with feature engineering as Scikit-Learn Transformers and Pipelines.
 
+With Rexify, users may easily train Recommender Systems models, just by specifying what their
+data looks like. Rexify also comes equipped with pre-built machine learning pipelines which can
+be used serverlessly. 
+
+## What is Rexify?
+
+Rexify is a low-code personalization tool, that makes use of traditional machine learning 
+frameworks, such as Scikit-Learn and TensorFlow, and Kubeflow to create scalable Recommender Systems
+workflows that anyone can use.
+
+### Who is it for?
+
+Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
+mostly geared towards people with little to no machine learning knowledge, that want to implement
+somewhat scalable Recommender Systems in their applications.
 
 ## Installation
 
@@ -154,13 +169,6 @@ After that, you'll have a form to help you set up the schema for the data.
 Finally, after hitting "Compile", you'll have your Pipeline Spec ready. The resulting JSON file can then be uploaded to Vertex AI Pipelines or Kubeflow, seamlessly.
 
 The key difference from this pipeline to the prebuilt one is that instead of using the `download` component to download the schema, it will pass it as an argument to the pipeline, and then use a `copy` component to pass it down as an artifact.
-
-
-## Who is this for?
-
-Rexify is a project that simplifies and standardizes the workflow of recommender systems. It is 
-mostly geared towards people with little to no machine learning knowledge, that want to implement
-somewhat scalable Recommender Systems in their applications.
 
 ## License
 
