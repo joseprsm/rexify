@@ -14,15 +14,14 @@ def mock():
     events = pd.read_csv(EVENTS_PATH)
     with open(SCHEMA_PATH, "r") as f:
         feat = FeatureExtractor(json.load(f))
-    feat.fit(events)
-    return events, feat
+    features = feat.fit_transform(events)
+    return features, feat
 
 
 class RecommenderTest(tf.test.TestCase):
     def setUp(self):
         super(RecommenderTest, self).setUp()
         self.inputs, self.feat = mock()
-        self.inputs = self.feat.make_dataset(self.inputs)
         self.inputs = list(self.inputs.batch(1).take(1))[0]
         self.model = Recommender(**self.feat.model_params)
 
