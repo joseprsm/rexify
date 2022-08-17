@@ -10,13 +10,12 @@ from rexify.utils import get_target_feature
 class _BaseTransformerTuple(tuple):
 
     ppl: Pipeline
-    name: str
+    pipeline_name: str
 
     def __new__(cls, schema, target):
+        name = "_".join([target, cls.pipeline_name])
         target_features = cls._get_features(schema, target)
-        return tuple.__new__(
-            _BaseTransformerTuple, (cls.name, cls.ppl, target_features)
-        )
+        return tuple.__new__(_BaseTransformerTuple, (name, cls.ppl, target_features))
 
     @staticmethod
     @abstractmethod
@@ -26,7 +25,7 @@ class _BaseTransformerTuple(tuple):
 
 class IdentifierPipeline(_BaseTransformerTuple):
 
-    name = "idPipeline"
+    pipeline_name = "idPipeline"
 
     ppl = make_pipeline(
         OrdinalEncoder(
@@ -43,7 +42,7 @@ class IdentifierPipeline(_BaseTransformerTuple):
 
 class CategoricalPipeline(_BaseTransformerTuple):
 
-    name = "categoricalPipeline"
+    pipeline_name = "categoricalPipeline"
 
     ppl = make_pipeline(OneHotEncoder(sparse=False))
 
@@ -54,7 +53,7 @@ class CategoricalPipeline(_BaseTransformerTuple):
 
 class NumericalPipeline(_BaseTransformerTuple):
 
-    name = "numericalPipeline"
+    pipeline_name = "numericalPipeline"
 
     ppl = make_pipeline(MinMaxScaler(feature_range=(-1, 1)))
 
