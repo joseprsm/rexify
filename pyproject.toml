@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "rexify"
-version = "0.0.2"
+version = "0.0.0"
 description = "Streamlined Recommender System workflows with TensorFlow and Kubeflow"
 authors = ["José Medeiros <joseprsm@gmail.com>"]
 license = "MIT"
@@ -46,6 +46,7 @@ flake8 = "^5.0.4"
 black = "^22.6.0"
 isort = "^5.10.1"
 pre-commit = "^2.20.0"
+darglint = ">=1.8.1"
 
 [tool.isort]
 profile = "black"
