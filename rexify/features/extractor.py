@@ -1,14 +1,17 @@
 from typing import Any, Dict, List, Tuple
 
-import numpy as np
 import pandas as pd
 import tensorflow as tf
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 
 from rexify.features.dataset import TfDatasetGenerator
-from rexify.utils import get_target_categorical, get_target_id, get_target_numerical
+from rexify.features.pipelines import (
+    CategoricalPipeline,
+    IdentifierPipeline,
+    NumericalPipeline,
+)
+from rexify.utils import get_target_id
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
@@ -124,53 +127,12 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         transformer_list = []
 
         if target != "context":
-            id_transformer: tuple = self._get_id_pipeline(target)
-            transformer_list.append(id_transformer)
+            transformer_list.append(IdentifierPipeline(self.schema, target))
 
-        categorical_ppl: tuple = self._get_categorical_pipeline(target)
+        categorical_ppl = CategoricalPipeline(self.schema, target)
         transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
 
-        numerical_ppl: tuple = self._get_numerical_pipeline(target)
+        numerical_ppl: tuple = NumericalPipeline(self.schema, target)
         transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
 
         return transformer_list
-
-    def _get_id_pipeline(self, target: str) -> Tuple[str, TransformerMixin, List[str]]:
-        id_feature = get_target_id(self.schema, target)
-        return (
-            "_".join([target, "idPipeline"]),
-            OrdinalEncoder(
-                dtype=np.int64,
-                handle_unknown="use_encoded_value",
-                unknown_value=-1,
-            ),
-            id_feature,
-        )
-
-    def _get_categorical_pipeline(
-        self, target: str
-    ) -> Tuple[str, TransformerMixin, List[str]]:
-        categorical_features: List[str] = get_target_categorical(self.schema, target)
-        if len(categorical_features) != 0:
-            return (
-                "_".join([target, "categoricalPipeline"]),
-                OneHotEncoder(sparse=False),
-                categorical_features,
-            )
-        return tuple()
-
-    def _get_numerical_pipeline(
-        self, target: str
-    ) -> Tuple[str, TransformerMixin, List[str]]:
-        numerical_features: List[str] = get_target_numerical(self.schema, target)
-        if len(numerical_features) != 0:
-            return (
-                "_".join([target, "numericalPipeline"]),
-                MinMaxScaler(),
-                numerical_features,
-            )
-        return tuple()
-
-    @staticmethod
-    def _get_transformer_name(target: str, transformer: TransformerMixin):
-        return "_".join([target, transformer.__str__().split("(")[0]])
