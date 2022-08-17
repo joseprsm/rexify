@@ -6,11 +6,26 @@ def flatten(xss: List[List[Any]]):
 
 
 def get_target_id(schema: dict, target: str):
-    def mask(x: tuple):
-        return x[1] == "id"
-
-    return list(filter(mask, schema[target].items()))[0][0]
+    return get_target_feature(schema, target, "id")
 
 
 def get_target_ids(schema: dict):
-    return [get_target_id(schema, target) for target in ["user", "item"]]
+    return flatten([get_target_id(schema, target) for target in ["user", "item"]])
+
+
+def get_target_categorical(schema: dict, target: str):
+    return get_target_feature(schema, target, "categorical")
+
+
+def get_target_numerical(schema: dict, target: str):
+    return get_target_feature(schema, target, "numerical")
+
+
+def get_target_feature(schema: dict, target: str, type_: str):
+    def mask(x: tuple):
+        return x[1] == type_
+
+    def get_first(x: tuple):
+        return x[0]
+
+    return list(map(get_first, filter(mask, schema[target].items())))

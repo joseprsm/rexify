@@ -65,7 +65,7 @@ def test_context_id_schema():
 
 def test_unsupported_user_attribute_dtype_schema():
     schema = {
-        "user": {"a": "id", "d": "categorical"},
+        "user": {"a": "id", "d": "error"},
         "item": {"b": "id"},
         "context": {"c": "id"},
     }
@@ -77,7 +77,7 @@ def test_unsupported_user_attribute_dtype_schema():
 def test_unsupported_item_attribute_dtype_schema():
     schema = {
         "user": {"a": "id"},
-        "item": {"b": "id", "d": "categorical"},
+        "item": {"b": "id", "d": "error"},
     }
 
     with pytest.raises(DataTypeNotSupportedSchemaException):
@@ -88,7 +88,7 @@ def test_unsupported_context_attribute_dtype_schema():
     schema = {
         "user": {"a": "id"},
         "item": {"b": "id"},
-        "context": {"d": "categorical"},
+        "context": {"d": "error"},
     }
 
     with pytest.raises(DataTypeNotSupportedSchemaException):
