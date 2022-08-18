@@ -53,11 +53,3 @@ workflows:
               only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
-      - build_docker:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^\d+\.\d+\.\d+$/
-            branches:
-              ignore: /.*/
