@@ -166,9 +166,12 @@ You can then follow the steps here to set up your pipeline.
 During setup, you'll be asked to either input a publicly available dataset URL or use a sample data set.
 After that, you'll have a form to help you set up the schema for the data.
 
-Finally, after hitting "Compile", you'll have your Pipeline Spec ready. The resulting JSON file can then be uploaded to Vertex AI Pipelines or Kubeflow, seamlessly.
+Finally, after hitting "Compile", you'll have your Pipeline Spec ready. The resulting JSON file can then 
+be uploaded to Vertex AI Pipelines or Kubeflow, seamlessly.
 
-The key difference from this pipeline to the prebuilt one is that instead of using the `download` component to download the schema, it will pass it as an argument to the pipeline, and then use a `copy` component to pass it down as an artifact.
+The key difference from this pipeline to the prebuilt one is that instead of using the `download` 
+component to download the schema, it will pass it as an argument to the pipeline, and then use a `copy` 
+component to pass it down as an artifact.
 
 ## License
 
