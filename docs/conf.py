@@ -1,9 +1,10 @@
 import sphinx_material
 
+
 project = "Rexify"
 html_title = "Rexify"
 
-html_theme = 'sphinx_material'
+html_theme = "sphinx_material"
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -11,7 +12,7 @@ extensions = [
     "m2r2",
     "sphinx.ext.napoleon",
     "sphinx_search.extension",
-    "nbsphinx"
+    "nbsphinx",
 ]
 source_suffix = [".rst", ".md"]
 
@@ -36,7 +37,7 @@ if html_theme == "sphinx_material":
         "globaltoc_depth": 2,
         "globaltoc_collapse": False,
         "globaltoc_includehidden": False,
-        "repo_type": "github"
+        "repo_type": "github",
     }
 
     extensions.append("sphinx_material")

@@ -1,11 +1,12 @@
 import json
 import os
 
-import requests
 import pandas as pd
+import requests
 import streamlit as st
 
 from rexify.pipeline import compile_
+
 
 events = None
 with open("demo/datasets.json", "r") as f:
