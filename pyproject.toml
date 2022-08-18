@@ -47,6 +47,7 @@ black = "^22.6.0"
 isort = "^5.10.1"
 pre-commit = "^2.20.0"
 darglint = ">=1.8.1"
+coverage = {extras = ["toml"], version = ">=6.2"}
 
 [tool.isort]
 profile = "black"
@@ -69,6 +70,20 @@ warn_unused_ignores = true
 warn_return_any = true
 implicit_reexport = false
 strict_equality = true
+
+[tool.coverage.paths]
+source = ["rexify"]
+tests = ["tests", "*/tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["rexify", "tests"]
+omit = ["tests", "*/tests", "rexify/cli.py"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = ["if __name__ == .__main__.:", "_cmd"]
+omit = ["tests/*", "*/tests", "rexify/cli.py", "*/__init__.py"]
 
 [project.scripts]
 rexify = "rexify.cli:cli"
