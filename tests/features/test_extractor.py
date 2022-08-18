@@ -107,7 +107,7 @@ def test_dataset_header_output_with_features():
     feat_ = FeatureExtractor(schema=schema_)
     feat_.fit(events_)
 
-    header = feat_._get_header_fn()(tf.constant([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
+    header = feat_._get_header_fn()(tf.constant([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]))
 
     expected_result = {
         "query": {
