@@ -50,6 +50,10 @@ darglint = ">=1.8.1"
 
 [tool.isort]
 profile = "black"
+lines_after_imports = 2
+
+[tool.darglint]
+strictness = "long"
 
 [tool.mypy]
 disallow_any_generics = true
