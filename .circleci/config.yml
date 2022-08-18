@@ -20,9 +20,10 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.10
 
     steps:
+      - checkout
       - run:
           name: Build and publish
           command: |
