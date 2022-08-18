@@ -4,6 +4,7 @@ from kfp.components import load_component_from_file
 from kfp.v2.compiler import Compiler
 from kfp.v2.dsl import pipeline
 
+
 BASE_PATH = os.path.join("rexify", "components")
 PIPELINE_NAME = os.environ.get("PIPELINE_NAME")
 PIPELINE_ROOT = os.environ.get("PIPELINE_ROOT")
@@ -24,17 +25,12 @@ retrieval_op = _load_component("retrieval")
 @pipeline(name=PIPELINE_NAME, pipeline_root=PIPELINE_ROOT)
 def pipeline_fn(
     event_uri: str = None,
-    schema_uri: str = None,
     schema: dict = None,
     epochs: int = 100,
 ):
     events_task = download_op(input_uri=event_uri or os.environ.get("INPUT_DATA_URL"))
 
-    schema_task = (
-        download_op(input_uri=schema_uri or os.environ.get("SCHEMA_URL"))
-        if schema is None
-        else copy_op(content=schema)
-    )
+    schema_task = copy_op(content=schema)
 
     load_task = load_op(
         events=events_task.outputs["data"],
@@ -61,10 +57,10 @@ def pipeline_fn(
     )
 
 
-def compile_(**ppl_params):
+def compile_(package_path: str = "pipeline.json", **ppl_params):
     Compiler().compile(
         pipeline_func=pipeline_fn,
-        package_path="pipeline.json",
+        package_path=package_path,
         pipeline_parameters=ppl_params,
     )
 
