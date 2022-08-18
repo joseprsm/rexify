@@ -28,7 +28,7 @@ jobs:
           command: |
             poetry build
             poetry version $(git describe --tags --abbrev=0)
-            poetry publish
+            poetry publish --username $PYPI_USERNAME --password $PYPI_PASSWORD
 
   build_docker:
     docker:
