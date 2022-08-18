@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
-import tensorflow as tf
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 
@@ -62,7 +62,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         self._output_features = X.columns.tolist()
         return self
 
-    def transform(self, X: pd.DataFrame) -> tf.data.Dataset:
+    def transform(self, X: pd.DataFrame) -> np.ndarray:
         """
         Transform X according to the inferred pipeline.
 
@@ -70,12 +70,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             X (pd.DataFrame): The original event data
 
         Returns:
-            tf.data.Dataset: a Dataset with a nested structure
-                according to the inputs to the Recommender model.
+            numpy.ndarray: an array with the preprocessed features
 
         """
-        ds = self._ppl.transform(X)
-        return self.make_dataset(ds)
+        return self._ppl.transform(X)
 
     @property
     def model_params(self):

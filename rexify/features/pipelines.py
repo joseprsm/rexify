@@ -7,7 +7,7 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 from rexify.utils import get_target_feature
 
 
-class _BaseTransformerTuple(tuple):
+class _BaseFeaturePipeline(tuple):
 
     ppl: Pipeline
     pipeline_name: str
@@ -15,7 +15,7 @@ class _BaseTransformerTuple(tuple):
     def __new__(cls, schema, target):
         name = "_".join([target, cls.pipeline_name])
         target_features = cls._get_features(schema, target)
-        return tuple.__new__(_BaseTransformerTuple, (name, cls.ppl, target_features))
+        return tuple.__new__(_BaseFeaturePipeline, (name, cls.ppl, target_features))
 
     @staticmethod
     @abstractmethod
@@ -23,7 +23,7 @@ class _BaseTransformerTuple(tuple):
         raise NotImplementedError
 
 
-class IdentifierPipeline(_BaseTransformerTuple):
+class IdentifierPipeline(_BaseFeaturePipeline):
 
     pipeline_name = "idPipeline"
 
@@ -40,7 +40,7 @@ class IdentifierPipeline(_BaseTransformerTuple):
         return get_target_feature(schema, target, "id")
 
 
-class CategoricalPipeline(_BaseTransformerTuple):
+class CategoricalPipeline(_BaseFeaturePipeline):
 
     pipeline_name = "categoricalPipeline"
 
@@ -51,7 +51,7 @@ class CategoricalPipeline(_BaseTransformerTuple):
         return get_target_feature(schema, target, "categorical")
 
 
-class NumericalPipeline(_BaseTransformerTuple):
+class NumericalPipeline(_BaseFeaturePipeline):
 
     pipeline_name = "numericalPipeline"
 
