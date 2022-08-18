@@ -113,7 +113,7 @@ def test_dataset_header_output_with_features():
         "query": {
             "user_id": tf.constant(1),
             "user_features": tf.constant([1, 1]),
-            "context_features": tf.constant([0]),
+            "context_features": tf.constant([1]),
         },
         "candidate": {
             "item_id": tf.constant(1),
