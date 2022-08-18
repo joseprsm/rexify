@@ -4,9 +4,9 @@ from typing import Callable
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
 from rexify.features import FeatureExtractor
+
 
 EVENTS_PATH = os.path.join("tests", "data", "events.csv")
 TOWERS = ["query", "candidate"]
@@ -15,6 +15,7 @@ events = pd.read_csv(EVENTS_PATH)
 schema = {"user": {"user_id": "id"}, "item": {"item_id": "id"}}
 feat = FeatureExtractor(schema=schema)
 out = feat.fit_transform(events)
+out = feat.make_dataset(out)
 out = list(out.take(1))[0]
 
 query_header = list(schema["user"].keys())
@@ -43,6 +44,7 @@ def test_fit():
 
 def test_transform_output_ids():
     features = feat.transform(events)
+    features = feat.make_dataset(features)
     e = next(features.as_numpy_iterator())
     assert isinstance(e["query"]["user_id"], Number)
     assert isinstance(e["candidate"]["item_id"], Number)
@@ -50,11 +52,12 @@ def test_transform_output_ids():
 
 def test_transform_output_type():
     features = feat.transform(events)
-    assert isinstance(features, tf.data.Dataset)
+    assert isinstance(features, np.ndarray)
 
 
 def test_transform_nunique():
     features = feat.transform(events)
+    features = feat.make_dataset(features)
     assert np.all(
         pd.DataFrame(
             list(

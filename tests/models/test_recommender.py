@@ -6,6 +6,7 @@ import tensorflow as tf
 
 from rexify import FeatureExtractor, Recommender
 
+
 EVENTS_PATH = os.path.join("tests", "data", "events.csv")
 SCHEMA_PATH = os.path.join("tests", "data", "schema.json")
 
@@ -15,6 +16,7 @@ def mock():
     with open(SCHEMA_PATH, "r") as f:
         feat = FeatureExtractor(json.load(f))
     features = feat.fit_transform(events)
+    features = feat.make_dataset(features)
     return features, feat
 
 
