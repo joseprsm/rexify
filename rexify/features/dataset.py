@@ -38,14 +38,23 @@ class TfDatasetGenerator(HasSchemaInput):
                 },
             }
 
-            if len(user_features_idx) != 0:
-                header["query"]["user_features"] = tf.gather(x, user_features_idx)
+            header["query"]["user_features"] = (
+                tf.gather(x, user_features_idx)
+                if len(user_features_idx) != 0
+                else tf.constant([])
+            )
 
-            if len(context_features_idx) != 0:
-                header["query"]["context_features"] = tf.gather(x, context_features_idx)
+            header["query"]["context_features"] = (
+                tf.gather(x, context_features_idx)
+                if len(context_features_idx) != 0
+                else tf.constant([])
+            )
 
-            if len(item_features_idx) != 0:
-                header["candidate"]["item_features"] = tf.gather(x, item_features_idx)
+            header["candidate"]["item_features"] = (
+                tf.gather(x, item_features_idx)
+                if len(item_features_idx) != 0
+                else tf.constant([])
+            )
 
             return header
 
