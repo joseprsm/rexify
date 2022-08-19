@@ -1,6 +1,3 @@
-import os
-
-import pandas as pd
 import pytest
 from sklearn.pipeline import Pipeline
 
@@ -12,8 +9,6 @@ from rexify.features.pipelines import (
 )
 
 
-EVENTS_PATH = os.path.join("tests", "data", "events.csv")
-events = pd.read_csv(EVENTS_PATH)
 schema = {
     "user": {
         "user_id": "id",
