@@ -48,6 +48,7 @@ isort = "^5.10.1"
 pre-commit = "^2.20.0"
 darglint = ">=1.8.1"
 coverage = {extras = ["toml"], version = ">=6.2"}
+interrogate = "^1.5.0"
 
 [tool.isort]
 profile = "black"
@@ -84,6 +85,22 @@ omit = ["tests", "*/tests", "rexify/cli.py"]
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:", "_cmd"]
 omit = ["tests/*", "*/tests", "rexify/cli.py", "*/__init__.py"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-semiprivate = true
+ignore-private = true
+ignore-module = true
+ignore-nested-functions = true
+ignore-property-decorators = true
+exclude = ["docs", "build", "demo", "*/cli.py", "tests", "rexify/pipeline.py", "*/exceptions/*"]
+ignore-regex = ["call", "get_config", "compute_loss"]
+verbose = 0
+omit-covered-files = false
+quiet = false
+color = false
 
 [project.scripts]
 rexify = "rexify.cli:cli"
