@@ -33,20 +33,28 @@ jobs:
 
   build_docker:
     docker:
-      - image: docker:17.05.0-ce-git
+      - image: circleci/buildpack-deps:stretch
 
     steps:
+      - checkout
       - setup_remote_docker
       - run:
           name: Build and push Docker images
           command: |
-            sh scripts/build.sh
+            echo "$DOCKER_HUB_PASSWORD" | docker login -u $DOCKER_HUB_USERNAME --password-stdin 
+            sh scripts/build_docker.sh
 
 workflows:
   build:
     jobs:
       - test
       - publish:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - build_docker:
           requires:
             - test
           filters:
