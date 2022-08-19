@@ -1,39 +1,51 @@
-from typing import List
-
 import tensorflow as tf
 
+from rexify.models.tower import TowerModel
 
-class CandidateModel(tf.keras.Model):
+
+class CandidateModel(TowerModel):
+    """Tower model responsible for computing the candidate representations
+
+    Attributes:
+
+
+    Args:
+        item_id (str): the item ID feature
+        n_items (str): number possible values for the ID feature
+        embedding_dim (int): output dimension of the embedding layer
+        output_layers (list): number of neurons in each layer for the output model
+        feature_layers (list): number of neurons in each layer for the feature model
+
+    Examples:
+    >>> from rexify.models.candidate import CandidateModel
+    >>> model = CandidateModel('item_id', 15)
+    >>> model({'item_id': tf.constant([1]), 'item_features': tf.constant([[1, 1, 1]])})
+    <tf.Tensor: shape=(1, 32), dtype=float32, numpy=
+    array([[...]], dtype=float32)>
+    """
+
     def __init__(
         self,
-        n_items: int,
         item_id: str,
+        n_items: int,
         embedding_dim: int = 32,
-        layer_sizes: List[int] = None,
+        output_layers: list[int] = None,
+        feature_layers: list[int] = None,
     ):
+        super().__init__(item_id, n_items, embedding_dim, output_layers, feature_layers)
 
-        super(CandidateModel, self).__init__()
-        self._item_id = item_id
-        self._n_items = n_items
-        self._embedding_dim = embedding_dim
-        self._layer_sizes = layer_sizes
-
-        self.embedding_layer = tf.keras.layers.Embedding(n_items, embedding_dim)
-
-        self.dense_layers = [
-            tf.keras.layers.Dense(num_neurons) for num_neurons in layer_sizes
-        ]
-
-    def call(self, inputs: tf.Tensor):
-        x = self.embedding_layer(inputs[self._item_id])
-        for layer in self.dense_layers:
-            x = layer(x)
+    def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
+        x = self.embedding_layer(inputs[self._id_feature])
+        if inputs["item_features"].shape[1] != 0:
+            feature_embedding = self.feature_model(inputs["item_features"])
+            x = tf.concat([x, feature_embedding], axis=1)
+        else:
+            self.feature_model.build(input_shape=tf.TensorShape([]))
+        x = self.output_model(x)
         return x
 
     def get_config(self):
-        return {
-            "n_items": self._n_items,
-            "item_id": self._item_id,
-            "embedding_dim": self._embedding_dim,
-            "layer_sizes": self._layer_sizes,
-        }
+        config = super().get_config()
+        config["item_id"] = self._id_feature
+        config["n_items"] = self._n_dims
+        return config
