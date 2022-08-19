@@ -20,4 +20,10 @@
     Configuring your own Kubeflow pipeline <tutorials/configure_pipeline>
     Using the demo application <tutorials/using_demo_app.md>
 
+.. toctree::
+   :maxdepth: 1
+   :caption: API reference
+
+   API reference <api/modules>
+
 .. mdinclude:: ../README.md

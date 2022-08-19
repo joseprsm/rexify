@@ -12,6 +12,7 @@ extensions = [
     "m2r2",
     "sphinx.ext.napoleon",
     "sphinx_search.extension",
+    "sphinxcontrib.apidoc",
     "nbsphinx",
 ]
 source_suffix = [".rst", ".md"]
@@ -27,6 +28,13 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
+
+apidoc_module_dir = "../rexify"
+apidoc_output_dir = "api"
+apidoc_excluded_paths = ["**/*test*"]
+apidoc_module_first = True
+apidoc_separate_modules = True
+apidoc_extra_args = ["-d 6"]
 
 if html_theme == "sphinx_material":
     html_theme_options = {
