@@ -1,9 +1,12 @@
-from typing import Any, Dict, List, Tuple
+import pickle
+from pathlib import Path
+from typing import Any, List, Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 from rexify.features.dataset import TfDatasetGenerator
 from rexify.features.pipelines import (
@@ -11,7 +14,7 @@ from rexify.features.pipelines import (
     IdentifierPipeline,
     NumericalPipeline,
 )
-from rexify.utils import get_target_id
+from rexify.utils import get_target_id, make_dirs
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
@@ -29,21 +32,30 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             the user, item and context features
 
     Examples:
-    >>> from rexify.features import FeatureExtractor
-    >>> schema_ = {"user": {"user_id": "id"}, "item": {"item_id": "id"}}
-    >>> feat = FeatureExtractor(schema_)
-    >>> X = pd.DataFrame([['a', 1], ['b', 1]], columns=['user_id', 'item_id'])
-    >>> feat.fit(X)
-    FeatureExtractor(schema={'item': {'item_id': 'id'}, 'user': {'user_id': 'id'}})
-    >>> feat.transform(X)
-    <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}}>
+
+        >>> from rexify.features import FeatureExtractor
+
+        >>> X = pd.DataFrame([['a', 1], ['b', 1]], columns=['user_id', 'item_id'])
+        >>> schema_ = {"user": {"user_id": "id"}, "item": {"item_id": "id"}}
+
+        >>> feat = FeatureExtractor(schema_)
+        >>> feat.fit(X)
+        FeatureExtractor(schema={'item': {'item_id': 'id'}, 'user': {'user_id': 'id'}})
+
+        >>> X_ = feat.transform(X)
+        >>> X_
+        array([[0, 0],
+               [1, 0]])
+
+        >>> feat.make_dataset(X_)
+        <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}}>
     """
 
     _ppl: ColumnTransformer
-    _model_params: Dict[str, Any]
-    _output_features: List[str]
+    _model_params: dict[str, Any]
+    _output_features: list[str]
 
-    def __init__(self, schema: Dict[str, Dict[str, str]]):
+    def __init__(self, schema: dict[str, dict[str, str]]):
         super(FeatureExtractor, self).__init__(schema=schema)
 
     def fit(self, X: pd.DataFrame, *_):
@@ -51,7 +63,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
         Args:
             X (pd.DataFrame): array-like of shape (n_samples, n_features)
-            y: None
 
         Returns:
             self: fitted encoder
@@ -59,7 +70,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         self._ppl = self._make_transformer()
         self._ppl.fit(X)
         self._model_params = self._get_model_params(X)
-        self._output_features = X.columns.tolist()
         return self
 
     def transform(self, X: pd.DataFrame) -> np.ndarray:
@@ -75,23 +85,23 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         """
         return self._ppl.transform(X)
 
+    def save(self, output_dir: str):
+        make_dirs(output_dir)
+        output_path = Path(output_dir) / "feat.pkl"
+        with open(output_path, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, path: Path):
+        with open(path, "rb") as f:
+            feat = pickle.load(f)
+        return feat
+
     @property
     def model_params(self):
-        """"""
         return self._model_params
 
-    @property
-    def output_features(self):
-        return self._output_features
-
     def _make_transformer(self) -> ColumnTransformer:
-        """Infers a sklearn.pipeline.Pipeline according to the input schema
-
-        Returns:
-            (sklearn.pipeline.Pipeline): a pipeline where each step is
-                a transformer to be fit to the original data
-        """
-
         transformer_list: List[Tuple[str, TransformerMixin, List[str]]] = [
             *self._get_features_transformers(target="user"),
             *self._get_features_transformers(target="item"),
@@ -113,15 +123,15 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         item_input_dim = int(X[item_id].nunique() + 1)
 
         return {
-            "n_unique_items": item_input_dim,
+            "item_dims": item_input_dim,
             "item_id": item_id,
-            "n_unique_users": user_input_dim,
+            "user_dims": user_input_dim,
             "user_id": user_id,
         }
 
     def _get_features_transformers(
         self, target: str
-    ) -> List[Tuple[str, TransformerMixin, List[str]]]:
+    ) -> List[Tuple[str, Pipeline, List[str]]]:
         transformer_list = []
 
         if target != "context":
@@ -130,7 +140,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         categorical_ppl = CategoricalPipeline(self.schema, target)
         transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
 
-        numerical_ppl: tuple = NumericalPipeline(self.schema, target)
+        numerical_ppl = NumericalPipeline(self.schema, target)
         transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
 
         return transformer_list
