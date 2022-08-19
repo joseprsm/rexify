@@ -21,8 +21,8 @@ schema = {
 
 
 def test_base_feature_pipeline_get_features():
-    with pytest.raises(NotImplementedError):
-        _BaseFeaturePipeline._get_features(None, None)
+    with pytest.raises(TypeError):
+        _BaseFeaturePipeline._get_features(None, None, None)
 
 
 def test_base_feature_pipeline__new__():
@@ -31,7 +31,7 @@ def test_base_feature_pipeline__new__():
 
 
 def test_id_pipeline_get_features():
-    assert IdentifierPipeline._get_features(schema, "user") == ["user_id"]
+    assert IdentifierPipeline._get_features(schema, "user", "id") == ["user_id"]
 
 
 def test_id_pipeline_new():
@@ -43,7 +43,7 @@ def test_id_pipeline_new():
 
 
 def test_categorical_pipeline_get_features():
-    assert CategoricalPipeline._get_features(schema, "user") == ["cat_1"]
+    assert CategoricalPipeline._get_features(schema, "user", "categorical") == ["cat_1"]
 
 
 def test_categorical_pipeline_new():
@@ -55,7 +55,10 @@ def test_categorical_pipeline_new():
 
 
 def test_numerical_pipeline_get_features():
-    assert NumericalPipeline._get_features(schema, "user") == ["num_1", "num_2"]
+    assert NumericalPipeline._get_features(schema, "user", "numerical") == [
+        "num_1",
+        "num_2",
+    ]
 
 
 def test_numerical_pipeline_new():
