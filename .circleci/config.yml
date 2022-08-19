@@ -54,9 +54,3 @@ workflows:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
-      - build_docker:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^\d+\.\d+\.\d+$/
