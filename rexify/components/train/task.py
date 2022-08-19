@@ -1,13 +1,39 @@
-import os
-import pickle
 from pathlib import Path
 
 import click
-import pandas as pd
+import numpy as np
 import tensorflow as tf
 
 from rexify import FeatureExtractor
 from rexify.models import Recommender
+from rexify.utils import make_dirs
+
+
+def train(
+    training_data_dir: str,
+    extractor_dir: str,
+    model_dir: str,
+    epochs: int = 100,
+    batch_size: int = 512,
+):
+    feat_path = Path(extractor_dir) / "feat.pkl"
+    feat = FeatureExtractor.load(feat_path)
+
+    train_path = Path(training_data_dir) / "train.csv"
+    train_df = np.loadtxt(train_path, delimiter=",")
+    train_df = feat.make_dataset(train_df).batch(batch_size)
+
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
+    ]
+
+    model = Recommender(**feat.model_params)
+    model.compile()
+    model.fit(train_df, epochs=epochs, callbacks=callbacks)
+
+    make_dirs(model_dir)
+    model_path = Path(model_dir) / "model"
+    model.save(model_path)
 
 
 @click.command()
@@ -17,39 +43,9 @@ from rexify.models import Recommender
 @click.option("--learning-rate", type=float, default=0.2)
 @click.option("--epochs", type=int, default=100)
 @click.option("--batch-size", type=int, default=512)
-def train(
-    training_data_dir: str,
-    extractor_dir: str,
-    model_dir: str,
-    learning_rate: float = 0.1,
-    epochs: int = 100,
-    batch_size: int = 512,
-):
-
-    feat_path = os.path.join(extractor_dir, "feat.pkl")
-    with open(feat_path, "rb") as f:
-        feat: FeatureExtractor = pickle.load(f)
-
-    train_path = Path(training_data_dir) / "train.csv"
-    train_df = pd.read_csv(train_path, header=None)
-    train_df.columns = feat.output_features
-    training_data = feat.make_dataset(train_df)
-
-    model = Recommender(**feat.model_params)
-
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate))
-    model.fit(
-        training_data.batch(batch_size),
-        epochs=epochs,
-        callbacks=[
-            tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
-        ],
-    )
-
-    Path(model_dir).mkdir(parents=True, exist_ok=True)
-    model_path = Path(model_dir) / "model"
-    model.save(model_path)
+def train_cmd(**kwargs):
+    train(**kwargs)
 
 
 if __name__ == "__main__":
-    train()
+    train_cmd()
