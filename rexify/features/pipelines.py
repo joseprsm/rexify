@@ -7,15 +7,15 @@ from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 from rexify.utils import get_target_feature
 
 
-class _BaseFeaturePipeline(tuple):
+class _BaseFeaturePipeline:
 
     ppl: Pipeline
     pipeline_name: str
 
-    def __new__(cls, schema, target):
+    def __new__(cls, schema, target) -> tuple[str, Pipeline, list[str]]:
         name = "_".join([target, cls.pipeline_name])
         target_features = cls._get_features(schema, target)
-        return tuple.__new__(_BaseFeaturePipeline, (name, cls.ppl, target_features))
+        return name, cls.ppl, target_features
 
     @staticmethod
     @abstractmethod
