@@ -1,5 +1,4 @@
 import json
-import pickle
 from pathlib import Path
 from typing import Any
 
@@ -9,7 +8,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from rexify.features import FeatureExtractor
-from rexify.utils import flatten, get_target_id
+from rexify.utils import flatten, get_target_id, make_dirs
 
 
 def _read(events_path, schema_path) -> tuple[pd.DataFrame, dict[str, dict[str, Any]]]:
@@ -21,11 +20,6 @@ def _read(events_path, schema_path) -> tuple[pd.DataFrame, dict[str, dict[str, A
     features = [list(schema[target].keys()) for target in ["user", "item"]]
     events = events.loc[~np.any(pd.isnull(events), axis=1), flatten(features)]
     return events, schema
-
-
-def _make_dirs(*args):
-    for dir_ in args:
-        Path(dir_).mkdir(parents=True, exist_ok=True)
 
 
 # noinspection PyTypeChecker,PydanticTypeChecker
@@ -46,15 +40,12 @@ def load(
     feat = FeatureExtractor(schema)
     train = feat.fit_transform(train)
     test = feat.transform(test)
+    feat.save(extractor_dir)
 
-    _make_dirs(extractor_dir, train_data_dir, test_data_dir, items_dir, users_dir)
+    make_dirs(train_data_dir, test_data_dir, items_dir, users_dir)
 
-    extractor_path = Path(extractor_dir) / "feat.pkl"
     train_path = Path(train_data_dir) / "train.csv"
     test_path = Path(test_data_dir) / "test.csv"
-
-    with open(extractor_path, "wb") as f:
-        pickle.dump(feat, f)
 
     np.savetxt(train_path, train, delimiter=",")
     np.savetxt(test_path, test, delimiter=",")
