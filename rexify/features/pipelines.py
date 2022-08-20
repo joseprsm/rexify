@@ -1,11 +1,6 @@
 import numpy as np
-from sklearn.pipeline import Pipeline, make_pipeline, make_union
-from sklearn.preprocessing import (
-    KBinsDiscretizer,
-    MinMaxScaler,
-    OneHotEncoder,
-    OrdinalEncoder,
-)
+from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 
 from rexify.utils import get_target_feature
 
@@ -56,6 +51,4 @@ class NumericalPipeline(_BaseFeaturePipeline):
 
     pipeline_name = "numericalPipeline"
 
-    ppl = make_pipeline(
-        make_union(MinMaxScaler(feature_range=(-1, 1)), KBinsDiscretizer())
-    )
+    ppl = make_pipeline(MinMaxScaler(feature_range=(-1, 1)))
