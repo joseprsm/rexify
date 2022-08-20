@@ -6,12 +6,30 @@ from rexify.models.query import QueryModel
 
 
 class Recommender(tfrs.Model):
-    """
+    """The main Recommendation model responsible for generating query and candidate embeddings.
+
+    It expects a `tf.data.Dataset`, composed of two keys: "query" and "candidate";
+    the query part of the dataset has three keys:
+
+    * the user ID feature name, a scalar;
+    * `user_features`, an array representing the user features
+    * `context_features`, an array representing the context features
+
+    The candidate part of the data set has two keys:
+
+    * the item ID feature name, a scalar;
+    * `item_features`, an array representing the item features
+
+    The query tower model takes the user ID feature and passes it by an embedding layer. The
+    user and context features are concatenated and passed by a number of dense layers. The
+    item ID feature is similarly passed to an Embedding layer. Its outputs are then concatenated
+    to the outputs of the features model whose inputs are the item features, and are then
+    passed by a number of Dense layers.
 
     Args:
-        user_id (str): the user ID feature
+        user_id (str): the user ID feature name
         user_dims (int): number possible values for the user ID feature
-        item_id (str): the item ID feature
+        item_id (str): the item ID feature name
         item_dims (int): number possible values for the item ID feature
         embedding_dim (int): output dimension of the embedding layer
         feature_layers (list): number of neurons in each layer for the feature models
@@ -20,7 +38,6 @@ class Recommender(tfrs.Model):
     Attributes:
          query_model (rexify.models.tower.TowerModel): the Query Tower model
          candidate_model (rexify.models.tower.TowerModel): the Candidate Tower model
-         task (tfrs.tasks.Task): the task of
 
     Examples:
 

@@ -6,9 +6,6 @@ from rexify.models.tower import TowerModel
 class CandidateModel(TowerModel):
     """Tower model responsible for computing the candidate representations
 
-    Attributes:
-
-
     Args:
         item_id (str): the item ID feature
         n_items (str): number possible values for the ID feature
@@ -17,6 +14,7 @@ class CandidateModel(TowerModel):
         feature_layers (list): number of neurons in each layer for the feature model
 
     Examples:
+
     >>> from rexify.models.candidate import CandidateModel
     >>> model = CandidateModel('item_id', 15)
     >>> model({'item_id': tf.constant([1]), 'item_features': tf.constant([[1, 1, 1]])})

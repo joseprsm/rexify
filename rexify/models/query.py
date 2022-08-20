@@ -14,6 +14,7 @@ class QueryModel(TowerModel):
         feature_layers (list): number of neurons in each layer for the feature model
 
     Examples:
+
     >>> from rexify.models.query import QueryModel
     >>> model = QueryModel('user_id', 15)
     >>> model({"user_id": tf.constant([1]), "user_features": tf.constant([[1, 1]]), "context_features": tf.constant([[1]])})
