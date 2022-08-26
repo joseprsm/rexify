@@ -1,17 +1,23 @@
 import os
+from pathlib import Path
 
-from kfp.components import load_component_from_file
+from kfp.components import load_component_from_file, load_component_from_url
 from kfp.v2.compiler import Compiler
 from kfp.v2.dsl import pipeline
 
 
-BASE_PATH = os.path.join("rexify", "components")
+BASE_PATH = Path("rexify") / "components"
 PIPELINE_NAME = os.environ.get("PIPELINE_NAME")
 PIPELINE_ROOT = os.environ.get("PIPELINE_ROOT")
 
 
 def _load_component(task: str):
-    return load_component_from_file(os.path.join(BASE_PATH, task, "component.yaml"))
+    try:
+        return load_component_from_file(BASE_PATH / task / "component.yaml")
+    except FileNotFoundError:
+        return load_component_from_url(
+            f"https://raw.githubusercontent.com/joseprsm/rexify/main/rexify/components/{task}/component.yaml"
+        )
 
 
 download_op = _load_component("download")
