@@ -36,22 +36,20 @@ apidoc_module_first = True
 apidoc_separate_modules = True
 apidoc_extra_args = ["-d 6"]
 
-if html_theme == "sphinx_material":
-    html_theme_options = {
-        "color_primary": "cyan",
-        "color_accent": "light-blue",
-        "repo_url": "https://github.com/joseprsm/rexify",
-        "repo_name": "Rexify",
-        "globaltoc_depth": 2,
-        "globaltoc_collapse": False,
-        "globaltoc_includehidden": False,
-        "repo_type": "github",
-    }
+html_theme_options = {
+    "color_primary": "cyan",
+    "color_accent": "light-blue",
+    "repo_url": "https://github.com/joseprsm/rexify",
+    "repo_name": "Rexify",
+    "globaltoc_depth": 2,
+    "globaltoc_collapse": False,
+    "globaltoc_includehidden": False,
+    "repo_type": "github",
+}
 
-    extensions.append("sphinx_material")
-    html_theme_path = sphinx_material.html_theme_path()
-    html_context = sphinx_material.get_html_context()
-
+extensions.append("sphinx_material")
+html_theme_path = sphinx_material.html_theme_path()
+html_context = sphinx_material.get_html_context()
 
 html_sidebars = {
     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
