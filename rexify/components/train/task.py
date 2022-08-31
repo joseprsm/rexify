@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from rexify import FeatureExtractor
-from rexify.models import Recommender
+from rexify.models import RetrievalModel
 from rexify.utils import make_dirs
 
 
@@ -27,7 +27,7 @@ def train(
         tf.keras.callbacks.EarlyStopping(patience=10, restore_best_weights=True)
     ]
 
-    model = Recommender(**feat.model_params)
+    model = RetrievalModel(**feat.model_params)
     model.compile()
     model.fit(train_df, epochs=epochs, callbacks=callbacks)
 

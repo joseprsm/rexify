@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from rexify import Recommender
+from rexify import RetrievalModel
 from rexify.utils import flatten
 
 
@@ -94,7 +94,7 @@ def get_model_params():
 
 @pytest.mark.parametrize("inputs", datasets)
 def test_call(inputs):
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     query_embeddings, candidate_embeddings = model(list(inputs.take(1))[0])
 
     assert query_embeddings.shape == tf.TensorShape([16, 32])
@@ -103,21 +103,21 @@ def test_call(inputs):
 
 @pytest.mark.parametrize("inputs", datasets)
 def test_fit(inputs):
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     model.compile()
     model.fit(inputs, epochs=1)
 
 
 @pytest.mark.parametrize("inputs", datasets)
 def test_compile(inputs):
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     model.compile(optimizer=tf.keras.optimizers.Adam(0.1))
     model.fit(inputs, epochs=1)
 
 
 @pytest.mark.parametrize("inputs", datasets)
 def test_save(inputs):
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     model.compile(optimizer=tf.keras.optimizers.Adam(0.1))
     model.fit(inputs, epochs=1)
     model.save(mkdtemp())
@@ -125,12 +125,12 @@ def test_save(inputs):
 
 @pytest.mark.parametrize("model_params", get_model_params())
 def test_init(model_params):
-    Recommender(*model_params)
+    RetrievalModel(*model_params)
 
 
 @pytest.mark.parametrize("inputs", datasets)
 def test_compute_loss(inputs):
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     inputs = list(inputs.take(1))[0]
     loss = model.compute_loss(inputs)
 
@@ -138,7 +138,7 @@ def test_compute_loss(inputs):
 
 
 def test_config():
-    model = Recommender(*SAMPLE_MODEL_PARAMS)
+    model = RetrievalModel(*SAMPLE_MODEL_PARAMS)
     assert model.get_config() == {
         "item_dims": 15,
         "user_dims": 15,

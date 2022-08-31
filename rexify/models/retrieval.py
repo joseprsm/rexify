@@ -1,11 +1,12 @@
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
+from rexify.models.base import BaseRecommender
 from rexify.models.candidate import CandidateModel
 from rexify.models.query import QueryModel
 
 
-class Recommender(tfrs.Model):
+class RetrievalModel(BaseRecommender):
     """The main Recommendation model responsible for generating query and candidate embeddings.
 
     It expects a `tf.data.Dataset`, composed of two keys: "query" and "candidate";
@@ -41,8 +42,8 @@ class Recommender(tfrs.Model):
 
     Examples:
 
-        >>> from rexify.models import Recommender
-        >>> model = Recommender('user_id', 15, 'item_id', 15)
+        >>> from rexify.models import RetrievalModel
+        >>> model = RetrievalModel('user_id', 15, 'item_id', 15)
         >>> model.compile()
 
         >>> import numpy as np
@@ -62,17 +63,16 @@ class Recommender(tfrs.Model):
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
     ):
-        super().__init__()
+        super().__init__(
+            user_id=user_id,
+            user_dims=user_dims,
+            item_id=item_id,
+            item_dims=item_dims,
+            embedding_dim=embedding_dim,
+            output_layers=output_layers or [64, 32],
+        )
 
-        self._user_id = user_id
-        self._user_dims = user_dims
-
-        self._item_id = item_id
-        self._item_dims = item_dims
-
-        self._embedding_dim = embedding_dim
         self._feature_layers = feature_layers or [64, 32, 16]
-        self._output_layers = output_layers or [64, 32]
 
         self.query_model = QueryModel(
             self._user_id,
@@ -81,6 +81,7 @@ class Recommender(tfrs.Model):
             output_layers=self._output_layers,
             feature_layers=self._feature_layers,
         )
+
         self.candidate_model = CandidateModel(
             self._item_id,
             self._item_dims,
@@ -88,24 +89,20 @@ class Recommender(tfrs.Model):
             output_layers=self._output_layers,
             feature_layers=self._feature_layers,
         )
-        self.task: tfrs.tasks.Task = tfrs.tasks.Retrieval()
 
-    def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
-        query_embeddings, candidate_embeddings = self(inputs)
-        loss = self.task(query_embeddings, candidate_embeddings)
-        return loss
+        self.task = tfrs.tasks.Retrieval()
 
     def call(self, inputs, *_):
         query_embeddings: tf.Tensor = self.query_model(inputs["query"])
         candidate_embeddings: tf.Tensor = self.candidate_model(inputs["candidate"])
         return query_embeddings, candidate_embeddings
 
+    def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
+        query_embeddings, candidate_embeddings = self(inputs)
+        loss = self.task(query_embeddings, candidate_embeddings)
+        return loss
+
     def get_config(self):
-        return {
-            "item_dims": self._item_dims,
-            "user_dims": self._user_dims,
-            "user_id": self._user_id,
-            "item_id": self._item_id,
-            "output_layers": self._output_layers,
-            "feature_layers": self._feature_layers,
-        }
+        config = super().get_config()
+        config["feature_layers"] = self._feature_layers
+        return config
