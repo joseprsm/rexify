@@ -56,3 +56,8 @@ class HasSchemaInput:
                 ~np.in1d(list(schema["context"].values()), SUPPORTED_DATA_TYPES)
             ):
                 raise DataTypeNotSupportedSchemaException()
+
+
+class PassthroughTransformer(BaseTransformer):
+    def transform(self, X):
+        return X

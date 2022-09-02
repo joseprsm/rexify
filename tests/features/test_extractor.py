@@ -23,6 +23,8 @@ def get_sample_data():
                 np.random.randint(0, 1_000, size=100).reshape(-1, 1),
                 np.random.randint(0, 5, size=100).reshape(-1, 1),
                 np.random.randint(0, 365, size=100).reshape(-1, 1),
+                np.random.randint(0, 5, size=100).reshape(-1, 1),
+                np.random.randint(0, 40, size=100).reshape(-1, 1),
             ],
             axis=1,
         ),
@@ -35,6 +37,8 @@ def get_sample_data():
             "price",
             "event_type",
             "days_without_purchases",
+            "rating",
+            "minutes_watched",
         ],
     )
 
@@ -54,6 +58,12 @@ def get_mock_schemas() -> list[dict[str, dict[str, str]]]:
     with_context["context"] = {}
     with_context["context"]["event_type"] = "categorical"
     with_context["context"]["days_without_purchases"] = "numerical"
+
+    with_rank = deepcopy(with_context)
+    with_rank["rank"] = [
+        {"name": "rating", "weight": 0.5},
+        {"name": "minutes_watched"},
+    ]
     return [base, with_categorical, with_numerical, with_context]
 
 

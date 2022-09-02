@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, OrdinalEncoder
 
+from rexify.features.base import PassthroughTransformer
 from rexify.utils import get_target_feature
 
 
@@ -52,3 +53,16 @@ class NumericalPipeline(_BaseFeaturePipeline):
     pipeline_name = "numericalPipeline"
 
     ppl = make_pipeline(MinMaxScaler(feature_range=(-1, 1)))
+
+
+class RankingPipeline(_BaseFeaturePipeline):
+
+    dtype = "rank"
+
+    pipeline_name = "rankingPipeline"
+
+    ppl = make_pipeline(PassthroughTransformer())
+
+    @staticmethod
+    def _get_features(schema, target, dtype):
+        return [feature["name"] for feature in schema[dtype]]

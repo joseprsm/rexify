@@ -13,6 +13,7 @@ from rexify.features.pipelines import (
     CategoricalPipeline,
     IdentifierPipeline,
     NumericalPipeline,
+    RankingPipeline,
 )
 from rexify.utils import get_target_id, make_dirs
 
@@ -48,7 +49,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
                [1, 0]])
 
         >>> feat.make_dataset(X_)
-        <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None)}}>
+        <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'user_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None), 'context_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'item_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}}>
     """
 
     _ppl: ColumnTransformer
@@ -113,6 +114,12 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             else []
         )
 
+        transformer_list += (
+            self._get_features_transformers(target="rank")
+            if "rank" in self.schema.keys()
+            else []
+        )
+
         return ColumnTransformer(transformer_list)
 
     def _get_model_params(self, X):
@@ -134,13 +141,16 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
     ) -> List[Tuple[str, Pipeline, List[str]]]:
         transformer_list = []
 
-        if target != "context":
-            transformer_list.append(IdentifierPipeline(self.schema, target))
+        if target != "rank":
+            if target != "context":
+                transformer_list.append(IdentifierPipeline(self.schema, target))
 
-        categorical_ppl = CategoricalPipeline(self.schema, target)
-        transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
+            categorical_ppl = CategoricalPipeline(self.schema, target)
+            transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
 
-        numerical_ppl = NumericalPipeline(self.schema, target)
-        transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
+            numerical_ppl = NumericalPipeline(self.schema, target)
+            transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
+        else:
+            transformer_list.append(RankingPipeline(self.schema, target))
 
         return transformer_list
