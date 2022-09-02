@@ -29,8 +29,14 @@ class QueryModel(TowerModel):
         embedding_dim: int = 32,
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
+        n_items: int = None,
+        recurrent_layers: list[int] = None,
+        history_layers: list[int] = None,
     ):
         super().__init__(user_id, n_users, embedding_dim, output_layers, feature_layers)
+        self.history_model = self._get_history_model(
+            n_items, embedding_dim, recurrent_layers, history_layers
+        )
 
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
@@ -41,6 +47,10 @@ class QueryModel(TowerModel):
 
         if inputs["context_features"].shape[-1] != 0:
             features.append(inputs["context_features"])
+
+        if "user_history" in inputs.keys():
+            sequential_embedding = self.history_model(inputs["user_history"])
+            x = tf.concat([x, sequential_embedding], axis=1)
 
         if len(features) != 0:
             features = tf.concat(features, axis=1) if len(features) > 1 else features[0]
@@ -57,3 +67,13 @@ class QueryModel(TowerModel):
         config["user_id"] = self._id_feature
         config["n_users"] = self._n_dims
         return config
+
+    @staticmethod
+    def _get_history_model(item_dims, embedding_dim, recurrent_layers, dense_layers):
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Embedding(item_dims, embedding_dim))
+        for num_neurons in recurrent_layers:
+            model.add(tf.keras.layers.LSTM(num_neurons))
+        for num_neurons in dense_layers:
+            model.add(tf.keras.layers.Dense(num_neurons))
+        return model
