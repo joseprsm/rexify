@@ -67,7 +67,7 @@ import json
 import pandas as pd
 
 from rexify.features import FeatureExtractor
-from rexify.models import RetrievalModel
+from rexify.models import Recommender
 
 events = pd.read_csv('path/to/events/data')
 with open('path/to/schema') as f:
@@ -77,7 +77,7 @@ feat = FeatureExtractor(schema)
 prep_data = feat.fit_transform(events)
 ds = feat.make_dataset(prep_data)
 
-model = RetrievalModel(**feat.model_params)
+model = Recommender(**feat.model_params)
 model.compile()
 model.fit(ds)
 ````

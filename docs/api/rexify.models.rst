@@ -14,5 +14,7 @@ Submodules
 
    rexify.models.candidate
    rexify.models.query
+   rexify.models.ranking
    rexify.models.recommender
+   rexify.models.retrieval
    rexify.models.tower

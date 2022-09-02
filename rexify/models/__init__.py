@@ -1,1 +1,1 @@
-from .retrieval import RetrievalModel
+from .recommender import Recommender

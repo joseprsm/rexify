@@ -1,2 +1,2 @@
 from .features import FeatureExtractor
-from .models import RetrievalModel
+from .models import Recommender
