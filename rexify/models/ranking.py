@@ -39,13 +39,14 @@ class RankingMixin(tfrs.Model, ABC):
         self,
         query_embeddings: tf.Tensor,
         candidate_embeddings: tf.Tensor,
-        inputs: dict[str, tf.Tensor],
+        inputs: tf.Tensor,
     ):
         loss = 0
 
         # this method is never called when self._ranking_features is None
         for i, feature in enumerate(self._ranking_features):
-            labels = inputs[feature]
+            # assumes data follows the same indexing as in the schema
+            labels = inputs[i]
             rating_model = self.rating_models[feature]
 
             predictions = rating_model(
