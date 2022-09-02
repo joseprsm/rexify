@@ -144,6 +144,9 @@ def test_dataset_header_output_with_features(schema):
         for target in targets
     }
 
+    if "rank" in schema.keys():
+        count["rank"] = len(schema["rank"])
+
     header = feat._get_header_fn()(tf.ones(sum(list(count.values())) + 2))
 
     expected_result = {
@@ -159,6 +162,9 @@ def test_dataset_header_output_with_features(schema):
             "item_features": tf.ones(count["item"]),
         },
     }
+
+    if "rank" in schema.keys():
+        expected_result["rank"] = tf.ones(count["rank"])
 
     assert tf.reduce_all(
         header["query"]["user_features"] == expected_result["query"]["user_features"]
@@ -179,3 +185,8 @@ def test_dataset_header_output_with_features(schema):
         header["candidate"]["item_id"]
         == tf.cast(expected_result["candidate"]["item_id"], tf.float32)
     )
+
+    if "rank" in schema.keys():
+        assert tf.reduce_all(
+            header["rank"] == tf.cast(expected_result["rank"], tf.float32)
+        )
