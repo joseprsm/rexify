@@ -4,7 +4,7 @@ import tensorflow as tf
 from sklearn.compose import ColumnTransformer
 
 from rexify.features.base import HasSchemaInput
-from rexify.utils import get_target_id
+from rexify.utils import get_first, get_target_id
 
 
 class TfDatasetGenerator(HasSchemaInput):
@@ -26,6 +26,7 @@ class TfDatasetGenerator(HasSchemaInput):
             item_id_idx,
             item_features_idx,
             context_features_idx,
+            rank_features_idx,
         ) = self._get_indices()
 
         def add_header(x):
@@ -56,15 +57,19 @@ class TfDatasetGenerator(HasSchemaInput):
                 else tf.constant([])
             )
 
+            header["rank"] = (
+                tf.gather(x, rank_features_idx)
+                if len(rank_features_idx) != 0
+                else tf.constant([])
+            )
+
             return header
 
         return add_header
 
     def _get_indices(self):
         feature_names = pd.Series(self._ppl.get_feature_names_out())
-        target_feature_names: pd.Series = feature_names.str.split("_").map(
-            lambda x: x[0]
-        )
+        target_feature_names: pd.Series = feature_names.str.split("_").map(get_first)
         pipeline_names: pd.Series = feature_names.str.split("_").map(lambda x: x[1])
         id_pipeline_mask: pd.Series = pipeline_names == "idPipeline"
 
@@ -86,5 +91,13 @@ class TfDatasetGenerator(HasSchemaInput):
         user_ids, user_features = get_target_indices("user")
         item_ids, item_features = get_target_indices("item")
         _, context_features = get_target_indices("context")
+        _, rank_features = get_target_indices("rank")
 
-        return (user_ids, user_features, item_ids, item_features, context_features)
+        return (
+            user_ids,
+            user_features,
+            item_ids,
+            item_features,
+            context_features,
+            rank_features,
+        )

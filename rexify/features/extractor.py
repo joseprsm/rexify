@@ -103,7 +103,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         return self._model_params
 
     def _make_transformer(self) -> ColumnTransformer:
-        transformer_list: List[Tuple[str, TransformerMixin, List[str]]] = [
+        transformer_list: list[tuple[str, TransformerMixin, list[str]]] = [
             *self._get_features_transformers(target="user"),
             *self._get_features_transformers(target="item"),
         ]

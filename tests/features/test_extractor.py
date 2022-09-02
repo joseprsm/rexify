@@ -64,7 +64,7 @@ def get_mock_schemas() -> list[dict[str, dict[str, str]]]:
         {"name": "rating", "weight": 0.5},
         {"name": "minutes_watched"},
     ]
-    return [base, with_categorical, with_numerical, with_context]
+    return [base, with_categorical, with_numerical, with_context, with_rank]
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
