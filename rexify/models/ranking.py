@@ -39,17 +39,22 @@ class RankingMixin(tfrs.Model, ABC):
         self,
         query_embeddings: tf.Tensor,
         candidate_embeddings: tf.Tensor,
-        labels: tf.Tensor,
+        inputs: dict[str, tf.Tensor],
     ):
         loss = 0
-        if self._ranking_features:
-            for i, feature in enumerate(self._ranking_features):
-                rating_model = self.rating_models[feature]
-                x = tf.concat([query_embeddings, candidate_embeddings], axis=1)
-                predictions = rating_model(x)
-                loss += self._ranking_weights[i] * self.ranking_tasks[feature](
-                    labels=labels, predictions=predictions
-                )
+
+        # this method is never called when self._ranking_features is None
+        for i, feature in enumerate(self._ranking_features):
+            labels = inputs[feature]
+            rating_model = self.rating_models[feature]
+
+            predictions = rating_model(
+                tf.concat([query_embeddings, candidate_embeddings], axis=1)
+            )
+
+            loss += self._ranking_weights[i] * self.ranking_tasks[feature](
+                labels=labels, predictions=predictions
+            )
         return loss
 
     @staticmethod
