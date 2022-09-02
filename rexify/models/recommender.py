@@ -61,7 +61,8 @@ class Recommender(RetrievalMixin, RankingMixin):
         ranking_layers: list[int] = None,
         ranking_weights: list[float] = None,
     ):
-        super().__init__(
+        RetrievalMixin.__init__(
+            self,
             user_id=user_id,
             user_dims=user_dims,
             item_id=item_id,
@@ -69,6 +70,10 @@ class Recommender(RetrievalMixin, RankingMixin):
             embedding_dim=embedding_dim,
             feature_layers=feature_layers,
             output_layers=output_layers,
+        )
+
+        RankingMixin.__init__(
+            self,
             ranking_features=ranking_features,
             ranking_layers=ranking_layers,
             ranking_weights=ranking_weights,
