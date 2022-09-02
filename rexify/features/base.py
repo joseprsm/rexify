@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
 
 from rexify.constants import SUPPORTED_DATA_TYPES
 from rexify.exceptions.schema import (
@@ -58,6 +58,10 @@ class HasSchemaInput:
                 raise DataTypeNotSupportedSchemaException()
 
 
-class PassthroughTransformer(BaseTransformer):
+class PassthroughTransformer(BaseTransformer, _OneToOneFeatureMixin):
+    def fit(self, X, *_):
+        self._validate_data(X)
+        return self
+
     def transform(self, X):
         return X
