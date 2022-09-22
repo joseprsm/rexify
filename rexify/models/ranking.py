@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import Any
 
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
@@ -39,21 +40,19 @@ class RankingMixin(tfrs.Model, ABC):
         self,
         query_embeddings: tf.Tensor,
         candidate_embeddings: tf.Tensor,
-        inputs: tf.Tensor,
+        event_types: tf.Tensor,
+        ratings: tf.Tensor,
     ):
         loss = 0
+        inputs = tf.concat(
+            [query_embeddings, candidate_embeddings, event_types], axis=1
+        )
 
         # this method is never called when self._ranking_features is None
-        for i, feature in enumerate(self._ranking_features):
-            # assumes data follows the same indexing as in the schema
-            labels = inputs[i]
-            rating_model = self.rating_models[feature]
-
-            predictions = rating_model(
-                tf.concat([query_embeddings, candidate_embeddings], axis=1)
-            )
-
-            loss += self._ranking_weights[i] * self.ranking_tasks[feature](
+        for event_type in self._ranking_features:
+            features, labels = self._filter(inputs, ratings, event_types, event_type)
+            predictions = self.rating_models[event_type](features)
+            loss += self._ranking_weights[event_type] * self.ranking_tasks[event_type](
                 labels=labels, predictions=predictions
             )
         return loss
@@ -64,3 +63,16 @@ class RankingMixin(tfrs.Model, ABC):
         if layer_sizes[-1] != 1:
             layers.append(tf.keras.layers.Dense(1))
         return tf.keras.Sequential(layers)
+
+    @staticmethod
+    def _filter(
+        features: tf.Tensor,
+        labels: tf.Tensor,
+        condition_tensor: tf.Tensor,
+        value: str | int | Any,
+    ) -> tuple[tf.Tensor, tf.Tensor]:
+        condition = tf.reduce_all(tf.equal(condition_tensor, value), axis=1)
+        indices = tf.where(condition)
+        features = tf.gather_nd(features, indices)
+        labels = tf.gather_nd(labels, indices)
+        return features, labels

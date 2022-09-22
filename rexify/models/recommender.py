@@ -83,7 +83,9 @@ class Recommender(RetrievalMixin, RankingMixin):
         embeddings = self(inputs)  # Recommender inherits RetrievalMixin's call method
         loss = self.get_retrieval_loss(*embeddings)
         if self._ranking_features:
-            loss += self.get_ranking_loss(*embeddings, inputs["rank"])
+            loss += self.get_ranking_loss(
+                *embeddings, event_types=inputs["event_type"], ratings=inputs["rating"]
+            )
         return loss
 
     def get_config(self):
