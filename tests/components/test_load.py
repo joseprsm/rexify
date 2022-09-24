@@ -1,51 +1,20 @@
 import itertools
 import json
 import os
-from copy import deepcopy
 from pathlib import Path
 from tempfile import mkdtemp
 
-import numpy as np
-import pandas as pd
 import pytest
 
 from rexify.components.load.task import load
+from rexify.tests import get_mock_schemas, get_sample_data
 
 
 TEMP_DIR = Path(mkdtemp())
 
 
 def generate_mock_schemas():
-
-    base = {"user": {"user_id": "id"}, "item": {"item_id": "id"}}
-
-    with_categorical = deepcopy(base)
-    with_categorical["user"]["is_client"] = "categorical"
-    with_categorical["item"]["type"] = "categorical"
-
-    with_numerical = deepcopy(with_categorical)
-    with_numerical["user"]["age"] = "numerical"
-    with_numerical["item"]["price"] = "numerical"
-
-    with_context = deepcopy(with_numerical)
-    with_context["context"] = {}
-    with_context["context"]["event_type"] = "categorical"
-    with_context["context"]["days_without_purchases"] = "numerical"
-
-    with_rank = deepcopy(with_context)
-    with_rank["rank"] = [
-        {"name": "rating", "weight": 0.5},
-        {"name": "minutes_watched"},
-    ]
-
-    schemas = {
-        "base": base,
-        "with_categorical": with_categorical,
-        "with_numerical": with_numerical,
-        "with_context": with_context,
-        "with_rank": with_rank,
-    }
-
+    schemas = get_mock_schemas()
     os.makedirs(TEMP_DIR / "schemas")
 
     for k, v in schemas.items():
@@ -54,35 +23,7 @@ def generate_mock_schemas():
 
 
 def generate_events():
-    pd.DataFrame(
-        np.concatenate(
-            [
-                np.random.randint(0, 15, size=100).reshape(-1, 1),
-                np.random.randint(0, 2, size=100).reshape(-1, 1),
-                np.random.randint(15, 65, size=100).reshape(-1, 1),
-                np.random.randint(0, 15, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 1_000, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 365, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 40, size=100).reshape(-1, 1),
-            ],
-            axis=1,
-        ),
-        columns=[
-            "user_id",
-            "is_client",
-            "age",
-            "item_id",
-            "type",
-            "price",
-            "event_type",
-            "days_without_purchases",
-            "rating",
-            "minutes_watched",
-        ],
-    ).to_csv(TEMP_DIR / "events.csv", index=False)
+    get_sample_data().to_csv(TEMP_DIR / "events.csv", index=False)
 
 
 generate_events()

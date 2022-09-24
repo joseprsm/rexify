@@ -3,44 +3,11 @@ from copy import deepcopy
 from pathlib import Path
 from tempfile import mkdtemp
 
-import numpy as np
-import pandas as pd
 import pytest
 import tensorflow as tf
 
 from rexify.features import FeatureExtractor
-
-
-def get_sample_data():
-    return pd.DataFrame(
-        np.concatenate(
-            [
-                np.random.randint(0, 15, size=100).reshape(-1, 1),
-                np.random.randint(0, 2, size=100).reshape(-1, 1),
-                np.random.randint(15, 65, size=100).reshape(-1, 1),
-                np.random.randint(0, 15, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 1_000, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 365, size=100).reshape(-1, 1),
-                np.random.randint(0, 5, size=100).reshape(-1, 1),
-                np.random.randint(0, 40, size=100).reshape(-1, 1),
-            ],
-            axis=1,
-        ),
-        columns=[
-            "user_id",
-            "is_client",
-            "age",
-            "item_id",
-            "type",
-            "price",
-            "event_type",
-            "days_without_purchases",
-            "rating",
-            "minutes_watched",
-        ],
-    )
+from rexify.tests import get_sample_data
 
 
 def get_mock_schemas() -> list[dict[str, dict[str, str]]]:
