@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Any
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
@@ -24,12 +25,21 @@ class BaseTransformer(BaseEstimator, TransformerMixin):
 
 
 class HasSchemaInput:
-    def __init__(self, schema):
-        self._validate(schema)
+
+    """
+    Args:
+        schema (dict): a dictionary of dictionaries, corresponding to
+            the user, item and context features
+    """
+
+    def __init__(
+        self, schema: dict[str, dict[str, Any] | list[dict[str, str | float]]]
+    ):
+        self._validate_schema(schema)
         self.schema = schema
 
     @staticmethod
-    def _validate(schema):
+    def _validate_schema(schema):
         if schema == {}:
             raise EmptySchemaException()
 
@@ -60,7 +70,7 @@ class HasSchemaInput:
 
 class PassthroughTransformer(BaseTransformer, _OneToOneFeatureMixin):
     def fit(self, X, *_):
-        self._validate_data(X)
+        self._validate_data(X, dtype=[str, float])
         return self
 
     def transform(self, X):

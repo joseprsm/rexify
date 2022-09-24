@@ -18,7 +18,7 @@ class _BaseFeaturePipeline:
         return name, cls.ppl, target_features
 
     @staticmethod
-    def _get_features(schema, target, dtype):
+    def _get_features(schema, target, dtype) -> list[str]:
         return get_target_feature(schema, target, dtype)
 
 
@@ -64,5 +64,5 @@ class RankingPipeline(_BaseFeaturePipeline):
     ppl = make_pipeline(PassthroughTransformer())
 
     @staticmethod
-    def _get_features(schema, target, dtype):
-        return [feature["name"] for feature in schema[dtype]]
+    def _get_features(*_):
+        return ["event_type", "rating"]
