@@ -17,9 +17,9 @@ def generate_mock_schemas():
     schemas = get_mock_schemas()
     os.makedirs(TEMP_DIR / "schemas")
 
-    for k, v in schemas.items():
-        with open(TEMP_DIR / "schemas" / f"{k}.json", "w") as f:
-            json.dump(v, f)
+    for i, schema in enumerate(schemas):
+        with open(TEMP_DIR / "schemas" / f"{i}.json", "w") as f:
+            json.dump(schema, f)
 
 
 def generate_events():
