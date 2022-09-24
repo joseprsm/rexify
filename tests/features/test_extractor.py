@@ -1,5 +1,4 @@
 import tempfile
-from copy import deepcopy
 from pathlib import Path
 from tempfile import mkdtemp
 
@@ -7,31 +6,7 @@ import pytest
 import tensorflow as tf
 
 from rexify.features import FeatureExtractor
-from rexify.tests import get_sample_data
-
-
-def get_mock_schemas() -> list[dict[str, dict[str, str]]]:
-    base = {"user": {"user_id": "id"}, "item": {"item_id": "id"}}
-
-    with_categorical = deepcopy(base)
-    with_categorical["user"]["is_client"] = "categorical"
-    with_categorical["item"]["type"] = "categorical"
-
-    with_numerical = deepcopy(with_categorical)
-    with_numerical["user"]["age"] = "numerical"
-    with_numerical["item"]["price"] = "numerical"
-
-    with_context = deepcopy(with_numerical)
-    with_context["context"] = {}
-    with_context["context"]["event_type"] = "categorical"
-    with_context["context"]["days_without_purchases"] = "numerical"
-
-    with_rank = deepcopy(with_context)
-    with_rank["rank"] = [
-        {"name": "rating", "weight": 0.5},
-        {"name": "minutes_watched"},
-    ]
-    return [base, with_categorical, with_numerical, with_context, with_rank]
+from rexify.tests import get_mock_schemas, get_sample_data
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
@@ -81,6 +56,7 @@ def test_model_params(schema):
     assert feat.model_params["user_id"] == "user_id"
     assert feat.model_params["item_dims"] > 0
     assert feat.model_params["user_dims"] > 0
+    assert len(feat.model_params["ranking_features"]) != 0
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
@@ -130,9 +106,6 @@ def test_dataset_header_output_with_features(schema):
         },
     }
 
-    if "rank" in schema.keys():
-        expected_result["rank"] = tf.ones(count["rank"])
-
     assert tf.reduce_all(
         header["query"]["user_features"] == expected_result["query"]["user_features"]
     )
@@ -152,8 +125,3 @@ def test_dataset_header_output_with_features(schema):
         header["candidate"]["item_id"]
         == tf.cast(expected_result["candidate"]["item_id"], tf.float32)
     )
-
-    if "rank" in schema.keys():
-        assert tf.reduce_all(
-            header["rank"] == tf.cast(expected_result["rank"], tf.float32)
-        )

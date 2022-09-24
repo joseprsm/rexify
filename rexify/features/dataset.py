@@ -12,9 +12,35 @@ class TfDatasetGenerator(HasSchemaInput):
     _ppl: ColumnTransformer
 
     def make_dataset(self, X) -> tf.data.Dataset:
-        ds = tf.data.Dataset.from_tensor_slices(X)
+        features, ratings = X[:, :-2], X[:, -2:]
+        features = self._get_features_dataset(features)
+        ratings = self._get_ratings_dataset(ratings)
+        ds = self._concatenate(features, ratings)
+        return ds
+
+    def _get_features_dataset(self, features):
+        ds = tf.data.Dataset.from_tensor_slices(features.astype(float))
         ds = ds.map(self._get_header_fn())
         return ds
+
+    @staticmethod
+    def _get_ratings_dataset(x: tf.data.Dataset) -> tf.data.Dataset:
+        return tf.data.Dataset.zip(
+            (
+                tf.data.Dataset.from_tensor_slices(x[:, 0]),
+                tf.data.Dataset.from_tensor_slices(x[:, 1].astype(float)),
+            )
+        )
+
+    @staticmethod
+    def _concatenate(features: tf.data.Dataset, ratings: tf.data.Dataset):
+        def concatenate(x: dict, event_rating: tuple):
+            event_type, rating = event_rating
+            x["event_type"] = event_type
+            x["rating"] = rating
+            return x
+
+        return tf.data.Dataset.zip((features, ratings)).map(concatenate)
 
     def _get_header_fn(self):
         user_id = get_target_id(self.schema, "user")[0]
@@ -54,12 +80,6 @@ class TfDatasetGenerator(HasSchemaInput):
             header["candidate"]["item_features"] = (
                 tf.gather(x, item_features_idx)
                 if len(item_features_idx) != 0
-                else tf.constant([])
-            )
-
-            header["rank"] = (
-                tf.gather(x, rank_features_idx)
-                if len(rank_features_idx) != 0
                 else tf.constant([])
             )
 
