@@ -6,15 +6,8 @@ authors = ["José Medeiros <joseprsm@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://rexify.readthedocs.io"
-packages = [
-    {include = "rexify"}
-]
-include = [
-    "rexify/components/*/*.yaml"
-]
-exclude = [
-    "rexify/tests.py"
-]
+packages = [{ include = "rexify" }]
+include = ["rexify/components/*/*.yaml"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
