@@ -24,3 +24,15 @@ def make_dirs(*args):
 
 def get_first(x: tuple):
     return x[0]
+
+
+def get_schema_features(
+    schema: dict[str, dict[str, Any] | list[dict[str, str | float]]]
+):
+    return flatten([list(v.keys()) for k, v in schema.items() if k != "rank"])
+
+
+def get_ranking_features(
+    schema: dict[str, dict[str, Any] | list[dict[str, str | float]]]
+):
+    return [feat["name"] for feat in schema["rank"]]
