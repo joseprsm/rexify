@@ -5,6 +5,7 @@ data
 .idea
 .env
 .coverage
+.pytest_cache
 
 */__pycache__/*
 */.ipynb_checkpoints/
