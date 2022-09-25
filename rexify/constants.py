@@ -1,1 +1,1 @@
-SUPPORTED_DATA_TYPES = ["id", "categorical", "numerical"]
+SUPPORTED_DATA_TYPES = ["id", "categorical", "numerical", "timestamp"]
