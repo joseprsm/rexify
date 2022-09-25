@@ -28,17 +28,16 @@ class RankingMixin(tfrs.Model, ABC):
         ratings: tf.Tensor,
     ):
         loss = 0
-        inputs = tf.concat(
-            [query_embeddings, candidate_embeddings, event_types], axis=1
-        )
+        event_types = tf.reshape(event_types, (-1, 1))
+        inputs = tf.concat([query_embeddings, candidate_embeddings], axis=1)
 
-        # this method is never called when self._ranking_features is None
         for event_type in self._ranking_features:
             features, labels = self._filter(inputs, ratings, event_types, event_type)
             predictions = self.rating_models[event_type](features)
-            loss += self._ranking_weights[event_type] * self.ranking_tasks[event_type](
+            loss += 1 * self.ranking_tasks[event_type](
                 labels=labels, predictions=predictions
             )
+
         return loss
 
     @staticmethod
