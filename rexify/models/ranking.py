@@ -10,31 +10,15 @@ class RankingMixin(tfrs.Model, ABC):
         self,
         ranking_features: list[str] = None,
         ranking_layers: list[int] = None,
-        ranking_weights: list[float] = None,
-        **kwargs
+        ranking_weights: dict[str, float] = None,
     ):
         super().__init__()
         self._ranking_features = ranking_features
         self._ranking_layers = ranking_layers or [64, 32]
         self._ranking_weights = ranking_weights
 
-        if self._ranking_features:
-            self._ranking_weights = self._ranking_weights or [1] * len(
-                self._ranking_features
-            )
-
-            self.rating_models = {
-                ranking_feature: self._get_rating_model(self._ranking_layers)
-                for ranking_feature in ranking_features
-            }
-
-            self.ranking_tasks = {
-                ranking_feature: tfrs.tasks.Ranking(
-                    loss=tf.keras.losses.MeanSquaredError(),
-                    metrics=[tf.keras.metrics.RootMeanSquaredError()],
-                )
-                for ranking_feature in ranking_features
-            }
+        self.rating_models = self._get_ranking_models()
+        self.ranking_tasks = self._get_ranking_tasks()
 
     def get_ranking_loss(
         self,
@@ -58,13 +42,6 @@ class RankingMixin(tfrs.Model, ABC):
         return loss
 
     @staticmethod
-    def _get_rating_model(layer_sizes) -> tf.keras.Model:
-        layers = [tf.keras.layers.Dense(num_neurons) for num_neurons in layer_sizes]
-        if layer_sizes[-1] != 1:
-            layers.append(tf.keras.layers.Dense(1))
-        return tf.keras.Sequential(layers)
-
-    @staticmethod
     def _filter(
         features: tf.Tensor,
         labels: tf.Tensor,
@@ -76,3 +53,31 @@ class RankingMixin(tfrs.Model, ABC):
         features = tf.gather_nd(features, indices)
         labels = tf.gather_nd(labels, indices)
         return features, labels
+
+    def _get_ranking_models(self) -> dict[str, tf.keras.Model] | None:
+        ranking_models = None
+        if self._ranking_features:
+            ranking_models = {
+                ranking_feature: self._get_rating_model(self._ranking_layers)
+                for ranking_feature in self._ranking_features
+            }
+        return ranking_models
+
+    def _get_ranking_tasks(self):
+        ranking_tasks = None
+        if self._ranking_features:
+            ranking_tasks = {
+                ranking_feature: tfrs.tasks.Ranking(
+                    loss=tf.keras.losses.MeanSquaredError(),
+                    metrics=[tf.keras.metrics.RootMeanSquaredError()],
+                )
+                for ranking_feature in self._ranking_features
+            }
+        return ranking_tasks
+
+    @staticmethod
+    def _get_rating_model(layer_sizes) -> tf.keras.Model:
+        layers = [tf.keras.layers.Dense(num_neurons) for num_neurons in layer_sizes]
+        if layer_sizes[-1] != 1:
+            layers.append(tf.keras.layers.Dense(1))
+        return tf.keras.Sequential(layers)
