@@ -25,6 +25,11 @@ def _read(events_path, schema_path) -> tuple[pd.DataFrame, dict[str, dict[str, A
     return events, schema
 
 
+def _save(df: np.ndarray, path: str, filename: str):
+    path = Path(path) / filename
+    pd.DataFrame(df).to_csv(path)
+
+
 # noinspection PyTypeChecker,PydanticTypeChecker
 def load(
     events_path: str,
@@ -45,14 +50,6 @@ def load(
     test = feat.transform(test)
     feat.save(extractor_dir)
 
-    make_dirs(train_data_dir, test_data_dir, items_dir, users_dir)
-
-    train_path = Path(train_data_dir) / "train.csv"
-    test_path = Path(test_data_dir) / "test.csv"
-
-    np.savetxt(train_path, train, delimiter=",")
-    np.savetxt(test_path, test, delimiter=",")
-
     transformed_events = feat.transform(events)
 
     def get_unique_target_ids(target: str) -> np.ndarray:
@@ -62,12 +59,13 @@ def load(
         ).astype(int)
 
     items = get_unique_target_ids("item")
-    items_path = Path(items_dir) / "items.csv"
-    np.savetxt(items_path, items)
-
     users = get_unique_target_ids("user")
-    users_path = Path(users_dir) / "users.csv"
-    np.savetxt(users_path, users)
+
+    make_dirs(train_data_dir, test_data_dir, items_dir, users_dir)
+    _save(train, train_data_dir, "train.csv")
+    _save(test, test_data_dir, "test.csv")
+    _save(items, items_dir, "items.csv")
+    _save(users, users_dir, "users.csv")
 
 
 @click.command()
