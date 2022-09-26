@@ -17,10 +17,10 @@ def _read(events_path, schema_path) -> tuple[pd.DataFrame, dict[str, dict[str, A
     with open(schema_path, "r") as f:
         schema = json.loads(f.read().replace("'", '"'))
 
-    features = [["event_type"]]
-    features += [list(schema[target].keys()) for target in ["user", "item"]]
+    features = [list(schema[target].keys()) for target in ["user", "item"]]
     if "context" in schema.keys():
         features += [list(schema["context"].keys())]
+    features += [["event_type"]]
     events = events.loc[~np.any(pd.isnull(events), axis=1), flatten(features)]
     return events, schema
 
