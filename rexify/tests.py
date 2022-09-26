@@ -4,14 +4,18 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
+
+from rexify import FeatureExtractor
 
 
 _EVENT_TYPES = ["Page View", "Add to Cart", "Purchase"]
-
-np.random.seed(42)
+_BASE_MODEL_PARAMS = ["user_id", 15, "item_id", 30]
 
 
 def get_sample_data():
+    np.random.seed(42)
+
     event_types = np.array(_EVENT_TYPES)
 
     today = datetime.today().date()
@@ -85,3 +89,57 @@ def get_mock_schemas():
     return [
         get_mock_schema(*args) for args in itertools.product([True, False], repeat=4)
     ]
+
+
+def get_dataset(schema: dict):
+    base = get_sample_data()
+    feat = FeatureExtractor(schema)
+    ds = feat.fit_transform(base)
+    ds = feat.make_dataset(ds)
+    return ds, feat.model_params
+
+
+def remove_dataset_features(ds: tf.data.Dataset, features: list[str]):
+    return ds.map(
+        lambda x: {
+            "query": {
+                "user_id": x["query"]["user_id"],
+                "user_features": x["query"]["user_features"]
+                if "user_features" not in features
+                else tf.constant([], dtype=tf.float32),
+                "context_features": x["query"]["context_features"]
+                if "context_features" not in features
+                else tf.constant([], dtype=tf.float32),
+            },
+            "candidate": {
+                "item_id": x["candidate"]["item_id"],
+                "item_features": x["candidate"]["item_features"]
+                if "item_features" not in features
+                else tf.constant([], dtype=tf.float32),
+            },
+            "event_type": x["event_type"],
+            "rating": x["rating"],
+        }
+    )
+
+
+def get_model_params():
+    embedding_dims = [16, 8]
+    feature_layers = [None]
+    output_layers = [None]
+
+    ranking_layers = [[32, 16], None]
+    ranking_weights = [None]
+
+    model_params = [
+        _BASE_MODEL_PARAMS + list(params)
+        for params in itertools.product(
+            embedding_dims,
+            feature_layers,
+            output_layers,
+            ranking_layers,
+            ranking_weights,
+        )
+    ]
+
+    return model_params
