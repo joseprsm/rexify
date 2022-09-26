@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import click
-import numpy as np
+import pandas as pd
 import tensorflow as tf
 
 from rexify import FeatureExtractor
@@ -20,7 +20,7 @@ def train(
     feat = FeatureExtractor.load(feat_path)
 
     train_path = Path(training_data_dir) / "train.csv"
-    train_df = np.loadtxt(train_path, delimiter=",")
+    train_df = pd.read_csv(train_path).values
     train_df = feat.make_dataset(train_df).batch(batch_size)
 
     callbacks = [
