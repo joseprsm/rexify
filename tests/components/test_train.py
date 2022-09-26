@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from tempfile import mkdtemp
 
+import pandas as pd
 import pytest
 
 from rexify.components.load.task import load
@@ -55,6 +56,16 @@ args = list(
 )
 
 
+def _concat_data(train_data_dir, test_data_dir):
+    train_path = Path(train_data_dir) / "train.csv"
+    pd.concat(
+        [
+            pd.read_csv(train_path),
+            pd.read_csv(Path(test_data_dir) / "test.csv"),
+        ]
+    ).to_csv(train_path)
+
+
 @pytest.mark.parametrize(
     "events_path,schema_path,extractor_dir,train_data_dir,test_data_dir,items_dir,users_dir,model_dir,batch_size",
     args,
@@ -79,4 +90,6 @@ def test_train(
         items_dir,
         users_dir,
     )
+
+    _concat_data(train_data_dir, test_data_dir)
     train(train_data_dir, extractor_dir, model_dir, 1, batch_size)
