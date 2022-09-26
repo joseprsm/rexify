@@ -47,6 +47,8 @@ def get_mock_schema(
         "item": {"item_id": "id"},
         "rank": [
             {"name": "Purchase"},
+            {"name": "Add to Cart"},
+            {"name": "Page View"},
         ],
     }
 
