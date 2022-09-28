@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Any
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
@@ -13,6 +12,7 @@ from rexify.exceptions.schema import (
     MissingKeysSchemaException,
     TooManyIdFeaturesSchemaException,
 )
+from rexify.types import Schema
 
 
 class BaseTransformer(BaseEstimator, TransformerMixin):
@@ -32,9 +32,7 @@ class HasSchemaInput:
             the user, item and context features
     """
 
-    def __init__(
-        self, schema: dict[str, dict[str, Any] | list[dict[str, str | float]]]
-    ):
+    def __init__(self, schema: Schema):
         self._validate_schema(schema)
         self.schema = schema
 
