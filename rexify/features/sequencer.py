@@ -19,7 +19,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
         self._timestamp_feature = timestamp_feature
         self._window_size = window_size + 1
 
-    def fit(self, X, *_):
+    def fit(self, X: pd.DataFrame, *_):
         self._user_id = get_target_id(self.schema, "user")[0]
         self._item_id = get_target_id(self.schema, "item")[0]
         self._columns = [col for col in X.columns if col != self._user_id]
@@ -27,35 +27,24 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
         return self
 
     def transform(self, X: pd.DataFrame):
-        sequences = (
+        sequences: pd.DataFrame = (
             X.sort_values(self._timestamp_feature)
             .set_index(self._user_id)
             .groupby(level=-1)
             .apply(self._mask)
             .apply(pd.Series)
+            .rename(columns=pd.Series(self._columns))
+            .applymap(self._pad)
+            .applymap(self._window)
+            .apply(lambda x: x.explode())
         )
 
-        sequences.columns = self._columns
-        padded = pd.concat(
-            [sequences[col].map(self._pad) for col in self._columns], axis=1
-        )
-        windowed = pd.concat(
-            [padded[col].map(self._window) for col in self._columns], axis=1
-        )
-        exploded = pd.concat([windowed[col].explode() for col in self._columns], axis=1)
-        exploded["history"] = exploded[self._item_id].map(lambda x: x[:-1])
-        exploded[self._item_id] = exploded[self._item_id].map(self._get_last)
+        sequences["history"] = sequences[self._item_id].map(lambda x: x[:-1])
+        sequences[self._item_id] = sequences[self._item_id].map(self._get_last)
 
-        res = pd.concat(
-            [
-                exploded[col].map(self._get_last)
-                for col in self._columns
-                if col != "item_id"
-            ],
-            axis=1,
-        )
-        res[self._item_id] = exploded[self._item_id]
-        res["history"] = exploded["history"]
+        res = sequences.drop(self._item_id, axis=1).applymap(self._get_last)
+        res[self._item_id] = sequences.pop(self._item_id)
+        res["history"] = sequences.pop("history")
 
         return res
 
