@@ -9,6 +9,36 @@ from rexify.utils import get_target_id
 
 class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
 
+    """Transformer responsible for creating sequential data.
+
+    It creates a new column `history` that holds the previous `window_size` event item IDs.
+
+    Args:
+        schema (rexify.types.Schema): the data schema
+        timestamp_feature (str): the dataframe's feature name with a timestamp
+        window_size (int): the size of the sliding window
+
+    Examples:
+
+        >>> from rexify.tests import get_mock_schema, get_sample_data
+        >>> events = get_sample_data()
+        >>> schema = get_mock_schema(True, True, True, True)
+        >>> from rexify.features.sequencer import Sequencer
+        >>> sequencer = Sequencer(schema, "timestamp")
+        >>> sequencer.fit(events)
+        Sequencer(schema={'context': {'timestamp': 'timestamp'},
+                      'item': {'item_id': 'id', 'price': 'numerical',
+                               'type': 'categorical'},
+                      'rank': [{'name': 'Purchase'}, {'name': 'Add to Cart'},
+                               {'name': 'Page View'}],
+                      'user': {'age': 'numerical', 'gender': 'categorical',
+                               'user_id': 'id'}},
+              timestamp_feature='timestamp', window_size=4)
+
+        >>> transformed = sequencer.transform(events)
+
+    """
+
     _user_id: str
     _item_id: str
     _columns: list[str]
