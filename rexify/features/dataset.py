@@ -3,16 +3,12 @@ from abc import abstractmethod
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.compose import ColumnTransformer
 
 from rexify.features.base import HasSchemaInput
 from rexify.utils import get_first, get_target_id
 
 
-class TfDatasetGenerator(HasSchemaInput):
-
-    _transformer: ColumnTransformer
-
+class TFDatasetGenerator(HasSchemaInput):
     def make_dataset(self, X) -> tf.data.Dataset:
         features, ratings = X[:, :-2], X[:, -2:]
         features = self._get_features_dataset(features)
