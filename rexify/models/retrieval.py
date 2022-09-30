@@ -29,12 +29,18 @@ class RetrievalMixin(tfrs.Model, ABC):
         self._embedding_dim = embedding_dim
         self._output_layers = output_layers or [64, 32]
         self._feature_layers = feature_layers or [64, 32, 16]
+        joint_args = {
+            "embedding_dim": self._embedding_dim,
+            "output_layers": self._output_layers,
+            "feature_layers": self._feature_layers,
+        }
 
-        self.query_model = self._get_tower_model(
-            QueryModel, self._user_id, self._user_dims
+        self.query_model = QueryModel(
+            self._user_id, self._user_dims, self._item_dims, **joint_args
         )
-        self.candidate_model = self._get_tower_model(
-            CandidateModel, self._item_id, self._item_dims
+
+        self.candidate_model = CandidateModel(
+            self._item_id, self._item_dims, **joint_args
         )
 
         self.retrieval_task = tfrs.tasks.Retrieval()
@@ -43,15 +49,6 @@ class RetrievalMixin(tfrs.Model, ABC):
         query_embeddings: tf.Tensor = self.query_model(inputs["query"])
         candidate_embeddings: tf.Tensor = self.candidate_model(inputs["candidate"])
         return query_embeddings, candidate_embeddings
-
-    def _get_tower_model(self, obj, id_, n_dims):
-        return obj(
-            id_,
-            n_dims,
-            embedding_dim=self._embedding_dim,
-            output_layers=self._output_layers,
-            feature_layers=self._feature_layers,
-        )
 
     def get_retrieval_loss(
         self, query_embeddings: tf.Tensor, candidate_embeddings: tf.Tensor
