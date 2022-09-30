@@ -9,7 +9,7 @@ from rexify.utils import get_first, get_target_id
 
 class TfDatasetGenerator(HasSchemaInput):
 
-    _ppl: ColumnTransformer
+    _transformer: ColumnTransformer
 
     def make_dataset(self, X) -> tf.data.Dataset:
         features, ratings = X[:, :-2], X[:, -2:]
@@ -88,7 +88,7 @@ class TfDatasetGenerator(HasSchemaInput):
         return add_header
 
     def _get_indices(self):
-        feature_names = pd.Series(self._ppl.get_feature_names_out())
+        feature_names = pd.Series(self._transformer.get_feature_names_out())
         target_feature_names: pd.Series = feature_names.str.split("_").map(get_first)
         pipeline_names: pd.Series = feature_names.str.split("_").map(lambda x: x[1])
         id_pipeline_mask: pd.Series = pipeline_names == "idPipeline"

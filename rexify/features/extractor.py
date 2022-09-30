@@ -5,16 +5,11 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
 
 from rexify.features.dataset import TfDatasetGenerator
-from rexify.features.pipelines import (
-    CategoricalPipeline,
-    IdentifierPipeline,
-    NumericalPipeline,
-    RankingPipeline,
-)
+from rexify.features.sequencer import Sequencer
+from rexify.features.transform import MainTransformer
+from rexify.types import Schema
 from rexify.utils import (
     get_ranking_features,
     get_schema_features,
@@ -53,10 +48,19 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'user_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None), 'context_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'item_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}}>
     """
 
-    _ppl: ColumnTransformer
+    _sequencer: Sequencer
+    _transformer: MainTransformer
     _model_params: dict[str, Any]
     _output_features: list[str]
     _rating_add: bool
+
+    def __init__(self, schema: Schema, use_sequential: bool = True, **kwargs):
+        super().__init__(schema=schema)
+        self._use_sequential = use_sequential
+        self._sequencer = (
+            Sequencer(self.schema, **kwargs) if self._use_sequential else None
+        )
+        self._transformer = MainTransformer(self.schema)
 
     def fit(self, X: pd.DataFrame, *_):
         """Fit FeatureExtractor to X.
@@ -67,11 +71,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         Returns:
             self: fitted encoder
         """
-        self._ppl = self._make_transformer()
         self._check_rating_col(X)
         self._validate_input(X)
         x_ = self._add_rating_col(X)
-        self._ppl.fit(x_)
+        self._transformer.fit(x_)
         self._model_params = self._get_model_params(X)
         return self
 
@@ -87,7 +90,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
         """
         x = self._add_rating_col(X)
-        return self._ppl.transform(x)
+        return self._transformer.transform(x)
 
     def save(self, output_dir: str):
         make_dirs(output_dir)
@@ -105,25 +108,9 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
     def model_params(self):
         return self._model_params
 
-    def _make_transformer(self) -> ColumnTransformer:
-        transformer_list: list[tuple[str, TransformerMixin, list[str]]] = [
-            *self._get_features_transformers(target="user"),
-            *self._get_features_transformers(target="item"),
-        ]
-
-        transformer_list += (
-            [*self._get_features_transformers(target="context")]
-            if "context" in self.schema.keys()
-            else []
-        )
-
-        transformer_list += (
-            self._get_features_transformers(target="rank")
-            if "rank" in self.schema.keys()
-            else []
-        )
-
-        return ColumnTransformer(transformer_list)
+    @property
+    def use_sequential(self):
+        return self._use_sequential
 
     def _get_model_params(self, X):
         user_id = get_target_id(self.schema, "user")[0]
@@ -139,25 +126,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
             "user_id": user_id,
             "ranking_features": X["event_type"].unique().tolist(),
         }
-
-    def _get_features_transformers(
-        self, target: str
-    ) -> list[tuple[str, Pipeline, list[str]]]:
-        transformer_list = []
-
-        if target != "rank":
-            if target != "context":
-                transformer_list.append(IdentifierPipeline(self.schema, target))
-
-            categorical_ppl = CategoricalPipeline(self.schema, target)
-            transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
-
-            numerical_ppl = NumericalPipeline(self.schema, target)
-            transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
-        else:
-            transformer_list.append(RankingPipeline(self.schema, target))
-
-        return transformer_list
 
     def _validate_input(
         self,
