@@ -3,18 +3,12 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 from rexify.features.base import HasSchemaInput
-from rexify.features.pipelines import (
-    CategoricalPipeline,
-    IdentifierPipeline,
-    NumericalPipeline,
-    RankingPipeline,
-    SequentialPipeline,
-)
+from rexify.features.transform.pipelines import CategoricalPipeline, NumericalPipeline
 from rexify.types import Schema
 
 
-class MainTransformer(ColumnTransformer, HasSchemaInput):
-    def __init__(self, schema: Schema, use_sequential: bool = True):
+class FeatureTransformer(ColumnTransformer, HasSchemaInput):
+    def __init__(self, schema: Schema, use_sequential: bool = True, **kwargs):
         self._use_sequential = use_sequential
         HasSchemaInput.__init__(self, schema=schema)
         transformers = self._get_transformers()
@@ -32,25 +26,12 @@ class MainTransformer(ColumnTransformer, HasSchemaInput):
             else []
         )
 
-        transformer_list += (
-            [RankingPipeline(self.schema, "rank")]
-            if "rank" in self.schema.keys()
-            else []
-        )
-
-        transformer_list += (
-            [SequentialPipeline(self.schema, "history")] if self._use_sequential else []
-        )
-
         return transformer_list
 
     def _get_features_transformers(
         self, target: str
     ) -> list[tuple[str, Pipeline, list[str]]]:
         transformer_list = []
-
-        if target != "context":
-            transformer_list.append(IdentifierPipeline(self.schema, target))
 
         categorical_ppl = CategoricalPipeline(self.schema, target)
         transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
