@@ -24,7 +24,7 @@ class TFDatasetGenerator(HasSchemaInput):
         ]
         ratings = X[:, ratings_idx]
         sequential = np.stack(X[:, sequential_idx].reshape(-1).tolist()).reshape(
-            (-1, 3, 1)
+            (-1, 3)
         )
 
         features = self._get_features_dataset(features)
