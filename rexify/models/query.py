@@ -26,10 +26,10 @@ class QueryModel(TowerModel):
         self,
         user_id: str,
         n_users: int,
+        n_items: int,
         embedding_dim: int = 32,
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
-        n_items: int = None,
         recurrent_layers: list[int] = None,
         history_layers: list[int] = None,
     ):
@@ -66,6 +66,7 @@ class QueryModel(TowerModel):
         config = super().get_config()
         config["user_id"] = self._id_feature
         config["n_users"] = self._n_dims
+        config["n_items"] = self._n_items
         return config
 
     @staticmethod
