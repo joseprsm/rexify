@@ -12,7 +12,9 @@ class FeatureTransformer(ColumnTransformer, HasSchemaInput):
         self._use_sequential = use_sequential
         HasSchemaInput.__init__(self, schema=schema)
         transformers = self._get_transformers()
-        ColumnTransformer.__init__(self, transformers=transformers)
+        ColumnTransformer.__init__(
+            self, transformers=transformers, remainder="passthrough"
+        )
 
     def _get_transformers(self) -> list:
         transformer_list: list[tuple[str, TransformerMixin, list[str]]] = [
