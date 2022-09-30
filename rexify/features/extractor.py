@@ -5,10 +5,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import make_pipeline
 
-from rexify.features.dataset import TfDatasetGenerator
-from rexify.features.sequencer import Sequencer
-from rexify.features.transform import MainTransformer
+from rexify.features.dataset import TFDatasetGenerator
+from rexify.features.transform import FeatureTransformer, IDEncoder, Sequencer
 from rexify.types import Schema
 from rexify.utils import (
     get_ranking_features,
@@ -18,7 +18,7 @@ from rexify.utils import (
 )
 
 
-class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
+class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
 
     """Main transformer responsible for pre-processing event data.
 
@@ -48,19 +48,17 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         <MapDataset element_spec={'query': {'user_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'user_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None), 'context_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}, 'candidate': {'item_id': TensorSpec(shape=(), dtype=tf.int64, name=None), 'item_features': TensorSpec(shape=(0,), dtype=tf.float32, name=None)}}>
     """
 
-    _sequencer: Sequencer
-    _transformer: MainTransformer
     _model_params: dict[str, Any]
     _output_features: list[str]
     _rating_add: bool
 
-    def __init__(self, schema: Schema, use_sequential: bool = True, **kwargs):
+    def __init__(self, schema: Schema, **kwargs):
         super().__init__(schema=schema)
-        self._use_sequential = use_sequential
-        self._sequencer = (
-            Sequencer(self.schema, **kwargs) if self._use_sequential else None
+        self._ppl = make_pipeline(
+            IDEncoder(schema=schema),
+            Sequencer(schema=schema, **kwargs),
+            FeatureTransformer(schema=schema, **kwargs),
         )
-        self._transformer = MainTransformer(self.schema)
 
     def fit(self, X: pd.DataFrame, *_):
         """Fit FeatureExtractor to X.
@@ -74,7 +72,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         self._check_rating_col(X)
         self._validate_input(X)
         x_ = self._add_rating_col(X)
-        self._transformer.fit(x_)
+        self._ppl.fit(x_)
         self._model_params = self._get_model_params(X)
         return self
 
@@ -90,7 +88,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
 
         """
         x = self._add_rating_col(X)
-        return self._transformer.transform(x)
+        return self._ppl.transform(x)
 
     def save(self, output_dir: str):
         make_dirs(output_dir)
@@ -107,10 +105,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
     @property
     def model_params(self):
         return self._model_params
-
-    @property
-    def use_sequential(self):
-        return self._use_sequential
 
     def _get_model_params(self, X):
         user_id = get_target_id(self.schema, "user")[0]
