@@ -23,7 +23,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
         >>> from rexify.tests import get_mock_schema, get_sample_data
         >>> events = get_sample_data()
         >>> schema = get_mock_schema(True, True, True, True)
-        >>> from rexify.features.sequencer import Sequencer
+        >>> from rexify.features.transform import Sequencer
         >>> sequencer = Sequencer(schema, "timestamp")
         >>> sequencer.fit(events)
         Sequencer(schema={'context': {'timestamp': 'timestamp'},
@@ -75,6 +75,9 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
         res = sequences.drop(self._item_id, axis=1).applymap(self._get_last)
         res[self._item_id] = sequences.pop(self._item_id)
         res["history"] = sequences.pop("history")
+        res.reset_index(inplace=True)
+        res.drop(self._timestamp_feature, axis=1, inplace=True)
+        res = res.loc[res["history"].map(len) == self._window_size - 1, :]
 
         return res
 
