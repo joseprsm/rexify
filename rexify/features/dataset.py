@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -121,3 +123,7 @@ class TfDatasetGenerator(HasSchemaInput):
             context_features,
             rank_features,
         )
+
+    @abstractmethod
+    def _get_feature_names_out(self) -> list[str]:
+        pass

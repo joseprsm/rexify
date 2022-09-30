@@ -149,3 +149,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TfDatasetGenerator):
         if self._rating_add:
             x_["rating"] = np.zeros(X.shape[0])
         return x_
+
+    def _get_feature_names_out(self) -> list[str]:
+        return self._ppl.steps[-1][-1].get_feature_names_out()
