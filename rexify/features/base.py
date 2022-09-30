@@ -34,7 +34,11 @@ class HasSchemaInput:
 
     def __init__(self, schema: Schema):
         self._validate_schema(schema)
-        self.schema = schema
+        self._schema = schema
+
+    @property
+    def schema(self):
+        return self._schema
 
     @staticmethod
     def _validate_schema(schema):
