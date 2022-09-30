@@ -40,3 +40,7 @@ class FeatureTransformer(ColumnTransformer, HasSchemaInput):
         transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
 
         return transformer_list
+
+    @property
+    def use_sequential(self):
+        return self._use_sequential
