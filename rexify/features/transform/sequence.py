@@ -55,7 +55,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
         self._user_id = get_target_id(self.schema, "user")[0]
         self._item_id = get_target_id(self.schema, "item")[0]
         self._columns = [col for col in X.columns if col != self._user_id]
-        self._padding = [-1] * (self._window_size - 2)
+        self._padding = [X[self._item_id].max() + 1] * (self._window_size - 2)
         return self
 
     def transform(self, X: pd.DataFrame):
