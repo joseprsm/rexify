@@ -66,3 +66,16 @@ class RankingPipeline(_BaseFeaturePipeline):
     @staticmethod
     def _get_features(*_):
         return ["event_type", "rating"]
+
+
+class SequentialPipeline(_BaseFeaturePipeline):
+
+    dtype = "list"
+
+    pipeline_name = "sequentialPipeline"
+
+    ppl = make_pipeline(PassthroughTransformer())
+
+    @staticmethod
+    def _get_features(*_) -> list[str]:
+        return ["history"]
