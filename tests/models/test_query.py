@@ -5,7 +5,7 @@ import tensorflow as tf
 from rexify.models.query import QueryModel
 
 
-SAMPLE_MODEL_PARAMS = ("user_id", 15)
+SAMPLE_MODEL_PARAMS = ("user_id", 15, 9)
 
 
 def get_base_inputs():
@@ -56,8 +56,8 @@ def get_missing_features_dataset(strip_features: list[str]):
 
 def get_model_params():
     return [
-        ("user_id", 9, 16, [64, 32], [64, 32, 16]),
-        ("user_id", 9, 8, [32], [64]),
+        ("user_id", 9, 9, 16, [64, 32], [64, 32, 16]),
+        ("user_id", 9, 9, 8, [32], [64]),
         # (12, 9, 'string', 9, 8, [32], [64])
     ]
 
@@ -88,4 +88,5 @@ def test_config():
         "feature_layers": [64, 32, 16],
         "user_id": "user_id",
         "n_users": 15,
+        "n_items": 9,
     }
