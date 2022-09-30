@@ -47,7 +47,7 @@ def test_compute_loss(schema):
     total_loss = model.compute_loss(inputs)
     assert total_loss.dtype == tf.float32
 
-    compare_loss = model.get_retrieval_loss(*embeddings)
+    compare_loss = model.retrieval_task(*embeddings)
     compare_loss += model.get_ranking_loss(
         *embeddings, inputs["event_type"], inputs["rating"]
     )

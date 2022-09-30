@@ -93,7 +93,7 @@ def get_mock_schemas():
 
 def get_dataset(schema: dict):
     base = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     ds = feat.fit_transform(base)
     ds = feat.make_dataset(ds)
     return ds, feat.model_params

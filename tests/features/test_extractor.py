@@ -11,27 +11,27 @@ from rexify.tests import get_mock_schemas, get_sample_data
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_init(schema):
-    FeatureExtractor(schema)
+    FeatureExtractor(schema, timestamp_feature="timestamp")
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_fit(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     feat.fit(events)
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_transform(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     feat.fit_transform(events)
 
 
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_save(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     feat.fit(events)
     feat.save(mkdtemp())
 
@@ -39,7 +39,7 @@ def test_save(schema):
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_load(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     feat.fit(events)
 
     with tempfile.TemporaryDirectory() as tempdir:
@@ -50,7 +50,7 @@ def test_load(schema):
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_model_params(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     feat.fit(events)
     assert feat.model_params["item_id"] == "item_id"
     assert feat.model_params["user_id"] == "user_id"
@@ -62,7 +62,7 @@ def test_model_params(schema):
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_make_dataset(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema)
+    feat = FeatureExtractor(schema, timestamp_feature="timestamp")
     x = feat.fit_transform(events)
     feat.make_dataset(x)
 
@@ -70,7 +70,7 @@ def test_make_dataset(schema):
 @pytest.mark.parametrize("schema", get_mock_schemas())
 def test_dataset_header_output_with_features(schema):
     events = get_sample_data()
-    feat = FeatureExtractor(schema=schema)
+    feat = FeatureExtractor(schema=schema, timestamp_feature="timestamp")
     feat.fit(events)
 
     targets = ["user", "item"]
@@ -87,10 +87,7 @@ def test_dataset_header_output_with_features(schema):
         for target in targets
     }
 
-    if "rank" in schema.keys():
-        count["rank"] = len(schema["rank"])
-
-    header = feat._get_header_fn()(tf.ones(sum(list(count.values())) + 2))
+    header = feat._get_header_fn()(tf.ones(100))
 
     expected_result = {
         "query": {
