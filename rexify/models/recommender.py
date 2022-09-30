@@ -64,9 +64,9 @@ class Recommender(RetrievalMixin, RankingMixin):
         RetrievalMixin.__init__(
             self,
             user_id=user_id,
-            user_dims=user_dims,
+            user_dims=user_dims + 1,
             item_id=item_id,
-            item_dims=item_dims,
+            item_dims=item_dims + 1,
             embedding_dim=embedding_dim,
             feature_layers=feature_layers,
             output_layers=output_layers,

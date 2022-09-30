@@ -57,8 +57,8 @@ def test_compute_loss(schema):
 def test_config():
     model = Recommender(*_BASE_MODEL_PARAMS)
     assert model.get_config() == {
-        "item_dims": 30,
-        "user_dims": 15,
+        "item_dims": 31,
+        "user_dims": 16,
         "user_id": "user_id",
         "item_id": "item_id",
         "output_layers": [64, 32],
