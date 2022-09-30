@@ -81,7 +81,7 @@ class Recommender(RetrievalMixin, RankingMixin):
 
     def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
         embeddings = self(inputs)  # Recommender inherits RetrievalMixin's call method
-        loss = self.get_retrieval_loss(*embeddings)
+        loss = self.retrieval_task(*embeddings)
         loss += self.get_ranking_loss(
             *embeddings, inputs["event_type"], inputs["rating"]
         )
