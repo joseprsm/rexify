@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+from rexify.models.sequential import SequentialModel
 from rexify.models.tower import TowerModel
 
 
@@ -34,14 +35,11 @@ class QueryModel(TowerModel):
         sequential_dense_layers: list[int] = None,
     ):
         super().__init__(user_id, n_users, embedding_dim, output_layers, feature_layers)
-        self._n_items = n_items
-        self._recurrent_layers = recurrent_layers or [32] * 2
-        self._sequential_dense_layers = sequential_dense_layers or []
-        self.sequential_model = self._get_sequential_model(
-            n_items,
-            embedding_dim,
-            self._recurrent_layers,
-            self._sequential_dense_layers,
+        self.sequential_model = SequentialModel(
+            n_dims=n_items,
+            embedding_dim=self._embedding_dim,
+            recurrent_layer_sizes=recurrent_layers,
+            dense_layer_sizes=sequential_dense_layers,
         )
 
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
@@ -74,14 +72,3 @@ class QueryModel(TowerModel):
         config["n_users"] = self._n_dims
         config["n_items"] = self._n_items
         return config
-
-    @staticmethod
-    def _get_sequential_model(item_dims, embedding_dim, recurrent_layers, dense_layers):
-        model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Embedding(item_dims, embedding_dim))
-        for num_neurons in recurrent_layers[:-1]:
-            model.add(tf.keras.layers.LSTM(num_neurons, return_sequences=True))
-        model.add(tf.keras.layers.LSTM(recurrent_layers[-1]))
-        for num_neurons in dense_layers:
-            model.add(tf.keras.layers.Dense(num_neurons))
-        return model
