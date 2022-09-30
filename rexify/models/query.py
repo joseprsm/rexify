@@ -31,11 +31,17 @@ class QueryModel(TowerModel):
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
         recurrent_layers: list[int] = None,
-        history_layers: list[int] = None,
+        sequential_dense_layers: list[int] = None,
     ):
         super().__init__(user_id, n_users, embedding_dim, output_layers, feature_layers)
-        self.history_model = self._get_history_model(
-            n_items, embedding_dim, recurrent_layers, history_layers
+        self._n_items = n_items
+        self._recurrent_layers = recurrent_layers or [32] * 2
+        self._sequential_dense_layers = sequential_dense_layers or []
+        self.sequential_model = self._get_sequential_model(
+            n_items,
+            embedding_dim,
+            self._recurrent_layers,
+            self._sequential_dense_layers,
         )
 
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
@@ -48,8 +54,8 @@ class QueryModel(TowerModel):
         if inputs["context_features"].shape[-1] != 0:
             features.append(inputs["context_features"])
 
-        if "user_history" in inputs.keys():
-            sequential_embedding = self.history_model(inputs["user_history"])
+        if "history" in inputs.keys():
+            sequential_embedding = self.sequential_model(inputs["history"])
             x = tf.concat([x, sequential_embedding], axis=1)
 
         if len(features) != 0:
@@ -70,11 +76,12 @@ class QueryModel(TowerModel):
         return config
 
     @staticmethod
-    def _get_history_model(item_dims, embedding_dim, recurrent_layers, dense_layers):
+    def _get_sequential_model(item_dims, embedding_dim, recurrent_layers, dense_layers):
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Embedding(item_dims, embedding_dim))
-        for num_neurons in recurrent_layers:
-            model.add(tf.keras.layers.LSTM(num_neurons))
+        for num_neurons in recurrent_layers[:-1]:
+            model.add(tf.keras.layers.LSTM(num_neurons, return_sequences=True))
+        model.add(tf.keras.layers.LSTM(recurrent_layers[-1]))
         for num_neurons in dense_layers:
             model.add(tf.keras.layers.Dense(num_neurons))
         return model
