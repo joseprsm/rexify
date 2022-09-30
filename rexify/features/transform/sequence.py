@@ -44,7 +44,9 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
     _columns: list[str]
     _padding: list[int]
 
-    def __init__(self, schema: Schema, timestamp_feature: str, window_size: int = 3):
+    def __init__(
+        self, schema: Schema, timestamp_feature: str, window_size: int = 3, **kwargs
+    ):
         super().__init__(schema=schema)
         self._timestamp_feature = timestamp_feature
         self._window_size = window_size + 1
