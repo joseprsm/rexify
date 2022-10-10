@@ -30,7 +30,8 @@ class SequentialModel(tf.keras.Model):
         )
 
     def call(self, inputs: tf.Tensor):
-        x = self.embedding_layer(inputs)
+        x = tf.cast(inputs, tf.int32)
+        x = self.embedding_layer(x)
         x = self.recurrent_layers(x)
         return self.dense_layers(x)
 
