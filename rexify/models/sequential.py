@@ -1,9 +1,7 @@
 import tensorflow as tf
 
-from rexify.models.base import DenseModelMixin
 
-
-class SequentialModel(tf.keras.Model, DenseModelMixin):
+class SequentialModel(tf.keras.Model):
     def __init__(
         self,
         n_dims: int,
@@ -36,19 +34,31 @@ class SequentialModel(tf.keras.Model, DenseModelMixin):
         x = self.recurrent_layers(x)
         return self.dense_layers(x)
 
-    def _set_recurrent_layers(
-        self, layer: str, layer_sizes: list[int]
-    ) -> tf.keras.Model:
+    @staticmethod
+    def _set_recurrent_layers(layer: str, layer_sizes: list[int]) -> tf.keras.Model:
         layer = getattr(tf.keras.layers, layer)
-        model = self._set_sequential_model(
-            layer, layer_sizes[:-1], return_sequences=True
-        )
+        model = tf.keras.Sequential()
+        for num_neurons in layer_sizes[:-1]:
+            model.add(layer(num_neurons, return_sequences=True))
         model.add(layer(layer_sizes[-1]))
         return model
 
+    @staticmethod
     def _set_dense_layers(
-        self, layer_sizes: list[int], activation: str = "leaky_relu"
+        layer_sizes: list[int], activation: str = "leaky_relu"
     ) -> tf.keras.layers.Layer:
-        model = super()._set_dense_layers(layer_sizes[:-1], activation)
+        model = tf.keras.Sequential()
+        for num_neurons in layer_sizes[:-1]:
+            model.add(tf.keras.layers.Dense(num_neurons, activation=activation))
         model.add(tf.keras.layers.Dense(layer_sizes[-1]))
         return model
+
+    def get_config(self):
+        return {
+            "n_dims": self._n_dims,
+            "embedding_dim": self._embedding_dim,
+            "layer": self._layer,
+            "activation": self._activation,
+            "recurrent_layer_sizes": self._recurrent_layer_sizes,
+            "dense_layer_sizes": self._dense_layer_sizes,
+        }
