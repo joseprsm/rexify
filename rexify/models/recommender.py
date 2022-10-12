@@ -57,9 +57,10 @@ class Recommender(RetrievalMixin, RankingMixin):
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
-        ranking_features: list[str] = None,
-        ranking_layers: list[int] = None,
-        ranking_weights: list[float] = None,
+        ranking_dims: int = 1,
+        rating_features: list[str] = None,
+        rating_layers: list[int] = None,
+        ranking_weights: dict[str, float] = None,
     ):
         RetrievalMixin.__init__(
             self,
@@ -74,17 +75,16 @@ class Recommender(RetrievalMixin, RankingMixin):
 
         RankingMixin.__init__(
             self,
-            ranking_features=ranking_features,
-            ranking_layers=ranking_layers,
-            ranking_weights=ranking_weights,
+            n_dims=ranking_dims,
+            rating_features=rating_features,
+            layer_sizes=rating_layers,
+            weights=ranking_weights,
         )
 
     def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
         embeddings = self(inputs)  # Recommender inherits RetrievalMixin's call method
         loss = self.retrieval_task(*embeddings)
-        loss += self.get_ranking_loss(
-            *embeddings, inputs["event_type"], inputs["rating"]
-        )
+        loss += RankingMixin.get_loss(self, *embeddings, inputs["event"])
         return loss
 
     def get_config(self):
