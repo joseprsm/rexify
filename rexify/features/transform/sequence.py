@@ -92,7 +92,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
 
     def _window(self, sequence):
         if len(sequence) >= self._window_size:
-            sequence = np.array(sequence)
+            sequence = np.array(sequence, dtype=object)
 
             stack = [
                 sequence[range(i, i + self._window_size)]
