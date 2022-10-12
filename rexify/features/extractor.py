@@ -9,6 +9,7 @@ from sklearn.pipeline import make_pipeline
 
 from rexify.features.dataset import TFDatasetGenerator
 from rexify.features.transform import FeatureTransformer, IDEncoder, Sequencer
+from rexify.features.transform.event import EventEncoder
 from rexify.types import Schema
 from rexify.utils import (
     get_ranking_features,
@@ -56,6 +57,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         super().__init__(schema=schema)
         self._ppl = make_pipeline(
             IDEncoder(schema=schema),
+            EventEncoder(**kwargs),
             Sequencer(schema=schema, **kwargs),
             FeatureTransformer(schema=schema, **kwargs),
         )
