@@ -69,10 +69,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         Returns:
             self: fitted encoder
         """
-        self._check_rating_col(X)
         self._validate_input(X)
-        x_ = self._add_rating_col(X)
-        self._ppl.fit(x_)
+        self._ppl.fit(X)
         self._model_params = self._get_model_params(X)
         return self
 
@@ -87,8 +85,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
             numpy.ndarray: an array with the preprocessed features
 
         """
-        x = self._add_rating_col(X)
-        return self._ppl.transform(x)
+        return self._ppl.transform(X)
 
     def save(self, output_dir: str):
         make_dirs(output_dir)
@@ -118,7 +115,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
             "item_id": item_id,
             "user_dims": user_input_dim,
             "user_id": user_id,
-            "ranking_features": X["event_type"].unique().tolist(),
+            "ranking_dims": X["event_type"].nunique(),
         }
 
     def _validate_input(
@@ -133,16 +130,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         assert all(
             [feat in X["event_type"].unique().tolist() for feat in ranking_features]
         )
-
-    def _check_rating_col(self, X: pd.DataFrame):
-        if "rating" not in X.columns:
-            self._rating_add = True
-
-    def _add_rating_col(self, X: pd.DataFrame) -> pd.DataFrame:
-        x_ = X.copy()
-        if self._rating_add:
-            x_["rating"] = np.zeros(X.shape[0])
-        return x_
 
     def _get_feature_names_out(self) -> list[str]:
         return self._ppl.steps[-1][-1].get_feature_names_out()
