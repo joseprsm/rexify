@@ -3,34 +3,37 @@ from typing import Callable
 
 import numpy as np
 import tensorflow as tf
+from sklearn.pipeline import Pipeline
 
 from rexify.features.base import HasSchemaInput
 from rexify.utils import get_first, get_target_id
 
 
 class TFDatasetGenerator(HasSchemaInput):
+
+    _ppl: Pipeline
+
     def make_dataset(self, X) -> tf.data.Dataset:
         feature_names = self._get_feature_names_out()
 
-        ratings_idx = self._get_ratings_features_idx(feature_names)
+        event_idx = np.argwhere([f.endswith("event_type") for f in feature_names])[0]
         sequential_idx = self._get_sequential_feature_idx(feature_names)
 
         features = X[
             :,
             ~np.in1d(
                 np.array(list(range(X.shape[1]))),
-                np.concatenate([ratings_idx, sequential_idx]),
+                np.concatenate([event_idx, sequential_idx]),
             ),
         ]
-        ratings = X[:, ratings_idx]
         sequential = np.stack(X[:, sequential_idx].reshape(-1).tolist()).reshape(
-            (-1, 3)
+            (-1, self._ppl.steps[2][1].window_size - 1)
         )
 
         features = self._get_features_dataset(features)
-        sequential = tf.data.Dataset.from_tensor_slices(sequential)
-        ratings = self._get_ratings_dataset(ratings)
-        ds = self._concatenate(features, ratings, sequential)
+        events = self._get_events_dataset(X[:, event_idx])
+        sequential = tf.data.Dataset.from_tensor_slices(sequential.astype(float))
+        ds = self._concatenate(features, events, sequential)
         return ds
 
     def _get_features_dataset(self, features):
@@ -39,26 +42,21 @@ class TFDatasetGenerator(HasSchemaInput):
         return ds
 
     @staticmethod
-    def _get_ratings_dataset(x: np.ndarray) -> tf.data.Dataset:
-        return tf.data.Dataset.zip(
-            (
-                tf.data.Dataset.from_tensor_slices(x[:, 0]),
-                tf.data.Dataset.from_tensor_slices(x[:, 1].astype(float)),
-            )
+    def _get_events_dataset(events):
+        return tf.data.Dataset.from_tensor_slices(
+            np.stack(events.reshape(-1)).astype(float)
         )
 
     @staticmethod
     def _concatenate(
-        features: tf.data.Dataset, ratings: tf.data.Dataset, sequential: tf.data.Dataset
+        features: tf.data.Dataset, events: tf.data.Dataset, sequential: tf.data.Dataset
     ):
-        def concatenate(x: dict, event_rating: tuple, sequences):
-            event_type, rating = event_rating
-            x["event_type"] = event_type
-            x["rating"] = rating
+        def concatenate(x: dict, event, sequences):
+            x["event"] = event
             x["query"]["history"] = sequences
             return x
 
-        return tf.data.Dataset.zip((features, ratings, sequential)).map(concatenate)
+        return tf.data.Dataset.zip((features, events, sequential)).map(concatenate)
 
     def _get_header_fn(self):
         user_id = get_target_id(self.schema, "user")[0]
@@ -148,7 +146,7 @@ class TFDatasetGenerator(HasSchemaInput):
         return np.array([fn(x) for x in array], dtype=object)
 
     @staticmethod
-    def _get_ratings_features_idx(feature_names: list[str]):
+    def _get_ratings_features_idx(feature_names):
         mask = [
             [feat in feature_name for feature_name in feature_names]
             for feat in ["event_type", "rating"]
@@ -156,5 +154,5 @@ class TFDatasetGenerator(HasSchemaInput):
         return np.argwhere(mask)[:, 1]
 
     @staticmethod
-    def _get_sequential_feature_idx(feature_names: list[str]):
+    def _get_sequential_feature_idx(feature_names):
         return np.argwhere(["history" in feat for feat in feature_names]).reshape(-1)
