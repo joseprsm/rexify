@@ -2,8 +2,10 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
+from rexify.models.base import DenseSetterMixin
 
-class TowerModel(tf.keras.Model):
+
+class TowerModel(tf.keras.Model, DenseSetterMixin):
     """
 
     Args:
@@ -15,8 +17,8 @@ class TowerModel(tf.keras.Model):
 
     Attributes:
          embedding_layer (tf.keras.layers.Embedding):
-         feature_model (tf.keras.models.Sequential):
-         output_model (tf.keras.models.Sequential):
+         feature_model (list):
+         output_model (list):
     """
 
     def __init__(
@@ -35,18 +37,12 @@ class TowerModel(tf.keras.Model):
         self._feature_layers = feature_layers or [64, 32, 16]
 
         self.embedding_layer = tf.keras.layers.Embedding(n_dims, embedding_dim)
-        self.feature_model = self._get_dense_model(self._feature_layers)
-        self.output_model = self._get_dense_model(self._layer_sizes)
+        self.feature_model = self._set_dense_layers(self._feature_layers)
+        self.output_model = self._set_dense_layers(self._layer_sizes, activation=None)
 
     @abstractmethod
     def call(self, inputs: dict[str, tf.Tensor]):
         raise NotImplementedError
-
-    @staticmethod
-    def _get_dense_model(layer_sizes) -> tf.keras.Sequential:
-        return tf.keras.Sequential(
-            [tf.keras.layers.Dense(num_neurons) for num_neurons in layer_sizes]
-        )
 
     def get_config(self):
         return {

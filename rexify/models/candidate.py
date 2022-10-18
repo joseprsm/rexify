@@ -35,11 +35,11 @@ class CandidateModel(TowerModel):
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
         if inputs["item_features"].shape[1] != 0:
-            feature_embedding = self.feature_model(inputs["item_features"])
+            feature_embedding = self._call_layers(
+                self.feature_model, inputs["item_features"]
+            )
             x = tf.concat([x, feature_embedding], axis=1)
-        else:
-            self.feature_model.build(input_shape=tf.TensorShape([]))
-        x = self.output_model(x)
+        x = self._call_layers(self.output_model, x)
         return x
 
     def get_config(self):

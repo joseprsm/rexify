@@ -30,23 +30,23 @@ class SequentialModel(tf.keras.Model, DenseSetterMixin):
         self.output_model = self._set_dense_layers(
             layer_sizes=self._dense_layer_sizes[:-1], activation=activation
         )
-        self.output_model.add(tf.keras.layers.Dense(self._dense_layer_sizes[-1]))
+        self.output_model.append(tf.keras.layers.Dense(self._dense_layer_sizes[-1]))
 
     def call(self, inputs: tf.Tensor):
         x = tf.cast(inputs, tf.int32)
         x = self.embedding_layer(x)
-        x = self.recurrent_model(x)
-        return self.output_model(x)
+        x = self._call_layers(self.recurrent_model, x)
+        return self._call_layers(self.output_model, x)
 
     def _set_recurrent_model(self) -> tf.keras.Model:
         layer = getattr(tf.keras.layers, self._layer)
-        model = self._set_sequential_model(
+        layers = self._set_sequential_model(
             layer=layer,
             layer_sizes=self._recurrent_layer_sizes[:-1],
             return_sequences=True,
         )
-        model.add(layer(self._recurrent_layer_sizes[-1]))
-        return model
+        layers.append(layer(self._recurrent_layer_sizes[-1]))
+        return layers
 
     def get_config(self):
         return {

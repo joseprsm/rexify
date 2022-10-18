@@ -95,7 +95,8 @@ class Recommender(RetrievalMixin, RankingMixin):
             "item_id": self._item_id,
             "output_layers": self._output_layers,
             "feature_layers": self._feature_layers,
-            "ranking_layers": self._ranking_layers,
-            "ranking_features": self._ranking_features,
+            "ranking_dims": self._ranking_dims,
+            "rating_layers": self._rating_layers,
+            "rating_features": self._rating_features,
             "ranking_weights": self._ranking_weights,
         }

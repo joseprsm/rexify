@@ -15,13 +15,15 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         weights: dict[str, float] = None,
     ):
         super().__init__()
-        self._n_dims = n_dims
+        self._ranking_dims = n_dims
         self._rating_features = rating_features or []
-        self._layer_sizes = layer_sizes or [64, 32]
-        self._weights = weights
+        self._rating_layers = layer_sizes or [64, 32]
+        self._ranking_weights = weights
 
-        self.event_model = self._set_dense_layers(self._layer_sizes)
-        self.event_model.add(tf.keras.layers.Dense(self._n_dims, activation="softmax"))
+        self.event_model = self._set_dense_layers(self._rating_layers)
+        self.event_model.append(
+            tf.keras.layers.Dense(self._ranking_dims, activation="softmax")
+        )
         self.event_task = tfrs.tasks.Ranking(
             loss=tf.keras.losses.CategoricalCrossentropy()
         )
@@ -37,7 +39,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         events: tf.Tensor,
     ):
         inputs = tf.concat([query_embeddings, candidate_embeddings], axis=1)
-        x = self.event_model(inputs)
+        x = self._call_layers(self.event_model, inputs)
         loss = self.event_task(labels=events, predictions=x)
         return loss
 
@@ -45,7 +47,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         rating_models = None
         if self._rating_features:
             rating_models = {
-                feature: self._get_rating_model(self._layer_sizes)
+                feature: self._get_rating_model(self._rating_layers)
                 for feature in self._rating_features
             }
         return rating_models
@@ -62,8 +64,8 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
             }
         return ranking_tasks
 
-    def _get_rating_model(self, layer_sizes) -> tf.keras.Model:
+    def _get_rating_model(self, layer_sizes) -> list[tf.keras.layers.Layer]:
         model = self._set_dense_layers(layer_sizes)
         if layer_sizes[-1] != 1:
-            model.add(tf.keras.layers.Dense(1))
+            model.append(tf.keras.layers.Dense(1))
         return model

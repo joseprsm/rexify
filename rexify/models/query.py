@@ -35,6 +35,7 @@ class QueryModel(TowerModel):
         sequential_dense_layers: list[int] = None,
     ):
         super().__init__(user_id, n_users, embedding_dim, output_layers, feature_layers)
+        self._n_items = n_items
         self.sequential_model = SequentialModel(
             n_dims=n_items,
             embedding_dim=self._embedding_dim,
@@ -58,12 +59,10 @@ class QueryModel(TowerModel):
 
         if len(features) != 0:
             features = tf.concat(features, axis=1) if len(features) > 1 else features[0]
-            feature_embedding = self.feature_model(features)
+            feature_embedding = self._call_layers(self.feature_model, features)
             x = tf.concat([x, feature_embedding], axis=1)
-        else:
-            self.feature_model.build(input_shape=tf.TensorShape([]))
 
-        x = self.output_model(x)
+        x = self._call_layers(self.output_model, x)
         return x
 
     def get_config(self):
