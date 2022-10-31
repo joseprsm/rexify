@@ -89,9 +89,9 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         """
         return self._ppl.transform(X)
 
-    def save(self, output_dir: str):
+    def save(self, output_dir: str, filename: str = "feat.pkl"):
         make_dirs(output_dir)
-        output_path = Path(output_dir) / "feat.pkl"
+        output_path = Path(output_dir) / filename
         with open(output_path, "wb") as f:
             pickle.dump(self, f)
 
