@@ -96,7 +96,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
             pickle.dump(self, f)
 
     @classmethod
-    def load(cls, path: Path):
+    def load(cls, path: Path | str):
         with open(path, "rb") as f:
             feat = pickle.load(f)
         return feat
