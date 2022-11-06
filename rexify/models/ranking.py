@@ -30,7 +30,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
 
         if len(self._rating_features) > 0:
             self.rating_models = self._get_rating_models()
-            self.rating_tasks = self._get_ranking_tasks()
+            self.rating_tasks = self._get_rating_tasks()
 
     def get_loss(
         self,
@@ -41,6 +41,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         inputs = tf.concat([query_embeddings, candidate_embeddings], axis=1)
         x = self._call_layers(self.event_model, inputs)
         loss = self.event_task(labels=events, predictions=x)
+        loss += self._call_ratings(events) if len(self._rating_features) > 0 else 0
         return loss
 
     def _get_rating_models(self) -> dict[str, tf.keras.Model] | None:
@@ -52,7 +53,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
             }
         return rating_models
 
-    def _get_ranking_tasks(self):
+    def _get_rating_tasks(self):
         ranking_tasks = None
         if self._rating_features:
             ranking_tasks = {
@@ -69,3 +70,11 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         if layer_sizes[-1] != 1:
             model.append(tf.keras.layers.Dense(1))
         return model
+
+    def _call_ratings(self, inputs):
+        return sum(
+            [
+                self._ranking_weights[feature_name] * rating_model(inputs)
+                for feature_name, rating_model in self.rating_models.items()
+            ]
+        )
