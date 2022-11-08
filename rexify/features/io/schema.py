@@ -1,7 +1,4 @@
-from abc import abstractmethod
-
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from rexify.constants import SUPPORTED_DATA_TYPES
 from rexify.exceptions.schema import (
@@ -13,15 +10,6 @@ from rexify.exceptions.schema import (
     TooManyIdFeaturesSchemaException,
 )
 from rexify.types import Schema
-
-
-class BaseTransformer(BaseEstimator, TransformerMixin):
-    def fit(self, *_):
-        return self
-
-    @abstractmethod
-    def transform(self, X):
-        raise NotImplementedError
 
 
 class HasSchemaInput:

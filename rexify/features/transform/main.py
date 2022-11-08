@@ -2,7 +2,7 @@ from sklearn.base import TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
-from rexify.features.base import HasSchemaInput
+from rexify.features.io import HasSchemaInput
 from rexify.features.transform.pipelines import CategoricalPipeline, NumericalPipeline
 from rexify.types import Schema
 
