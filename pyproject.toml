@@ -70,7 +70,6 @@ strict_equality = true
 
 [tool.coverage.paths]
 source = ["rexify"]
-tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
 branch = true
