@@ -7,7 +7,6 @@ license = "MIT"
 readme = "README.md"
 documentation = "https://rexify.readthedocs.io"
 packages = [{ include = "rexify" }]
-include = ["rexify/components/*/*.yaml"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -73,13 +72,12 @@ source = ["rexify"]
 
 [tool.coverage.run]
 branch = true
-source = ["rexify", "tests"]
-omit = ["tests", "*/tests", "rexify/cli.py"]
+source = ["rexify"]
 
 [tool.coverage.report]
 show_missing = true
 exclude_lines = ["if __name__ == .__main__.:", "_cmd"]
-omit = ["tests/*", "*/tests", "rexify/cli.py", "*/__init__.py"]
+omit = ["*/__init__.py"]
 
 [tool.interrogate]
 ignore-init-method = true
@@ -90,15 +88,13 @@ ignore-private = true
 ignore-module = true
 ignore-nested-functions = true
 ignore-property-decorators = true
-exclude = ["docs", "build", "demo", "*/cli.py", "tests", "rexify/pipeline.py", "*/exceptions/*"]
+exclude = ["docs", "build", "rexify/pipeline.py", "*/exceptions/*"]
 ignore-regex = ["call", "get_config", "compute_loss"]
 verbose = 0
 omit-covered-files = false
 quiet = false
 color = false
 
-[project.scripts]
-rexify = "rexify.cli:cli"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
