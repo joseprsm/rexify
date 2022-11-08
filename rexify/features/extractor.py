@@ -7,9 +7,9 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
-from rexify.features.dataset import TFDatasetGenerator
-from rexify.features.transform import FeatureTransformer, IDEncoder, Sequencer
-from rexify.features.transform.event import EventEncoder
+from rexify.features.io import TFDatasetGenerator
+from rexify.features.transform import EventEncoder, IDEncoder, Sequencer
+from rexify.features.transformer import FeatureTransformer
 from rexify.types import Schema
 from rexify.utils import (
     get_ranking_features,
