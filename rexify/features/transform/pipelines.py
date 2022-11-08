@@ -36,3 +36,12 @@ class NumericalPipeline(_BaseFeaturePipeline):
     pipeline_name = "numericalPipeline"
 
     ppl = make_pipeline(MinMaxScaler(feature_range=(-1, 1)))
+
+
+class RatingPipeline(_BaseFeaturePipeline):
+
+    dtype = "rating"
+
+    pipeline_name = "ratingPipeline"
+
+    ppl = make_pipeline(MinMaxScaler())
