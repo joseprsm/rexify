@@ -4,19 +4,6 @@ orbs:
   python: circleci/python@1.2
 
 jobs:
-  test:
-    docker:
-      - image: cimg/python:3.10
-
-    steps:
-      - checkout
-      - python/install-packages:
-          pkg-manager: poetry
-      - run:
-          name: Run tests
-          command: |
-            poetry run sh scripts/lint.sh
-            poetry run pytest
 
   publish:
     docker:
@@ -31,29 +18,10 @@ jobs:
             poetry version $(git describe --tags --abbrev=0)
             poetry publish --build --username $PYPI_USERNAME --password $PYPI_PASSWORD
 
-  build_docker:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build and push Docker images
-          command: |
-            echo "$DOCKER_HUB_PASSWORD" | docker login -u $DOCKER_HUB_USERNAME --password-stdin 
-            sh scripts/build_docker.sh
-
 workflows:
   build:
     jobs:
-      - test:
-          filters:
-            tags:
-              only: /.*/
       - publish:
-          requires:
-            - test
           filters:
             branches:
               ignore: /.*/
