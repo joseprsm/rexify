@@ -18,7 +18,6 @@
     Quickstart <tutorials/quickstart>
     Using a pre-built pipeline <tutorials/prebuilt_pipeline>
     Configuring your own Kubeflow pipeline <tutorials/configure_pipeline>
-    Using the demo application <tutorials/using_demo_app.md>
 
 .. toctree::
    :maxdepth: 1
