@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.pipeline import Pipeline
 
-from rexify.features.schema import HasSchemaInput
+from rexify.features.io.schema import HasSchemaInput
 from rexify.utils import get_first, get_target_id
 
 

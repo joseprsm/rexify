@@ -11,12 +11,7 @@ from rexify.features.io import TFDatasetGenerator
 from rexify.features.transform import EventEncoder, IDEncoder, Sequencer
 from rexify.features.transformer import FeatureTransformer
 from rexify.types import Schema
-from rexify.utils import (
-    get_ranking_features,
-    get_schema_features,
-    get_target_id,
-    make_dirs,
-)
+from rexify.utils import get_schema_features, get_target_id, make_dirs
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
@@ -127,11 +122,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         schema_columns = get_schema_features(self.schema)
         columns = ["event_type"] + schema_columns
         assert all([col in X.columns for col in columns])
-
-        ranking_features = get_ranking_features(self.schema)
-        assert all(
-            [feat in X["event_type"].unique().tolist() for feat in ranking_features]
-        )
 
     def _get_feature_names_out(self) -> list[str]:
         return self._ppl.steps[-1][-1].get_feature_names_out()
