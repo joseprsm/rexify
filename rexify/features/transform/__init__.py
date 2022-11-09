@@ -1,4 +1,5 @@
+from .category import CategoricalEncoder
 from .event import EventEncoder
 from .id import IDEncoder
-from .pipelines import CategoricalPipeline, NumericalPipeline
+from .number import NumericalEncoder
 from .sequence import Sequencer

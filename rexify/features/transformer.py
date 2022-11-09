@@ -3,7 +3,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 from rexify.features.io import HasSchemaInput
-from rexify.features.transform.pipelines import CategoricalPipeline, NumericalPipeline
+from rexify.features.transform import CategoricalEncoder, NumericalEncoder
 from rexify.types import Schema
 
 
@@ -35,11 +35,11 @@ class FeatureTransformer(ColumnTransformer, HasSchemaInput):
     ) -> list[tuple[str, Pipeline, list[str]]]:
         transformer_list = []
 
-        categorical_ppl = CategoricalPipeline(self.schema, target)
-        transformer_list += [categorical_ppl] if categorical_ppl != tuple() else []
+        cat_encoder = CategoricalEncoder(self.schema, target).as_tuple()
+        transformer_list += [cat_encoder] if cat_encoder[-1] != tuple() else []
 
-        numerical_ppl = NumericalPipeline(self.schema, target)
-        transformer_list += [numerical_ppl] if numerical_ppl != tuple() else []
+        num_encoder = NumericalEncoder(self.schema, target).as_tuple()
+        transformer_list += [num_encoder] if num_encoder[-1] != tuple() else []
 
         return transformer_list
 
