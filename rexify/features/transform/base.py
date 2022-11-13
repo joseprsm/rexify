@@ -30,6 +30,7 @@ class BaseEncoder(HasSchemaInput):
 class BaseFeatureEncoder(BaseEncoder):
     def __init__(self, dtype: str, target: str, schema: Schema):
         super().__init__(dtype, schema)
+        self._name = target.lower() + "_" + self._name
         self._targets = self._get_features(self._schema, target, self._type)
 
     @staticmethod
