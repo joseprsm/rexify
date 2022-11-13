@@ -44,16 +44,10 @@ def get_mock_schema(
     use_categorical: bool = False,
     use_numerical: bool = False,
     use_context: bool = False,
-    use_rank: bool = False,
 ):
     schema = base = {
         "user": {"user_id": "id"},
         "item": {"item_id": "id"},
-        "rank": [
-            {"name": "Purchase"},
-            {"name": "Add to Cart"},
-            {"name": "Page View"},
-        ],
     }
 
     if use_categorical:
@@ -73,14 +67,6 @@ def get_mock_schema(
         with_context["context"] = {}
         with_context["context"]["timestamp"] = "timestamp"
         schema = with_context
-
-    if use_rank:
-        with_rank = deepcopy(schema)
-        ranking_features = with_rank["rank"]
-        ranking_features += [
-            {"name": "Page View", "weight": 0.1},
-            {"name": "Add to Cart", "weight": 0.9},
-        ]
 
     return schema
 
