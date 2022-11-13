@@ -46,7 +46,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
 
     _model_params: dict[str, Any]
     _output_features: list[str]
-    _rating_add: bool
 
     def __init__(self, schema: Schema, **kwargs):
         super().__init__(schema=schema)

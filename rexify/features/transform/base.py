@@ -8,7 +8,7 @@ from rexify.utils import get_target_feature
 class BaseEncoder(HasSchemaInput):
 
     ppl: Pipeline
-    targets: list[str]
+    _targets: list[str]
 
     def __init__(self, dtype: str, schema: Schema):
         super().__init__(schema)
@@ -16,7 +16,7 @@ class BaseEncoder(HasSchemaInput):
         self._name = self._type + "Pipeline"
 
     def __iter__(self):
-        for x in [self._name, self.ppl, self.targets]:
+        for x in [self._name, self.ppl, self._targets]:
             yield x
 
     @property
