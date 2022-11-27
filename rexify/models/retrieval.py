@@ -49,3 +49,6 @@ class RetrievalMixin(tfrs.Model, ABC):
         query_embeddings: tf.Tensor = self.query_model(inputs["query"])
         candidate_embeddings: tf.Tensor = self.candidate_model(inputs["candidate"])
         return query_embeddings, candidate_embeddings
+
+    def get_loss(self, *embeddings):
+        return self.retrieval_task(*embeddings)
