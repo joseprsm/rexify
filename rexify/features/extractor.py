@@ -51,7 +51,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, TFDatasetGenerator):
         super().__init__(schema=schema)
         self._ppl = make_pipeline(
             IDEncoder(schema=schema),
-            EventEncoder(**kwargs),
+            EventEncoder(event_col=schema["event"]),
             Sequencer(schema=schema, **kwargs),
             FeatureTransformer(schema=schema, **kwargs),
         )

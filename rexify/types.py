@@ -1,1 +1,1 @@
-Schema = dict[str, dict[str, str] | list[str]]
+Schema = dict[str, dict[str, str] | list[str] | str]
