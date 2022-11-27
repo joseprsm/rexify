@@ -3,8 +3,8 @@ from abc import ABC
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
-from rexify.models.candidate import CandidateModel
-from rexify.models.query import QueryModel
+from rexify.models.retrieval.candidate import CandidateModel
+from rexify.models.retrieval.query import QueryModel
 
 
 class RetrievalMixin(tfrs.Model, ABC):
