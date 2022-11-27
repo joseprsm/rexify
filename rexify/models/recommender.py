@@ -60,7 +60,6 @@ class Recommender(RetrievalMixin, RankingMixin):
         ranking_dims: int = 1,
         rating_features: list[str] = None,
         rating_layers: list[int] = None,
-        ranking_weights: dict[str, float] = None,
     ):
         RetrievalMixin.__init__(
             self,
@@ -78,7 +77,6 @@ class Recommender(RetrievalMixin, RankingMixin):
             n_dims=ranking_dims,
             rating_features=rating_features,
             layer_sizes=rating_layers,
-            weights=ranking_weights,
         )
 
     def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
