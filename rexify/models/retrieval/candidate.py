@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from rexify.models.tower import TowerModel
+from rexify.models.retrieval.tower import TowerModel
 
 
 class CandidateModel(TowerModel):
@@ -15,7 +15,7 @@ class CandidateModel(TowerModel):
 
     Examples:
 
-    >>> from rexify.models.candidate import CandidateModel
+    >>> from rexify.models.retrieval.candidate import CandidateModel
     >>> model = CandidateModel('item_id', 15)
     >>> model({'item_id': tf.constant([1]), 'item_features': tf.constant([[1, 1, 1]])})
     <tf.Tensor: shape=(1, 32), dtype=float32, numpy=

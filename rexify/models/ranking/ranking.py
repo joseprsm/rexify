@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
 from rexify.models.base import DenseSetterMixin
-from rexify.models.event import EventModel
+from rexify.models.ranking.event import EventModel
 
 
 class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
@@ -13,13 +13,11 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         n_dims: int = 1,
         rating_features: list[str] = None,
         layer_sizes: list[int] = None,
-        weights: dict[str, float] = None,
     ):
         super().__init__()
         self._ranking_dims = n_dims
         self._rating_features = rating_features or []
         self._rating_layers = layer_sizes or [64, 32]
-        self._ranking_weights = weights
 
         self.event_model = EventModel(self._rating_layers, n_dims=self._ranking_dims)
 

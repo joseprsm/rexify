@@ -1,7 +1,7 @@
 import tensorflow as tf
 
+from rexify.models.retrieval.tower import TowerModel
 from rexify.models.sequential import SequentialModel
-from rexify.models.tower import TowerModel
 
 
 class QueryModel(TowerModel):
@@ -16,7 +16,7 @@ class QueryModel(TowerModel):
 
     Examples:
 
-    >>> from rexify.models.query import QueryModel
+    >>> from rexify.models.retrieval.query import QueryModel
     >>> model = QueryModel('user_id', 15)
     >>> model({"user_id": tf.constant([1]), "user_features": tf.constant([[1, 1]]), "context_features": tf.constant([[1]])})
     <tf.Tensor: shape=(1, 32), dtype=float32, numpy=
