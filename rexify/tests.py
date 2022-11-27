@@ -41,9 +41,9 @@ def get_sample_data():
 
 
 def get_mock_schema(
-    use_categorical: bool = False,
-    use_numerical: bool = False,
-    use_context: bool = False,
+    use_categorical: bool = True,
+    use_numerical: bool = True,
+    use_context: bool = True,
 ):
     schema = base = {
         "user": {"user_id": "id"},
