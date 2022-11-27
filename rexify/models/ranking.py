@@ -4,6 +4,7 @@ import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
 from rexify.models.base import DenseSetterMixin
+from rexify.models.event import EventModel
 
 
 class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
@@ -20,17 +21,7 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         self._rating_layers = layer_sizes or [64, 32]
         self._ranking_weights = weights
 
-        self.event_model = self._set_dense_layers(self._rating_layers)
-        self.event_model.append(
-            tf.keras.layers.Dense(self._ranking_dims, activation="softmax")
-        )
-        self.event_task = tfrs.tasks.Ranking(
-            loss=tf.keras.losses.CategoricalCrossentropy()
-        )
-
-        if len(self._rating_features) > 0:
-            self.rating_models = self._get_rating_models()
-            self.rating_tasks = self._get_rating_tasks()
+        self.event_model = EventModel(self._rating_layers, n_dims=self._ranking_dims)
 
     def get_loss(
         self,
@@ -39,42 +30,5 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         events: tf.Tensor,
     ):
         inputs = tf.concat([query_embeddings, candidate_embeddings], axis=1)
-        x = self._call_layers(self.event_model, inputs)
-        loss = self.event_task(labels=events, predictions=x)
-        loss += self._call_ratings(events) if len(self._rating_features) > 0 else 0
+        loss = self.event_model(inputs, events)
         return loss
-
-    def _get_rating_models(self) -> dict[str, tf.keras.Model] | None:
-        rating_models = None
-        if self._rating_features:
-            rating_models = {
-                feature: self._get_rating_model(self._rating_layers)
-                for feature in self._rating_features
-            }
-        return rating_models
-
-    def _get_rating_tasks(self):
-        ranking_tasks = None
-        if self._rating_features:
-            ranking_tasks = {
-                ranking_feature: tfrs.tasks.Ranking(
-                    loss=tf.keras.losses.MeanSquaredError(),
-                    metrics=[tf.keras.metrics.RootMeanSquaredError()],
-                )
-                for ranking_feature in self._rating_features
-            }
-        return ranking_tasks
-
-    def _get_rating_model(self, layer_sizes) -> list[tf.keras.layers.Layer]:
-        model = self._set_dense_layers(layer_sizes)
-        if layer_sizes[-1] != 1:
-            model.append(tf.keras.layers.Dense(1))
-        return model
-
-    def _call_ratings(self, inputs):
-        return sum(
-            [
-                self._ranking_weights[feature_name] * rating_model(inputs)
-                for feature_name, rating_model in self.rating_models.items()
-            ]
-        )
