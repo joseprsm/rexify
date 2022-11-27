@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 from rexify.features.io import HasSchemaInput
 from rexify.types import Schema
-from rexify.utils import get_target_id
+from rexify.utils import flatten, get_target_id
 
 
 class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
@@ -22,7 +22,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
 
         >>> from rexify.tests import get_mock_schema, get_sample_data
         >>> events = get_sample_data()
-        >>> schema = get_mock_schema(True, True, True, True)
+        >>> schema = get_mock_schema()
         >>> from rexify.features.transform import Sequencer
         >>> sequencer = Sequencer(schema, "timestamp")
         >>> sequencer.fit(events)
@@ -45,10 +45,16 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
     _padding: list[int]
 
     def __init__(
-        self, schema: Schema, timestamp_feature: str, window_size: int = 3, **kwargs
+        self,
+        schema: Schema,
+        timestamp_feature: str = None,
+        window_size: int = 3,
+        **kwargs
     ):
         super().__init__(schema=schema)
-        self._timestamp_feature = timestamp_feature
+        self._timestamp_feature = (
+            timestamp_feature or self._get_timestamp_feature_from_schema(schema)
+        )
         self._window_size = window_size + 1
 
     def fit(self, X: pd.DataFrame, *_):
@@ -107,6 +113,19 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
 
     def _pad(self, x: list):
         return self._padding + x
+
+    @staticmethod
+    def _get_timestamp_feature_from_schema(schema: Schema) -> str:
+        schema_timestamps = flatten(
+            [
+                [key for key, dtype in v.items() if dtype == "timestamp"]
+                for v in schema.values()
+                if type(v) == dict
+            ]
+        )
+        if len(schema_timestamps) > 1:
+            raise ValueError("Can't infer timestamp variable, more than one timestamp")
+        return schema_timestamps[0]
 
     @property
     def timestamp_feature(self):
