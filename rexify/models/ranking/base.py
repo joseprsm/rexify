@@ -1,8 +1,10 @@
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
+from rexify.models.base import DenseSetterMixin
 
-class BaseRankingModel(tf.keras.Model):
+
+class BaseRankingModel(tf.keras.Model, DenseSetterMixin):
 
     output_layer: tf.keras.layers.Dense
     task: tfrs.tasks.Ranking
