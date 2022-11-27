@@ -10,6 +10,7 @@ class BaseRankingModel(tf.keras.Model, DenseSetterMixin):
     task: tfrs.tasks.Ranking
 
     def __init__(self, layer_sizes: list[int]):
+        super().__init__()
         self._layer_sizes = layer_sizes or [64, 32]
         self.hidden_layers = self._set_dense_layers(self._layer_sizes)
 
