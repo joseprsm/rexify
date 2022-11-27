@@ -1,0 +1,24 @@
+name: train
+
+inputs:
+  - {name: train_data}
+  - {name: feat}
+  - {name: batch_size, type: Integer, default: "512"}
+  - {name: epochs, type: Integer, default: "100"}
+  - {name: learning_rate, type: Float, default: "0.1"}
+
+outputs:
+  - {name: model, type: Model}
+
+implementation:
+  container:
+    image: joseprsm/rexify-train
+    command: ["python", "train.py"]
+    args: [
+      --training-data-dir, {inputPath: train_data},
+      --extractor-dir, {inputPath: feat},
+      --model-dir, {outputPath: model},
+      --batch-size, {inputValue: batch_size},
+      --epochs, {inputValue: epochs},
+      --learning-rate, {inputValue: learning_rate}
+    ]

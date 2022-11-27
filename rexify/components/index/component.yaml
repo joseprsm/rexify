@@ -1,0 +1,20 @@
+name: index
+
+inputs:
+  - {name: items}
+  - {name: model}
+  - {name: schema}
+
+outputs:
+  - {name: index, type: Model}
+
+implementation:
+  container:
+    image: joseprsm/rexify-index
+    command: [python, index.py]
+    args: [
+      --schema-path, {inputPath: schema},
+      --items-dir, {inputPath: items},
+      --model-dir, {inputPath: model},
+      --index-dir, {outputPath: index}
+    ]
