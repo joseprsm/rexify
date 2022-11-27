@@ -1,0 +1,23 @@
+name: retrieval
+
+inputs:
+  - {name: users}
+  - {name: schema}
+  - {name: model}
+  - {name: index}
+
+outputs:
+  - {name: predictions}
+
+implementation:
+  container:
+    image: joseprsm/rexify-retrieval
+    command: ['python', 'retrieval.py']
+    args: [
+      "--users-dir", {inputPath: users},
+      "--schema-path", {inputPath: schema},
+      "--model-dir", {inputPath: model},
+      "--index-dir", {inputPath: index},
+      "--predictions-dir", {outputPath: predictions},
+    ]
+

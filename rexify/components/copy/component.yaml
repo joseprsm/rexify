@@ -1,0 +1,22 @@
+name: copy
+
+inputs:
+- {name: content, type: JsonObject}
+
+outputs:
+- {name: data, type: CSV}
+
+implementation:
+  container:
+    image: bash
+    command:
+      - sh
+      - -c
+      - |
+        set -e -x -o pipefail
+        content="$0"
+        output_path="$1"
+        mkdir -p "$(dirname "$output_path")"
+        echo "$content" > "$output_path"
+      - { inputValue: content }
+      - { outputPath: data }

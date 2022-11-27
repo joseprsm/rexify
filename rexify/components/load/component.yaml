@@ -1,0 +1,28 @@
+name: load
+
+inputs:
+  - {name: events}
+  - {name: schema}
+  - {name: test_size, type: Float, default: "0.3"}
+
+outputs:
+  - {name: train}
+  - {name: test}
+  - {name: items}
+  - {name: users}
+  - {name: feat}
+
+implementation:
+  container:
+    image: joseprsm/rexify-load
+    command: ["python", "load.py"]
+    args: [
+      "--events-path", {inputPath: events},
+      "--schema-path", {inputPath: schema},
+      "--test-size", {inputValue: test_size},
+      "--extractor-dir", {outputPath: feat},
+      "--train-data-dir", {outputPath: train},
+      "--test-data-dir", {outputPath: test},
+      "--items-dir", {outputPath: items},
+      "--users-dir", {outputPath: users}
+    ]
