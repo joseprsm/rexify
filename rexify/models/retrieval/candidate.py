@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 from rexify.models.retrieval.tower import TowerModel
@@ -26,19 +27,27 @@ class CandidateModel(TowerModel):
         self,
         item_id: str,
         n_items: int,
+        identifiers: np.array,
+        feature_embeddings: np.array,
         embedding_dim: int = 32,
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
     ):
-        super().__init__(item_id, n_items, embedding_dim, output_layers, feature_layers)
+        super().__init__(
+            item_id,
+            n_items,
+            identifiers,
+            feature_embeddings,
+            embedding_dim,
+            output_layers,
+            feature_layers,
+        )
 
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
-        if inputs["item_features"].shape[1] != 0:
-            feature_embedding = self._call_layers(
-                self.feature_model, inputs["item_features"]
-            )
-            x = tf.concat([x, feature_embedding], axis=1)
+        features = self.lookup_model(inputs[self._id_feature])
+        feature_embedding = self._call_layers(self.feature_model, features)
+        x = tf.concat([x, feature_embedding], axis=1)
         x = self._call_layers(self.output_model, x)
         return x
 

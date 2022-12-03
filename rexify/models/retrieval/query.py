@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 from rexify.models.retrieval.tower import TowerModel
@@ -28,13 +29,23 @@ class QueryModel(TowerModel):
         user_id: str,
         n_users: int,
         n_items: int,
+        identifiers: np.array,
+        feature_embeddings: np.array,
         embedding_dim: int = 32,
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
         recurrent_layers: list[int] = None,
         sequential_dense_layers: list[int] = None,
     ):
-        super().__init__(user_id, n_users, embedding_dim, output_layers, feature_layers)
+        super().__init__(
+            user_id,
+            n_users,
+            identifiers,
+            feature_embeddings,
+            embedding_dim,
+            output_layers,
+            feature_layers,
+        )
         self._n_items = n_items
         self.sequential_model = SequentialModel(
             n_dims=n_items,
@@ -45,10 +56,7 @@ class QueryModel(TowerModel):
 
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
-
-        features = []
-        if inputs["user_features"].shape[-1] != 0:
-            features.append(inputs["user_features"])
+        features = [self.lookup_model(inputs[self._id_feature])]
 
         if inputs["context_features"].shape[-1] != 0:
             features.append(inputs["context_features"])
@@ -57,10 +65,9 @@ class QueryModel(TowerModel):
             sequential_embedding = self.sequential_model(inputs["history"])
             x = tf.concat([x, sequential_embedding], axis=1)
 
-        if len(features) != 0:
-            features = tf.concat(features, axis=1) if len(features) > 1 else features[0]
-            feature_embedding = self._call_layers(self.feature_model, features)
-            x = tf.concat([x, feature_embedding], axis=1)
+        features = tf.concat(features, axis=1) if len(features) > 1 else features[0]
+        feature_embedding = self._call_layers(self.feature_model, features)
+        x = tf.concat([x, feature_embedding], axis=1)
 
         x = self._call_layers(self.output_model, x)
         return x
