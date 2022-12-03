@@ -12,10 +12,12 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput):
 
     _transformer: ColumnTransformer
 
+    def __init__(self, schema, target):
+        HasSchemaInput.__init__(self, schema)
+        self._target = target
+
     def fit(self, X: pd.DataFrame, y=None):
-        target_features = get_target_id(self._schema, "user") + get_target_id(
-            self._schema, "item"
-        )
+        target_features = get_target_id(self._schema, self._target)
         encoder_args = self._get_encoder_args(X, target_features)
         self._transformer = make_column_transformer(
             (OrdinalEncoder(**encoder_args), target_features),
@@ -41,3 +43,7 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput):
             "handle_unknown": "use_encoded_value",
             "unknown_value": value,
         }
+
+    @property
+    def target(self):
+        return self._target

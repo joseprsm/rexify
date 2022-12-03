@@ -6,11 +6,9 @@ from rexify.features.transform import CategoricalEncoder, NumericalEncoder
 from rexify.types import Schema
 
 
-class _FeatureTransformer(ColumnTransformer, HasSchemaInput):
-
-    _target: str
-
-    def __init__(self, schema: Schema):
+class FeatureTransformer(ColumnTransformer, HasSchemaInput):
+    def __init__(self, schema: Schema, target: str):
+        self._target = target
         HasSchemaInput.__init__(self, schema=schema)
         transformers = self._get_transformers()
         ColumnTransformer.__init__(
@@ -20,10 +18,10 @@ class _FeatureTransformer(ColumnTransformer, HasSchemaInput):
     def _get_transformers(self) -> list[tuple[str, Pipeline, list[str]]]:
         transformer_list = []
 
-        cat_encoder = CategoricalEncoder(self.schema, self.target).as_tuple()
+        cat_encoder = CategoricalEncoder(self.schema, self._target).as_tuple()
         transformer_list += [cat_encoder] if cat_encoder[-1] != tuple() else []
 
-        num_encoder = NumericalEncoder(self.schema, self.target).as_tuple()
+        num_encoder = NumericalEncoder(self.schema, self._target).as_tuple()
         transformer_list += [num_encoder] if num_encoder[-1] != tuple() else []
 
         return transformer_list
@@ -31,13 +29,3 @@ class _FeatureTransformer(ColumnTransformer, HasSchemaInput):
     @property
     def target(self):
         return self._target
-
-
-class UserTransformer(_FeatureTransformer):
-
-    _target = "user"
-
-
-class ItemTransformer(_FeatureTransformer):
-
-    _target = "item"
