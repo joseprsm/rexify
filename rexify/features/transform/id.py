@@ -5,16 +5,17 @@ from sklearn.compose import ColumnTransformer, make_column_transformer
 from sklearn.preprocessing import OrdinalEncoder
 
 from rexify.features.io import HasSchemaInput
+from rexify.features.io.target import HasTargetInput
 from rexify.utils import get_target_id
 
 
-class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput):
+class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput, HasTargetInput):
 
     _transformer: ColumnTransformer
 
     def __init__(self, schema, target):
         HasSchemaInput.__init__(self, schema)
-        self._target = target
+        HasTargetInput.__init__(self, target)
 
     def fit(self, X: pd.DataFrame, y=None):
         target_features = get_target_id(self._schema, self._target)
@@ -43,7 +44,3 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput):
             "handle_unknown": "use_encoded_value",
             "unknown_value": value,
         }
-
-    @property
-    def target(self):
-        return self._target
