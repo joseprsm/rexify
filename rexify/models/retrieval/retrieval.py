@@ -1,5 +1,6 @@
 from abc import ABC
 
+import pandas as pd
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
@@ -14,6 +15,8 @@ class RetrievalMixin(tfrs.Model, ABC):
         user_dims: int,
         item_id: str,
         item_dims: int,
+        user_embeddings: pd.DataFrame,
+        item_embeddings: pd.DataFrame,
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
@@ -36,11 +39,20 @@ class RetrievalMixin(tfrs.Model, ABC):
         }
 
         self.query_model = QueryModel(
-            self._user_id, self._user_dims, self._item_dims, **joint_args
+            self._user_id,
+            self._user_dims,
+            self._item_dims,
+            identifiers=user_embeddings.index.values.astype(int),
+            feature_embeddings=user_embeddings.values.astype(float),
+            **joint_args
         )
 
         self.candidate_model = CandidateModel(
-            self._item_id, self._item_dims, **joint_args
+            self._item_id,
+            self._item_dims,
+            identifiers=item_embeddings.index.values.astype(int),
+            feature_embeddings=item_embeddings.values.astype(float),
+            **joint_args
         )
 
         self.retrieval_task = tfrs.tasks.Retrieval()

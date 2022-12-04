@@ -1,3 +1,4 @@
+import pandas as pd
 import tensorflow as tf
 
 from rexify.models.ranking import RankingMixin
@@ -54,6 +55,8 @@ class Recommender(RetrievalMixin, RankingMixin):
         user_dims: int,
         item_id: str,
         item_dims: int,
+        user_embeddings: pd.DataFrame,
+        item_embeddings: pd.DataFrame,
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
@@ -67,6 +70,8 @@ class Recommender(RetrievalMixin, RankingMixin):
             user_dims=user_dims + 1,
             item_id=item_id,
             item_dims=item_dims + 1,
+            user_embeddings=user_embeddings,
+            item_embeddings=item_embeddings,
             embedding_dim=embedding_dim,
             feature_layers=feature_layers,
             output_layers=output_layers,
