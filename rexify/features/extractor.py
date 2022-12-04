@@ -44,6 +44,6 @@ class FeatureExtractor(ColumnTransformer, HasSchemaInput, HasTargetInput):
         HasTargetInput.__init__(self, target)
         ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
 
-    def apply(self, X):
-        features = self.fit_transform(X)
-        return features[:, :-1], features[:, -1]
+    def transform(self, X):
+        features = super(FeatureExtractor, self).transform(X)
+        return features[:, -1], features[:, :-1]
