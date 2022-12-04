@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
@@ -44,6 +45,6 @@ class FeatureExtractor(ColumnTransformer, HasSchemaInput, HasTargetInput):
         HasTargetInput.__init__(self, target)
         ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
 
-    def transform(self, X):
+    def transform(self, X) -> pd.DataFrame:
         features = super(FeatureExtractor, self).transform(X)
-        return features[:, -1], features[:, :-1]
+        return pd.DataFrame(features[:, :-1], index=features[:, -1])
