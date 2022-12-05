@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
@@ -5,6 +7,7 @@ from sklearn.pipeline import Pipeline, make_pipeline
 from rexify.features.io import HasSchemaInput, HasTargetInput, SavableTransformer
 from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
 from rexify.types import Schema
+from rexify.utils import get_target_id
 
 
 class _FeatureTransformer(ColumnTransformer, HasSchemaInput, HasTargetInput):
@@ -42,11 +45,32 @@ class _FeaturePipeline(tuple):
 class FeatureExtractor(
     ColumnTransformer, HasSchemaInput, HasTargetInput, SavableTransformer
 ):
+
+    _model_params: dict[str, Any]
+
     def __init__(self, schema: Schema, target: str):
         HasSchemaInput.__init__(self, schema)
         HasTargetInput.__init__(self, target)
         ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
 
+    def fit(self, X, y=None):
+        super().fit(X, y)
+        self._model_params = self._get_model_params(X)
+        return self
+
     def transform(self, X) -> pd.DataFrame:
         features = super(FeatureExtractor, self).transform(X)
         return pd.DataFrame(features[:, :-1], index=features[:, -1])
+
+    @property
+    def model_params(self):
+        return self._model_params
+
+    def _get_model_params(self, X):
+        id_col = get_target_id(self._schema, self._target)[0]
+        input_dims = int(X[id_col].nunique() + 1)
+
+        return {
+            f"{self._target}_id": id_col,
+            f"{self._target}_dims": input_dims,
+        }
