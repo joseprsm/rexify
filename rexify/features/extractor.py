@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
-from rexify.features.io import HasSchemaInput, HasTargetInput
+from rexify.features.io import HasSchemaInput, HasTargetInput, SavableTransformer
 from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
 from rexify.types import Schema
 
@@ -39,7 +39,9 @@ class _FeaturePipeline(tuple):
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 
-class FeatureExtractor(ColumnTransformer, HasSchemaInput, HasTargetInput):
+class FeatureExtractor(
+    ColumnTransformer, HasSchemaInput, HasTargetInput, SavableTransformer
+):
     def __init__(self, schema: Schema, target: str):
         HasSchemaInput.__init__(self, schema)
         HasTargetInput.__init__(self, target)
