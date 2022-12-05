@@ -108,19 +108,24 @@ A sample Rexify workflow should sort of look like this:
 import json
 import pandas as pd
 
-from rexify.features import FeatureExtractor
-from rexify.models import Recommender
+from rexify import FeatureExtractor, Recommender
 
+users = pd.read_csv('path/to/users/data')
+items = pd.read_csv('path/to/items/data')
 events = pd.read_csv('path/to/events/data')
+
 with open('path/to/schema') as f:
     schema = json.load(f)
 
-feat = FeatureExtractor(schema)
-ds = feat.fit_transform(events).batch(512)
+user_extractor = FeatureExtractor(schema, "user")
+users = user_extractor.fit(users).transform(users)
 
-model = Recommender(**feat.model_params)
+item_extractor = FeatureExtractor(schema, "item")
+items = item_extractor.fit(items).transform(items)
+
+model = Recommender(**user_extractor.model_params, **item_extractor.model_params)
 model.compile()
-model.fit(ds)
+model.fit(events)
 ````
 
 When training is complete, you'll have a trained `tf.keras.Model` ready to be used, as
