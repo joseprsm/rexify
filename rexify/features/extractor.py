@@ -1,11 +1,18 @@
 from typing import Any
 
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
 from rexify.features.io import HasSchemaInput, HasTargetInput, SavableTransformer
-from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
+from rexify.features.transform import (
+    CategoricalEncoder,
+    EventEncoder,
+    IDEncoder,
+    NumericalEncoder,
+    Sequencer,
+)
 from rexify.types import Schema
 from rexify.utils import get_target_id
 
@@ -74,3 +81,64 @@ class FeatureExtractor(
             f"{self._target}_id": id_col,
             f"{self._target}_dims": input_dims,
         }
+
+
+class Extractor(BaseEstimator, TransformerMixin, HasSchemaInput, SavableTransformer):
+    def __init__(
+        self,
+        schema: Schema,
+        timestamp: str,
+        user_extractor: FeatureExtractor,
+        item_extractor: FeatureExtractor,
+        window_size: int = 3,
+    ):
+        self._timestamp = timestamp
+        self._user_extractor = user_extractor
+        self._item_extractor = item_extractor
+        self._window_size = window_size
+
+        self._ppl = make_pipeline(
+            EventEncoder(schema),
+            Sequencer(schema, timestamp_feature=timestamp, window_size=window_size),
+        )
+
+        HasSchemaInput.__init__(self, schema=schema)
+
+    def fit(self, X: pd.DataFrame, y=None):
+        x_ = self.encode(self._user_extractor, X)
+        x_ = self.encode(self._item_extractor, x_)
+        self._ppl.fit(x_, y)
+        return self
+
+    def transform(self, X):
+        x_ = self.encode(self._user_extractor, X)
+        x_ = self.encode(self._item_extractor, x_)
+        x_ = self._ppl.transform(x_)
+        return x_
+
+    def encode(self, extractor: FeatureExtractor, data: pd.DataFrame) -> pd.DataFrame:
+        encoder = self._get_id_encoder(extractor)
+        data[encoder.target_feature] = encoder.transformer.transform(
+            data[[encoder.target_feature]]
+        )
+        return data
+
+    @staticmethod
+    def _get_id_encoder(extractor: FeatureExtractor):
+        return extractor.transformers_[0][1].steps[0][1]
+
+    @property
+    def item_extractor(self):
+        return self._item_extractor
+
+    @property
+    def user_extractor(self):
+        return self._user_extractor
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @property
+    def window_size(self):
+        return self._window_size

@@ -44,3 +44,11 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput, HasTargetInput)
             "handle_unknown": "use_encoded_value",
             "unknown_value": value,
         }
+
+    @property
+    def transformer(self):
+        return self._transformer.transformers_[0][1]
+
+    @property
+    def target_feature(self):
+        return self._transformer.transformers[0][-1][0]
