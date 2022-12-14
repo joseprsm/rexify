@@ -47,7 +47,7 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput, HasTargetInput)
 
     @property
     def transformer(self):
-        return self._transformer.transformers_[0][1]
+        return self._transformer
 
     @property
     def target_feature(self):
