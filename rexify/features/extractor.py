@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.preprocessing import OrdinalEncoder
 
 from rexify.features.io import HasSchemaInput, HasTargetInput, SavableTransformer
 from rexify.features.transform import (
@@ -84,6 +85,13 @@ class FeatureExtractor(
 
 
 class Extractor(BaseEstimator, TransformerMixin, HasSchemaInput, SavableTransformer):
+
+    _user_id: list[str]
+    _user_encoder: OrdinalEncoder
+
+    _item_id: list[str]
+    _item_encoder: OrdinalEncoder
+
     def __init__(
         self,
         schema: Schema,
@@ -105,27 +113,40 @@ class Extractor(BaseEstimator, TransformerMixin, HasSchemaInput, SavableTransfor
         HasSchemaInput.__init__(self, schema=schema)
 
     def fit(self, X: pd.DataFrame, y=None):
-        x_ = self.encode(self._user_extractor, X)
-        x_ = self.encode(self._item_extractor, x_)
-        self._ppl.fit(x_, y)
+        x_ = X.copy()
+        self._user_encoder, self._user_id = self._get_id_name_encoder(
+            self._user_extractor
+        )
+        features = self.encode(self._user_encoder, self._user_id, x_)
+
+        self._item_encoder, self._item_id = self._get_id_name_encoder(
+            self._item_extractor
+        )
+        features = self.encode(self._item_encoder, self._item_id, features)
+
+        self._ppl.fit(features, y)
         return self
 
     def transform(self, X):
-        x_ = self.encode(self._user_extractor, X)
-        x_ = self.encode(self._item_extractor, x_)
-        x_ = self._ppl.transform(x_)
-        return x_
+        x_ = X.copy()
+        features = self.encode(self._user_encoder, self._user_id, x_)
+        features = self.encode(self._item_encoder, self._item_id, features)
+        return self._ppl.transform(features)
 
-    def encode(self, extractor: FeatureExtractor, data: pd.DataFrame) -> pd.DataFrame:
-        encoder = self._get_id_encoder(extractor)
-        data[encoder.target_feature] = encoder.transformer.transform(
-            data[[encoder.target_feature]]
-        )
+    @staticmethod
+    def encode(
+        encoder: OrdinalEncoder, feature_names: list[str], data: pd.DataFrame
+    ) -> pd.DataFrame:
+        data[feature_names] = encoder.transform(data[feature_names])
         return data
 
     @staticmethod
     def _get_id_encoder(extractor: FeatureExtractor):
-        return extractor.transformers_[0][1].steps[0][1]
+        return extractor.transformers_[0][1].steps[0][1].transformer
+
+    def _get_id_name_encoder(self, extractor: FeatureExtractor):
+        encoder = self._get_id_encoder(extractor).transformers_[0]
+        return encoder[1], encoder[-1]
 
     @property
     def item_extractor(self):
