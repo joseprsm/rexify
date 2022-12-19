@@ -1,5 +1,6 @@
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
@@ -65,6 +66,14 @@ class FeatureExtractor(
         self._features = pd.DataFrame(
             self._features[:, :-1], index=self._features[:, -1]
         )
+        self._features = pd.concat(
+            [
+                self._features,
+                pd.DataFrame(np.zeros(self._features.shape[1])).transpose(),
+            ],
+            ignore_index=True,
+        )
+
         self._model_params.update({f"{self._target}_embeddings": self._features})
         return self._features
 
