@@ -64,7 +64,10 @@ class EventGenerator(
         x_ = X.copy()
         features = self.encode(self._user_encoder, self._user_id, x_)
         features = self.encode(self._item_encoder, self._item_id, features)
-        return self._ppl.transform(features)
+        features = self._ppl.transform(features)
+        features = self.drop(features, "user")
+        features = self.drop(features, "item")
+        return features
 
     @staticmethod
     def encode(
@@ -83,6 +86,11 @@ class EventGenerator(
         model_params.update(self._user_extractor.model_params)
         model_params.update(self._item_extractor.model_params)
         return model_params
+
+    def drop(self, df: pd.DataFrame, target: str):
+        id_ = getattr(self, f"_{target}_id")
+        encoder = getattr(self, f"_{target}_encoder")
+        return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
 
     @property
     def item_extractor(self):
