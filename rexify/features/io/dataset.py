@@ -16,8 +16,8 @@ class TFDatasetGenerator(HasSchemaInput):
     def _get_dataset(self, data: pd.DataFrame) -> tf.data.Dataset:
         return tf.data.Dataset.zip(
             (
-                self._get_target_vector_dataset(data, self._schema, "item"),
                 self._get_target_vector_dataset(data, self._schema, "user"),
+                self._get_target_vector_dataset(data, self._schema, "item"),
                 tf.data.Dataset.from_tensor_slices(
                     np.stack(data["history"].values).astype(int)
                 ),
