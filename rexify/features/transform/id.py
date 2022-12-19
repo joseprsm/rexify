@@ -38,7 +38,7 @@ class IDEncoder(BaseEstimator, TransformerMixin, HasSchemaInput, HasTargetInput)
 
     @staticmethod
     def _get_encoder_args(df: pd.DataFrame, target_features: list[str]):
-        value = df[target_features].nunique().sum() + 1
+        value = df[target_features].nunique().sum()
         return {
             "dtype": np.int64,
             "handle_unknown": "use_encoded_value",
