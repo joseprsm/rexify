@@ -19,10 +19,10 @@ class TFDatasetGenerator(HasSchemaInput):
                 self._get_target_vector_dataset(data, self._schema, "user"),
                 self._get_target_vector_dataset(data, self._schema, "item"),
                 tf.data.Dataset.from_tensor_slices(
-                    np.stack(data["history"].values).astype(int)
+                    np.stack(data["history"].values).astype(np.int32)
                 ),
                 tf.data.Dataset.from_tensor_slices(
-                    np.stack(data[self._schema["event"]].values).astype(float)
+                    np.stack(data[self._schema["event"]].values).astype(np.float32)
                 ),
             )
         )
@@ -32,7 +32,9 @@ class TFDatasetGenerator(HasSchemaInput):
         data, schema: Schema, target: str
     ) -> tf.data.Dataset:
         return tf.data.Dataset.from_tensor_slices(
-            data.loc[:, get_target_id(schema, target)].values.reshape(-1)
+            data.loc[:, get_target_id(schema, target)]
+            .values.reshape(-1)
+            .astype(np.int32)
         )
 
     @staticmethod
