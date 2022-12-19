@@ -8,7 +8,6 @@ class CandidateModel(TowerModel):
     """Tower model responsible for computing the candidate representations
 
     Args:
-        item_id (str): the item ID feature
         n_items (str): number possible values for the ID feature
         embedding_dim (int): output dimension of the embedding layer
         output_layers (list): number of neurons in each layer for the output model
@@ -25,7 +24,6 @@ class CandidateModel(TowerModel):
 
     def __init__(
         self,
-        item_id: str,
         n_items: int,
         identifiers: np.array,
         feature_embeddings: np.array,
@@ -34,7 +32,7 @@ class CandidateModel(TowerModel):
         feature_layers: list[int] = None,
     ):
         super().__init__(
-            item_id,
+            "item_id",
             n_items,
             identifiers,
             feature_embeddings,
@@ -53,6 +51,5 @@ class CandidateModel(TowerModel):
 
     def get_config(self):
         config = super().get_config()
-        config["item_id"] = self._id_feature
         config["n_items"] = self._n_dims
         return config

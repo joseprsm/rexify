@@ -9,7 +9,6 @@ class QueryModel(TowerModel):
     """Tower model responsible for computing the query representations
 
     Args:
-        user_id (str): the user ID feature
         n_users (str): number possible values for the ID feature
         embedding_dim (int): output dimension of the embedding layer
         output_layers (list): number of neurons in each layer for the output model
@@ -26,7 +25,6 @@ class QueryModel(TowerModel):
 
     def __init__(
         self,
-        user_id: str,
         n_users: int,
         n_items: int,
         identifiers: np.array,
@@ -38,7 +36,7 @@ class QueryModel(TowerModel):
         sequential_dense_layers: list[int] = None,
     ):
         super().__init__(
-            user_id,
+            "user_id",
             n_users,
             identifiers,
             feature_embeddings,
@@ -57,9 +55,6 @@ class QueryModel(TowerModel):
     def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
         features = [self.lookup_model(inputs[self._id_feature])]
-
-        if inputs["context_features"].shape[-1] != 0:
-            features.append(inputs["context_features"])
 
         if "history" in inputs.keys():
             sequential_embedding = self.sequential_model(inputs["history"])
