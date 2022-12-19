@@ -14,14 +14,17 @@ class EmbeddingLookup(tf.keras.Model):
 
         identifiers_idx = np.arange(0, self._identifiers.shape[0])
         init = tf.lookup.KeyValueTensorInitializer(
-            keys=self._identifiers, values=identifiers_idx
+            keys=self._identifiers,
+            values=identifiers_idx,
+            key_dtype=tf.int32,
+            value_dtype=tf.int32,
         )
 
         self.token_to_id = tf.lookup.StaticHashTable(
             init, default_value=len(identifiers)
         )
 
-    @tf.function(input_signature=[tf.TensorSpec([None], tf.int64)])
+    @tf.function(input_signature=[tf.TensorSpec([None], tf.int32)])
     def call(self, inputs):
         ids = self.token_to_id.lookup(inputs)
         return tf.nn.embedding_lookup(params=self._embeddings, ids=ids)
