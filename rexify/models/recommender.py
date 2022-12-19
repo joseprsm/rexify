@@ -51,9 +51,7 @@ class Recommender(RetrievalMixin, RankingMixin):
 
     def __init__(
         self,
-        user_id: str,
         user_dims: int,
-        item_id: str,
         item_dims: int,
         user_embeddings: pd.DataFrame,
         item_embeddings: pd.DataFrame,
@@ -66,9 +64,7 @@ class Recommender(RetrievalMixin, RankingMixin):
     ):
         RetrievalMixin.__init__(
             self,
-            user_id=user_id,
             user_dims=user_dims + 1,
-            item_id=item_id,
             item_dims=item_dims + 1,
             user_embeddings=user_embeddings,
             item_embeddings=item_embeddings,
@@ -94,8 +90,6 @@ class Recommender(RetrievalMixin, RankingMixin):
         return {
             "item_dims": self._item_dims,
             "user_dims": self._user_dims,
-            "user_id": self._user_id,
-            "item_id": self._item_id,
             "output_layers": self._output_layers,
             "feature_layers": self._feature_layers,
             "ranking_dims": self._ranking_dims,

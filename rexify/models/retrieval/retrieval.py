@@ -11,9 +11,7 @@ from rexify.models.retrieval.query import QueryModel
 class RetrievalMixin(tfrs.Model, ABC):
     def __init__(
         self,
-        user_id: str,
         user_dims: int,
-        item_id: str,
         item_dims: int,
         user_embeddings: pd.DataFrame,
         item_embeddings: pd.DataFrame,
@@ -23,12 +21,8 @@ class RetrievalMixin(tfrs.Model, ABC):
         **kwargs
     ):
         super().__init__()
-        self._user_id = user_id
         self._user_dims = user_dims
-
-        self._item_id = item_id
         self._item_dims = item_dims
-
         self._embedding_dim = embedding_dim
         self._output_layers = output_layers or [64, 32]
         self._feature_layers = feature_layers or [64, 32, 16]
@@ -39,7 +33,6 @@ class RetrievalMixin(tfrs.Model, ABC):
         }
 
         self.query_model = QueryModel(
-            self._user_id,
             self._user_dims,
             self._item_dims,
             identifiers=user_embeddings.index.values.astype(int),
@@ -48,7 +41,6 @@ class RetrievalMixin(tfrs.Model, ABC):
         )
 
         self.candidate_model = CandidateModel(
-            self._item_id,
             self._item_dims,
             identifiers=item_embeddings.index.values.astype(int),
             feature_embeddings=item_embeddings.values.astype(float),
