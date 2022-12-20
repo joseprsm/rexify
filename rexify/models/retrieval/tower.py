@@ -63,3 +63,7 @@ class TowerModel(tf.keras.Model, DenseSetterMixin):
             "identifiers": self._identifiers,
             "feature_embeddings": self._target_features,
         }
+
+    @property
+    def identifiers(self):
+        return self._identifiers
