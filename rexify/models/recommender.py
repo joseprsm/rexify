@@ -1,6 +1,7 @@
 import pandas as pd
 import tensorflow as tf
 
+from rexify.models.callbacks import BruteForceCallback
 from rexify.models.ranking import RankingMixin
 from rexify.models.retrieval import RetrievalMixin
 
@@ -29,9 +30,7 @@ class Recommender(RetrievalMixin, RankingMixin):
     An optional Ranking model is also included, granted there are `ranking_features`.
 
     Args:
-        user_id (str): the user ID feature name
         user_dims (int): number possible values for the user ID feature
-        item_id (str): the item ID feature name
         item_dims (int): number possible values for the item ID feature
         embedding_dim (int): output dimension of the embedding layer
         feature_layers (list): number of neurons in each layer for the feature models
@@ -39,7 +38,7 @@ class Recommender(RetrievalMixin, RankingMixin):
 
     Examples:
         >>> from rexify.models import Recommender
-        >>> model = Recommender('user_id', 15, 'item_id', 15)
+        >>> model = Recommender()
         >>> model.compile()
 
         >>> import numpy as np
@@ -86,6 +85,28 @@ class Recommender(RetrievalMixin, RankingMixin):
         loss += RankingMixin.get_loss(self, *embeddings, inputs["event"])
         return loss
 
+    def fit(
+        self,
+        x: tf.data.Dataset,
+        batch_size: int = None,
+        epochs: int = 1,
+        callbacks: list[tf.keras.callbacks.Callback] = None,
+        validation_data=None,
+    ):
+
+        sample_query = list(x.batch(1).take(1))[0][
+            "query"
+        ]  # required to set index shapes
+        callbacks = (
+            [BruteForceCallback(sample_query)] if callbacks is None else callbacks
+        )
+
+        x = x.batch(batch_size) if batch_size else x
+
+        return super().fit(
+            x, epochs=epochs, validation_data=validation_data, callbacks=callbacks
+        )
+
     def get_config(self):
         return {
             "item_dims": self._item_dims,
@@ -95,5 +116,4 @@ class Recommender(RetrievalMixin, RankingMixin):
             "ranking_dims": self._ranking_dims,
             "rating_layers": self._rating_layers,
             "rating_features": self._rating_features,
-            "ranking_weights": self._ranking_weights,
         }
