@@ -26,12 +26,12 @@ class EventGenerator(
     def __init__(
         self,
         schema: Schema,
-        timestamp: str,
         user_extractor: FeatureExtractor,
         item_extractor: FeatureExtractor,
+        timestamp: str = None,
         window_size: int = 3,
     ):
-        self._timestamp = timestamp
+        self._timestamp = timestamp or self._get_timestamp(schema)
         self._user_extractor = user_extractor
         self._item_extractor = item_extractor
         self._window_size = window_size
@@ -40,7 +40,9 @@ class EventGenerator(
 
         self._ppl = make_pipeline(
             EventEncoder(schema),
-            Sequencer(schema, timestamp_feature=timestamp, window_size=window_size),
+            Sequencer(
+                schema, timestamp_feature=self._timestamp, window_size=window_size
+            ),
         )
 
         HasSchemaInput.__init__(self, schema=schema)
@@ -76,6 +78,11 @@ class EventGenerator(
         data[feature_names] = encoder.transform(data[feature_names])
         return data
 
+    def drop(self, df: pd.DataFrame, target: str):
+        id_ = getattr(self, f"_{target}_id")
+        encoder = getattr(self, f"_{target}_encoder")
+        return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
+
     @staticmethod
     def _get_id_name_encoder(extractor: FeatureExtractor):
         encoder = extractor.transformers_[0][1].steps[0][1].transformer.transformers_[0]
@@ -87,10 +94,9 @@ class EventGenerator(
         model_params.update(self._item_extractor.model_params)
         return model_params
 
-    def drop(self, df: pd.DataFrame, target: str):
-        id_ = getattr(self, f"_{target}_id")
-        encoder = getattr(self, f"_{target}_encoder")
-        return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
+    @staticmethod
+    def _get_timestamp(schema):
+        return schema["timestamp"]
 
     @property
     def item_extractor(self):
