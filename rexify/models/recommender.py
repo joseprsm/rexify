@@ -93,14 +93,10 @@ class Recommender(RetrievalMixin, RankingMixin):
         callbacks: list[tf.keras.callbacks.Callback] = None,
         validation_data=None,
     ):
-
-        sample_query = list(x.batch(1).take(1))[0][
-            "query"
-        ]  # required to set index shapes
-        callbacks = (
-            [BruteForceCallback(sample_query)] if callbacks is None else callbacks
-        )
-
+        # required to set index shapes
+        sample_query = list(x.batch(1).take(1))[0]["query"]
+        base_callbacks = [BruteForceCallback(sample_query)]
+        callbacks = base_callbacks if callbacks is None else callbacks
         x = x.batch(batch_size) if batch_size else x
 
         return super().fit(

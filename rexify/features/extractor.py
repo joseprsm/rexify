@@ -89,7 +89,3 @@ class FeatureExtractor(
     @property
     def identifiers(self):
         return self._features.index.values.astype(int)
-
-    @property
-    def features(self):
-        return self._features.values.astype(float)

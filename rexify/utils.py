@@ -16,21 +16,9 @@ def get_target_feature(schema: Schema, target: str, type_: str):
     def mask(x: tuple):
         return x[1] == type_
 
-    return list(map(get_first, filter(mask, schema[target].items())))
+    return list(map(lambda x: x[0], filter(mask, schema[target].items())))
 
 
 def make_dirs(*args):
     for dir_ in args:
         Path(dir_).mkdir(parents=True, exist_ok=True)
-
-
-def get_first(x: tuple):
-    return x[0]
-
-
-def get_schema_features(schema: Schema):
-    return flatten([list(v.keys()) for k, v in schema.items() if k != "rank"])
-
-
-def get_ranking_features(schema: Schema):
-    return [feat["name"] for feat in schema["rank"]]
