@@ -65,7 +65,7 @@ class TFDatasetGenerator(HasSchemaMixin):
                     np.stack(data["history"].values).astype(np.int32)
                 ),
                 tf.data.Dataset.from_tensor_slices(
-                    np.stack(data[self._schema["event"]].values).astype(np.float32)
+                    np.stack(data[self._schema.event_type].values).astype(np.float32)
                 ),
             )
         )

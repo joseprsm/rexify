@@ -39,7 +39,7 @@ class _FeaturePipeline(tuple):
             IDEncoder(schema, target),
             _FeatureTransformer(schema, target),
         )
-        keys = list(schema[target].keys())
+        keys = list(getattr(schema, target).to_dict().keys())
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 

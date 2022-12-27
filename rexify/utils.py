@@ -1,22 +1,19 @@
 from pathlib import Path
-from typing import Any, List
 
 from rexify.dataclasses import Schema
 
 
-def flatten(xss: List[List[Any]]):
-    return [x for xs in xss for x in xs]
-
-
 def get_target_id(schema: Schema, target: str):
-    return get_target_feature(schema, target, "id")
+    return getattr(schema, target).id
 
 
 def get_target_feature(schema: Schema, target: str, type_: str):
     def mask(x: tuple):
         return x[1] == type_
 
-    return list(map(lambda x: x[0], filter(mask, schema[target].items())))
+    return list(
+        map(lambda x: x[0], filter(mask, getattr(schema, target).to_dict().items()))
+    )
 
 
 def make_dirs(*args):

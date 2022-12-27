@@ -28,10 +28,9 @@ class EventGenerator(
         schema: Schema,
         user_extractor: FeatureExtractor,
         item_extractor: FeatureExtractor,
-        timestamp: str = None,
         window_size: int = 3,
     ):
-        self._timestamp = timestamp or self._get_timestamp(schema)
+        self._timestamp = schema.timestamp
         self._user_extractor = user_extractor
         self._item_extractor = item_extractor
         self._window_size = window_size
@@ -93,10 +92,6 @@ class EventGenerator(
         model_params.update(self._user_extractor.model_params)
         model_params.update(self._item_extractor.model_params)
         return model_params
-
-    @staticmethod
-    def _get_timestamp(schema):
-        return schema["timestamp"]
 
     @property
     def item_extractor(self):
