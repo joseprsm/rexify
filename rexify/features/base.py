@@ -13,6 +13,23 @@ class HasSchemaInput:
         return self._schema
 
 
+class HasTargetInput:
+
+    _SUPPORTED_TARGETS = ["user", "item"]
+
+    def __init__(self, target: str):
+        self._target = target
+
+    @property
+    def target(self):
+        return self._target
+
+    @classmethod
+    def _validate_target(cls, target: str):
+        if target not in cls._SUPPORTED_TARGETS:
+            raise ValueError(f"Target {target} not supported")
+
+
 class BaseEncoder(HasSchemaInput):
 
     ppl: Pipeline

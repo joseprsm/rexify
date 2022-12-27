@@ -4,8 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer, make_column_transformer
 from sklearn.preprocessing import OrdinalEncoder
 
-from rexify.features.io import HasSchemaInput
-from rexify.features.io.target import HasTargetInput
+from rexify.features.base import HasSchemaInput, HasTargetInput
 from rexify.utils import get_target_id
 
 
