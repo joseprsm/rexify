@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from rexify.features.io import HasSchemaInput
-from rexify.types import Schema
+from rexify.dataclasses import Schema
+from rexify.features.base import HasSchemaMixin
 from rexify.utils import flatten, get_target_id
 
 
-class Sequencer(BaseEstimator, TransformerMixin, HasSchemaInput):
+class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
     """Transformer responsible for creating sequential data.
 

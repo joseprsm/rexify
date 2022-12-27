@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, List
 
-from rexify.types import Schema
+from rexify.dataclasses import Schema
 
 
 def flatten(xss: List[List[Any]]):

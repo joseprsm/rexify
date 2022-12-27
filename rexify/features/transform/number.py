@@ -1,11 +1,11 @@
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 
-from rexify.features.base import BaseFeatureEncoder
-from rexify.types import Schema
+from rexify.dataclasses import Schema
+from rexify.features.base import BaseEncoder
 
 
-class NumericalEncoder(BaseFeatureEncoder):
+class NumericalEncoder(BaseEncoder):
     def __init__(self, schema: Schema, target: str):
         super().__init__(dtype="numerical", target=target, schema=schema)
 

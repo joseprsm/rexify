@@ -6,13 +6,13 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
 from rexify import FeatureExtractor
-from rexify.features.io import HasSchemaInput, SavableTransformer, TFDatasetGenerator
+from rexify.dataclasses import Schema
+from rexify.features.base import HasSchemaMixin, Serializable, TFDatasetGenerator
 from rexify.features.transform import EventEncoder, Sequencer
-from rexify.types import Schema
 
 
 class EventGenerator(
-    BaseEstimator, TransformerMixin, SavableTransformer, TFDatasetGenerator
+    BaseEstimator, TransformerMixin, HasSchemaMixin, Serializable, TFDatasetGenerator
 ):
 
     _user_id: list[str]
@@ -45,7 +45,7 @@ class EventGenerator(
             ),
         )
 
-        HasSchemaInput.__init__(self, schema=schema)
+        HasSchemaMixin.__init__(self, schema=schema)
 
     def fit(self, X: pd.DataFrame, y=None):
         x_ = X.copy()

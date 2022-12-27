@@ -5,16 +5,16 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
-from rexify.features.io import HasSchemaInput, HasTargetInput, SavableTransformer
+from rexify.dataclasses import Schema
+from rexify.features.base import HasSchemaMixin, HasTargetMixin, Serializable
 from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
-from rexify.types import Schema
 from rexify.utils import get_target_id
 
 
-class _FeatureTransformer(ColumnTransformer, HasSchemaInput, HasTargetInput):
+class _FeatureTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
     def __init__(self, schema: Schema, target: str):
-        HasSchemaInput.__init__(self, schema=schema)
-        HasTargetInput.__init__(self, target=target)
+        HasSchemaMixin.__init__(self, schema=schema)
+        HasTargetMixin.__init__(self, target=target)
         transformers = self._get_transformers()
         ColumnTransformer.__init__(
             self, transformers=transformers, remainder="passthrough"
@@ -43,16 +43,14 @@ class _FeaturePipeline(tuple):
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 
-class FeatureExtractor(
-    ColumnTransformer, HasSchemaInput, HasTargetInput, SavableTransformer
-):
+class FeatureExtractor(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serializable):
 
     _features: pd.DataFrame
     _model_params: dict[str, Any]
 
     def __init__(self, schema: Schema, target: str):
-        HasSchemaInput.__init__(self, schema)
-        HasTargetInput.__init__(self, target)
+        HasSchemaMixin.__init__(self, schema)
+        HasTargetMixin.__init__(self, target)
         ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
 
     def fit(self, X, y=None):

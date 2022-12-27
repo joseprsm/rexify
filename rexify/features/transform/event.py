@@ -2,13 +2,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import OneHotEncoder
 
-from rexify.features.io import HasSchemaInput
-from rexify.types import Schema
+from rexify.dataclasses import Schema
+from rexify.features.base import HasSchemaMixin
 
 
-class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaInput):
+class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaMixin):
     def __init__(self, schema: Schema):
-        HasSchemaInput.__init__(self, schema)
+        HasSchemaMixin.__init__(self, schema)
         self._event_col = schema["event"]
         self._transformer = make_column_transformer(
             (OneHotEncoder(), [self._event_col])
