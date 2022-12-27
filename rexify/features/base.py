@@ -1,8 +1,16 @@
 from sklearn.pipeline import Pipeline
 
-from rexify.features.io import HasSchemaInput
-from rexify.types import Schema
+from rexify.dataclasses import Schema
 from rexify.utils import get_target_feature
+
+
+class HasSchemaInput:
+    def __init__(self, schema: Schema):
+        self._schema = schema
+
+    @property
+    def schema(self):
+        return self._schema
 
 
 class BaseEncoder(HasSchemaInput):
