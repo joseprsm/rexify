@@ -1,12 +1,14 @@
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
 from rexify.dataclasses import Schema
 from rexify.features.base import HasSchemaMixin, HasTargetMixin, Serializable
+from rexify.features.generator import EventGenerator
 from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
 from rexify.utils import get_target_id
 
@@ -43,7 +45,7 @@ class _FeaturePipeline(tuple):
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 
-class FeatureExtractor(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serializable):
+class TargetTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serializable):
 
     _features: pd.DataFrame
     _model_params: dict[str, Any]
@@ -60,7 +62,7 @@ class FeatureExtractor(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serial
         return self
 
     def transform(self, X) -> pd.DataFrame:
-        self._features = super(FeatureExtractor, self).transform(X)
+        self._features = super(TargetTransformer, self).transform(X)
         self._features = pd.DataFrame(
             self._features[:, :-1], index=self._features[:, -1]
         )
@@ -87,3 +89,40 @@ class FeatureExtractor(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serial
     @property
     def identifiers(self):
         return self._features.index.values.astype(int)
+
+
+class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaInput):
+
+    _event_gen: EventGenerator
+
+    def __init__(
+        self,
+        schema: Schema,
+        users_path: str | None = None,
+        items_path: str | None = None,
+        load_fn: Callable = pd.read_csv,
+    ):
+        HasSchemaMixin.__init__(self, schema)
+        self._user_extractor = TargetTransformer(schema, "user")
+        self._item_extractor = TargetTransformer(schema, "item")
+        self._load_fn = load_fn
+
+        self._users_path = users_path
+        self._items_path = items_path
+
+    def fit(self, X, y=None, **fit_params):
+        self._fit_extractor("user")
+        self._fit_extractor("item")
+        self._event_gen = EventGenerator(
+            self._schema, self._user_extractor, self._item_extractor
+        )
+        return self
+
+    def transform(self, X):
+        raise NotImplementedError
+
+    def _fit_extractor(self, target: str):
+        path = getattr(self, f"_{target}s_path")
+        extractor = getattr(self, f"_{target}_extractor")
+        data = self._load_fn(path)
+        extractor.fit(data)

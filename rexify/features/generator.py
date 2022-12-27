@@ -8,6 +8,7 @@ from sklearn.preprocessing import OrdinalEncoder
 from rexify import FeatureExtractor
 from rexify.dataclasses import Schema
 from rexify.features.base import HasSchemaMixin, Serializable, TFDatasetGenerator
+from rexify.features.extractor import TargetTransformer
 from rexify.features.transform import EventEncoder, Sequencer
 
 
@@ -26,8 +27,8 @@ class EventGenerator(
     def __init__(
         self,
         schema: Schema,
-        user_extractor: FeatureExtractor,
-        item_extractor: FeatureExtractor,
+        user_extractor: TargetTransformer,
+        item_extractor: TargetTransformer,
         window_size: int = 3,
     ):
         self._timestamp = schema.timestamp
@@ -83,7 +84,7 @@ class EventGenerator(
         return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
 
     @staticmethod
-    def _get_id_name_encoder(extractor: FeatureExtractor):
+    def _get_id_name_encoder(extractor: TargetTransformer):
         encoder = extractor.transformers_[0][1].steps[0][1].transformer.transformers_[0]
         return encoder[1], encoder[-1]
 
