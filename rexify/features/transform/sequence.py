@@ -30,7 +30,6 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
                       'user': {'age': 'numerical', 'gender': 'categorical',
                                'user_id': 'id'}},
               timestamp_feature='timestamp', window_size=4)
-
         >>> transformed = sequencer.transform(events)
 
     """
