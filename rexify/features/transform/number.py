@@ -1,7 +1,7 @@
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 
-from rexify.features.transform.base import BaseFeatureEncoder
+from rexify.features.base import BaseFeatureEncoder
 from rexify.types import Schema
 
 

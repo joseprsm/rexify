@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from rexify.features.io.schema import HasSchemaInput
+from rexify.features.base import HasSchemaInput
 from rexify.types import Schema
 from rexify.utils import get_target_id
 
