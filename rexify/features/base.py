@@ -6,7 +6,7 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.pipeline import Pipeline
 
-from rexify.dataclasses import Schema
+from rexify.schema import Schema
 from rexify.utils import get_target_feature, get_target_id, make_dirs
 
 

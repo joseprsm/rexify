@@ -3,7 +3,7 @@ class _TargetSchema:
     _SUPPORTED_DATA_TYPES = ["category", "number"]
 
     def __init__(self, id_: str, **features):
-        self.id = id_
+        setattr(self, id_, "id")
         for feature_name, dtype in features.items():
             self._validate_features(feature_name, dtype)
             setattr(self, feature_name, dtype)

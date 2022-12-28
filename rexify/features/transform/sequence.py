@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from rexify.dataclasses import Schema
 from rexify.features.base import HasSchemaMixin
+from rexify.schema import Schema
 from rexify.utils import get_target_id
 
 

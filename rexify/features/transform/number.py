@@ -1,8 +1,8 @@
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import MinMaxScaler
 
-from rexify.dataclasses import Schema
 from rexify.features.base import BaseEncoder
+from rexify.schema import Schema
 
 
 class NumericalEncoder(BaseEncoder):

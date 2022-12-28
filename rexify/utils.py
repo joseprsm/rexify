@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from rexify.dataclasses import Schema
+from rexify.schema import Schema
 
 
 def get_target_id(schema: Schema, target: str):
-    return getattr(schema, target).id
+    return [k for k, v in getattr(schema, target).to_dict().items() if v == "id"]
 
 
 def get_target_feature(schema: Schema, target: str, type_: str):

@@ -2,8 +2,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import OneHotEncoder
 
-from rexify.dataclasses import Schema
 from rexify.features.base import HasSchemaMixin
+from rexify.schema import Schema
 
 
 class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaMixin):
