@@ -1,128 +1,152 @@
 from typing import Any, Callable
 
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OrdinalEncoder
 
-from rexify.dataclasses import Schema
-from rexify.features.base import HasSchemaMixin, HasTargetMixin, Serializable
-from rexify.features.generator import EventGenerator
-from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
-from rexify.utils import get_target_id
+from rexify.features.base import HasSchemaMixin, Serializable, TFDatasetGenerator
+from rexify.features.transform import EventEncoder, Sequencer, TargetTransformer
+from rexify.schema import Schema
 
 
-class _FeatureTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
-    def __init__(self, schema: Schema, target: str):
-        HasSchemaMixin.__init__(self, schema=schema)
-        HasTargetMixin.__init__(self, target=target)
-        transformers = self._get_transformers()
-        ColumnTransformer.__init__(
-            self, transformers=transformers, remainder="passthrough"
-        )
+class _EventGenerator(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
-    def _get_transformers(self) -> list[tuple[str, Pipeline, list[str]]]:
-        transformer_list = []
+    _user_id: list[str]
+    _user_encoder: OrdinalEncoder
 
-        cat_encoder = CategoricalEncoder(self._schema, self._target).as_tuple()
-        transformer_list += [cat_encoder] if cat_encoder[-1] != tuple() else []
-
-        num_encoder = NumericalEncoder(self._schema, self._target).as_tuple()
-        transformer_list += [num_encoder] if num_encoder[-1] != tuple() else []
-
-        return transformer_list
-
-
-class _FeaturePipeline(tuple):
-    def __new__(cls, schema: Schema, target: str):
-        name = f"{target}_featureExtractor"
-        ppl = make_pipeline(
-            IDEncoder(schema, target),
-            _FeatureTransformer(schema, target),
-        )
-        keys = list(getattr(schema, target).to_dict().keys())
-        return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
-
-
-class TargetTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin, Serializable):
-
-    _features: pd.DataFrame
-    _model_params: dict[str, Any]
-
-    def __init__(self, schema: Schema, target: str):
-        HasSchemaMixin.__init__(self, schema)
-        HasTargetMixin.__init__(self, target)
-        ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
-
-    def fit(self, X, y=None):
-        super().fit(X, y)
-        n_dims = self._get_n_dims(X)
-        self._model_params = n_dims
-        return self
-
-    def transform(self, X) -> pd.DataFrame:
-        self._features = super(TargetTransformer, self).transform(X)
-        self._features = pd.DataFrame(
-            self._features[:, :-1], index=self._features[:, -1]
-        )
-        self._features = pd.concat(
-            [
-                self._features,
-                pd.DataFrame(np.zeros(self._features.shape[1])).transpose(),
-            ],
-            ignore_index=True,
-        )
-
-        self._model_params.update({f"{self._target}_embeddings": self._features})
-        return self._features
-
-    def _get_n_dims(self, X):
-        id_col = get_target_id(self._schema, self._target)[0]
-        input_dims = int(X[id_col].nunique() + 1)
-        return {f"{self._target}_dims": input_dims}
-
-    @property
-    def model_params(self):
-        return self._model_params
-
-    @property
-    def identifiers(self):
-        return self._features.index.values.astype(int)
-
-
-class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaInput):
-
-    _event_gen: EventGenerator
+    _item_id: list[str]
+    _item_encoder: OrdinalEncoder
 
     def __init__(
         self,
         schema: Schema,
-        users_path: str | None = None,
-        items_path: str | None = None,
+        user_extractor: TargetTransformer,
+        item_extractor: TargetTransformer,
+        window_size: int = 3,
+    ):
+        self._timestamp = schema.timestamp
+        self._user_extractor = user_extractor
+        self._item_extractor = item_extractor
+        self._window_size = window_size
+
+        self._ppl = make_pipeline(
+            EventEncoder(schema),
+            Sequencer(
+                schema, timestamp_feature=self._timestamp, window_size=window_size
+            ),
+        )
+
+        HasSchemaMixin.__init__(self, schema=schema)
+
+    def fit(self, X: pd.DataFrame, y=None):
+        x_ = X.copy()
+        self._user_encoder, self._user_id = self._user_extractor.encoder
+        features = self.encode(self._user_encoder, self._user_id, x_)
+
+        self._item_encoder, self._item_id = self._item_extractor.encoder
+        features = self.encode(self._item_encoder, self._item_id, features)
+
+        self._ppl.fit(features, y)
+        return self
+
+    def transform(self, X):
+        x_ = X.copy()
+        features = self.encode(self._user_encoder, self._user_id, x_)
+        features = self.encode(self._item_encoder, self._item_id, features)
+        features = self._ppl.transform(features)
+        features = self.drop(features, "user")
+        features = self.drop(features, "item")
+        return features
+
+    @staticmethod
+    def encode(
+        encoder: OrdinalEncoder, feature_names: list[str], data: pd.DataFrame
+    ) -> pd.DataFrame:
+        data[feature_names] = encoder.transform(data[feature_names])
+        return data
+
+    def drop(self, df: pd.DataFrame, target: str):
+        id_ = getattr(self, f"_{target}_id")
+        encoder = getattr(self, f"_{target}_encoder")
+        return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
+
+    @property
+    def item_extractor(self):
+        return self._item_extractor
+
+    @property
+    def user_extractor(self):
+        return self._user_extractor
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @property
+    def window_size(self):
+        return self._window_size
+
+
+class FeatureExtractor(
+    BaseEstimator, TransformerMixin, Serializable, TFDatasetGenerator
+):
+
+    _event_gen: _EventGenerator
+    _model_params: dict[str, Any]
+
+    def __init__(
+        self,
+        schema: Schema,
+        users_path: str = None,
+        items_path: str = None,
         load_fn: Callable = pd.read_csv,
     ):
         HasSchemaMixin.__init__(self, schema)
-        self._user_extractor = TargetTransformer(schema, "user")
-        self._item_extractor = TargetTransformer(schema, "item")
+        self._user_transformer = TargetTransformer(schema, "user")
+        self._item_transformer = TargetTransformer(schema, "item")
         self._load_fn = load_fn
 
         self._users_path = users_path
         self._items_path = items_path
 
-    def fit(self, X, y=None, **fit_params):
+    def fit(self, X, y=None):
         self._fit_extractor("user")
         self._fit_extractor("item")
-        self._event_gen = EventGenerator(
-            self._schema, self._user_extractor, self._item_extractor
+        self._event_gen = _EventGenerator(
+            self._schema, self._user_transformer, self._item_transformer
         )
+        self._event_gen.fit(X, y)
+        self._model_params = self._get_model_params()
         return self
 
     def transform(self, X):
-        raise NotImplementedError
+        return self._event_gen.transform(X)
 
     def _fit_extractor(self, target: str):
         path = getattr(self, f"_{target}s_path")
-        extractor = getattr(self, f"_{target}_extractor")
+        transformer = getattr(self, f"_{target}_transformer")
         data = self._load_fn(path)
-        extractor.fit(data)
+        _ = transformer.fit(data).transform(data)
+
+    def _get_model_params(self):
+        model_params = {}
+        model_params.update(self._user_transformer.model_params)
+        model_params.update(self._item_transformer.model_params)
+        return model_params
+
+    @property
+    def users_path(self):
+        return self._users_path
+
+    @property
+    def items_path(self):
+        return self._items_path
+
+    @property
+    def load_fn(self):
+        return self._load_fn
+
+    @property
+    def model_params(self):
+        return self._model_params
