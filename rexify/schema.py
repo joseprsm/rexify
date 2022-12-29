@@ -1,3 +1,6 @@
+import json
+
+
 class _JSONSerializable:
     def to_dict(self):
         return self.__dict__
@@ -60,3 +63,7 @@ class Schema(_JSONSerializable):
         schema["user"] = self.user.to_dict()
         schema["item"] = self.item.to_dict()
         return schema
+
+    def save(self, path: str):
+        with open(path, "w") as f:
+            json.dump(self.to_dict(), f, indent=4)
