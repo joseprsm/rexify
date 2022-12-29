@@ -1,4 +1,9 @@
-class _TargetSchema:
+class _JSONSerializable:
+    def to_dict(self):
+        return self.__dict__
+
+
+class _TargetSchema(_JSONSerializable):
 
     _SUPPORTED_DATA_TYPES = ["category", "number"]
 
@@ -18,11 +23,8 @@ class _TargetSchema:
                 """
             )
 
-    def to_dict(self):
-        return self.__dict__
 
-
-class Schema:
+class Schema(_JSONSerializable):
     def __init__(
         self,
         user_id: str,
@@ -38,3 +40,23 @@ class Schema:
         self.item = _TargetSchema(item_id, **item_features)
         self.timestamp = timestamp
         self.event_type = event_type
+
+    @classmethod
+    def from_dict(cls, schema: dict[str, str | dict[str, str]]):
+        schema_ = schema.copy()
+        user_id = schema_["user"].pop("id")
+        item_id = schema_["item"].pop("id")
+        return Schema(
+            user_id=user_id,
+            item_id=item_id,
+            timestamp=schema_["timestamp"],
+            event_type=schema_["event_type"],
+            user_features=schema_["user"],
+            item_features=schema_["item"],
+        )
+
+    def to_dict(self) -> dict[str, str | dict[str, str]]:
+        schema = super().to_dict()
+        schema["user"] = self.user.to_dict()
+        schema["item"] = self.item.to_dict()
+        return schema
