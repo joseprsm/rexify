@@ -45,6 +45,12 @@ class Schema(_JSONSerializable):
         self.event_type = event_type
 
     @classmethod
+    def load(cls, schema_path: str):
+        with open(schema_path, "r") as f:
+            schema = json.load(f)
+        return Schema.from_dict(schema)
+
+    @classmethod
     def from_dict(cls, schema: dict[str, str | dict[str, str]]):
         schema_ = schema.copy()
         user_id = schema_["user"].pop("id")
