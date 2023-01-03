@@ -23,3 +23,7 @@ class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaMixin):
         X = X.drop(self._event_type, axis=1)
         X[self._event_type] = oneh.tolist()
         return X
+
+    @property
+    def transformer(self):
+        return self._transformer.transformers_[0][1]
