@@ -111,9 +111,7 @@ class _TFDatasetGenerator(HasSchemaMixin):
                 tf.data.Dataset.from_tensor_slices(
                     np.stack(data["history"].values).astype(np.int32)
                 ),
-                tf.data.Dataset.from_tensor_slices(
-                    np.stack(data[self._schema.event_type].values).astype(np.float32)
-                ),
+                self._get_ranking_dataset(data),
             )
         )
 
@@ -127,16 +125,26 @@ class _TFDatasetGenerator(HasSchemaMixin):
             .astype(np.int32)
         )
 
-    def _get_ranking_dataset(self, data):
-        raise NotImplementedError
+    def _get_ranking_dataset(self, data) -> tf.data.Dataset:
+        @tf.autograph.experimental.do_not_convert
+        def add_header(x):
+            return {
+                self._event_gen.ranking_features[i]: x[i]
+                for i in range(self._event_gen.ranking_features.shape[0])
+            }
+
+        return tf.data.Dataset.from_tensor_slices(
+            data.loc[:, self._event_gen.ranking_features].values.astype(np.int32)
+        ).map(add_header)
 
     @staticmethod
     def _get_header_fn():
-        def header_fn(user_id, item_id, history, event):
+        @tf.autograph.experimental.do_not_convert
+        def header_fn(user_id, item_id, history, ranks):
             return {
                 "query": {"user_id": user_id, "history": history},
                 "candidate": {"item_id": item_id},
-                "event": event,
+                "rank": ranks,
             }
 
         return header_fn
