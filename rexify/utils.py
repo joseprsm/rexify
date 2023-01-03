@@ -1,13 +1,15 @@
 from pathlib import Path
 
-from rexify.schema import Schema
+
+def get_target_id(schema, target: str):
+    schema_dict = (
+        getattr(schema, target).to_dict() if type(schema) != dict else schema[target]
+    )
+
+    return [k for k, v in schema_dict.items() if v == "id"]
 
 
-def get_target_id(schema: Schema, target: str):
-    return [k for k, v in getattr(schema, target).to_dict().items() if v == "id"]
-
-
-def get_target_feature(schema: Schema, target: str, type_: str):
+def get_target_feature(schema, target: str, type_: str):
     def mask(x: tuple):
         return x[1] == type_
 

@@ -1,5 +1,7 @@
 import json
 
+from rexify.utils import get_target_id
+
 
 class _JSONSerializable:
     def to_dict(self):
@@ -53,8 +55,12 @@ class Schema(_JSONSerializable):
     @classmethod
     def from_dict(cls, schema: dict[str, str | dict[str, str]]):
         schema_ = schema.copy()
-        user_id = schema_["user"].pop("id")
-        item_id = schema_["item"].pop("id")
+        user_id = get_target_id(schema_, "user")[0]
+        _ = schema_["user"].pop(user_id)
+
+        item_id = get_target_id(schema_, "item")[0]
+        _ = schema_["item"].pop(item_id)
+
         return Schema(
             user_id=user_id,
             item_id=item_id,
