@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import make_column_transformer
 from sklearn.preprocessing import OneHotEncoder
@@ -20,9 +21,9 @@ class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
     def transform(self, X):
         oneh = self._transformer.transform(X)
-        X = X.drop(self._event_type, axis=1)
-        X[self._event_type] = oneh.tolist()
-        return X
+        oneh = pd.DataFrame(oneh, columns=self.transformer.get_feature_names_out())
+        x = X.drop(self._event_type, axis=1)
+        return pd.concat([x, oneh], axis=1)
 
     @property
     def transformer(self):
