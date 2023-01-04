@@ -130,7 +130,7 @@ class _TFDatasetGenerator(HasSchemaMixin):
         def add_header(x):
             return {
                 self._event_gen.ranking_features[i]: x[i]
-                for i in range(self._event_gen.ranking_features.shape[0])
+                for i in range(len(self._event_gen.ranking_features))
             }
 
         return tf.data.Dataset.from_tensor_slices(

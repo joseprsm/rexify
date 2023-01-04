@@ -31,4 +31,4 @@ class EventEncoder(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
     @property
     def ranking_features(self):
-        return self.transformer.get_feature_names_out()
+        return self.transformer.get_feature_names_out().tolist()
