@@ -10,14 +10,13 @@ from rexify.models.ranking.event import EventModel
 class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
     def __init__(
         self,
-        n_dims: int = 1,
-        rating_features: list[str] = None,
+        ranking_features: list[str] = None,
         layer_sizes: list[int] = None,
+        weights: dict[str, float] = None,
     ):
         super().__init__()
-        self._ranking_dims = n_dims
-        self._rating_features = rating_features or []
-        self._rating_layers = layer_sizes or [64, 32]
+        self._ranking_features = ranking_features or []
+        self._ranking_layers = layer_sizes or [64, 32]
 
         self.event_model = EventModel(self._rating_layers, n_dims=self._ranking_dims)
 
