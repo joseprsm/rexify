@@ -57,9 +57,9 @@ class Recommender(RetrievalMixin, RankingMixin):
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
-        ranking_dims: int = 1,
-        rating_features: list[str] = None,
-        rating_layers: list[int] = None,
+        ranking_features: list[str] = None,
+        ranking_layers: list[int] = None,
+        ranking_weights: dict[str, float] = None,
     ):
         RetrievalMixin.__init__(
             self,
@@ -74,15 +74,15 @@ class Recommender(RetrievalMixin, RankingMixin):
 
         RankingMixin.__init__(
             self,
-            n_dims=ranking_dims,
-            rating_features=rating_features,
-            layer_sizes=rating_layers,
+            ranking_features=ranking_features,
+            layer_sizes=ranking_layers,
+            weights=ranking_weights,
         )
 
     def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
         embeddings = self(inputs)  # Recommender inherits RetrievalMixin's call method
         loss = RetrievalMixin.get_loss(self, *embeddings)
-        loss += RankingMixin.get_loss(self, *embeddings, inputs["event"])
+        loss += RankingMixin.get_loss(self, *embeddings, inputs["rank"])
         return loss
 
     def fit(
@@ -109,7 +109,7 @@ class Recommender(RetrievalMixin, RankingMixin):
             "user_dims": self._user_dims,
             "output_layers": self._output_layers,
             "feature_layers": self._feature_layers,
-            "ranking_dims": self._ranking_dims,
-            "rating_layers": self._rating_layers,
-            "rating_features": self._rating_features,
+            "ranking_layers": self._ranking_layers,
+            "ranking_features": self._ranking_features,
+            "ranking_weights": self._ranking_weights,
         }

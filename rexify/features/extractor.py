@@ -1,13 +1,16 @@
 from typing import Any, Callable
 
+import numpy as np
 import pandas as pd
+import tensorflow as tf
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import OrdinalEncoder
 
-from rexify.features.base import HasSchemaMixin, Serializable, TFDatasetGenerator
+from rexify.features.base import HasSchemaMixin, Serializable
 from rexify.features.transform import EventEncoder, Sequencer, TargetTransformer
 from rexify.schema import Schema
+from rexify.utils import get_target_id
 
 
 class _EventGenerator(BaseEstimator, TransformerMixin, HasSchemaMixin):
@@ -87,9 +90,68 @@ class _EventGenerator(BaseEstimator, TransformerMixin, HasSchemaMixin):
     def window_size(self):
         return self._window_size
 
+    @property
+    def ranking_features(self):
+        return self._ppl.steps[0][1].ranking_features
+
+
+class _TFDatasetGenerator(HasSchemaMixin):
+    _event_gen: _EventGenerator
+
+    def make_dataset(self, X: pd.DataFrame) -> tf.data.Dataset:
+        ds = self._get_dataset(X)
+        ds = ds.map(self._get_header_fn())
+        return ds
+
+    def _get_dataset(self, data: pd.DataFrame) -> tf.data.Dataset:
+        return tf.data.Dataset.zip(
+            (
+                self._get_target_vector_dataset(data, self._schema, "user"),
+                self._get_target_vector_dataset(data, self._schema, "item"),
+                tf.data.Dataset.from_tensor_slices(
+                    np.stack(data["history"].values).astype(np.int32)
+                ),
+                self._get_ranking_dataset(data),
+            )
+        )
+
+    @staticmethod
+    def _get_target_vector_dataset(
+        data, schema: Schema, target: str
+    ) -> tf.data.Dataset:
+        return tf.data.Dataset.from_tensor_slices(
+            data.loc[:, get_target_id(schema, target)]
+            .values.reshape(-1)
+            .astype(np.int32)
+        )
+
+    def _get_ranking_dataset(self, data) -> tf.data.Dataset:
+        @tf.autograph.experimental.do_not_convert
+        def add_header(x):
+            return {
+                self._event_gen.ranking_features[i]: x[i]
+                for i in range(len(self._event_gen.ranking_features))
+            }
+
+        return tf.data.Dataset.from_tensor_slices(
+            data.loc[:, self._event_gen.ranking_features].values.astype(np.int32)
+        ).map(add_header)
+
+    @staticmethod
+    def _get_header_fn():
+        @tf.autograph.experimental.do_not_convert
+        def header_fn(user_id, item_id, history, ranks):
+            return {
+                "query": {"user_id": user_id, "history": history},
+                "candidate": {"item_id": item_id},
+                "rank": ranks,
+            }
+
+        return header_fn
+
 
 class FeatureExtractor(
-    BaseEstimator, TransformerMixin, Serializable, TFDatasetGenerator
+    BaseEstimator, TransformerMixin, Serializable, _TFDatasetGenerator
 ):
 
     _event_gen: _EventGenerator
@@ -133,6 +195,7 @@ class FeatureExtractor(
         model_params = {}
         model_params.update(self._user_transformer.model_params)
         model_params.update(self._item_transformer.model_params)
+        model_params.update({"ranking_features": self.ranking_features})
         return model_params
 
     @property
@@ -150,3 +213,7 @@ class FeatureExtractor(
     @property
     def model_params(self):
         return self._model_params
+
+    @property
+    def ranking_features(self):
+        return self._event_gen.ranking_features
