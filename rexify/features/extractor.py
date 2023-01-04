@@ -195,6 +195,7 @@ class FeatureExtractor(
         model_params = {}
         model_params.update(self._user_transformer.model_params)
         model_params.update(self._item_transformer.model_params)
+        model_params.update({"ranking_features": self.ranking_features})
         return model_params
 
     @property
