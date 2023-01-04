@@ -4,7 +4,6 @@ import tensorflow as tf
 import tensorflow_recommenders as tfrs
 
 from rexify.models.base import DenseSetterMixin
-from rexify.models.ranking.event import EventModel
 
 
 class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
@@ -18,14 +17,37 @@ class RankingMixin(tfrs.Model, DenseSetterMixin, ABC):
         self._ranking_features = ranking_features or []
         self._ranking_layers = layer_sizes or [64, 32]
 
-        self.event_model = EventModel(self._rating_layers, n_dims=self._ranking_dims)
+        # todo: validate ranking weights
+        self._ranking_weights = weights or {
+            feature: 1.0 for feature in self._ranking_features
+        }
+        self._ranking_models = {
+            feature: self._get_ranking_model() for feature in self._ranking_features
+        }
+        self._ranking_tasks = {
+            feature: tfrs.tasks.Ranking(loss=tf.keras.losses.BinaryCrossentropy())
+            for feature in self._ranking_features
+        }
 
     def get_loss(
         self,
         query_embeddings: tf.Tensor,
         candidate_embeddings: tf.Tensor,
-        events: tf.Tensor,
+        ranks: dict[str, tf.Tensor],
     ):
+        loss = 0
         inputs = tf.concat([query_embeddings, candidate_embeddings], axis=1)
-        loss = self.event_model(inputs, events)
+        for feature, model in self._ranking_models.items():
+            rating_preds = self._call_layers(model, inputs)
+            loss += (
+                self._ranking_tasks[feature](
+                    labels=ranks[feature], predictions=rating_preds
+                )
+                * self._ranking_weights[feature]
+            )
         return loss
+
+    def _get_ranking_model(self) -> list[tf.keras.layers.Layer]:
+        model = self._set_dense_layers(self._ranking_layers)
+        model.append(tf.keras.layers.Dense(1, activation="sigmoid"))
+        return model
