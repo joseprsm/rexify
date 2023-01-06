@@ -20,7 +20,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
     Examples:
         >>> from rexify.features.transform import Sequencer
-        >>> sequencer = Sequencer(schema, "timestamp")
+        >>> sequencer = Sequencer(schema)
         >>> sequencer.fit(events)
         Sequencer(schema={'context': {'timestamp': 'timestamp'},
                       'item': {'item_id': 'id', 'price': 'numerical',
@@ -38,6 +38,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
     _item_id: str
     _columns: list[str]
     _padding: list[int]
+    _history: pd.DataFrame
 
     def __init__(self, schema: Schema, window_size: int = 3, **kwargs):
         super().__init__(schema=schema)
@@ -52,8 +53,23 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
         return self
 
     def transform(self, X: pd.DataFrame):
+        sequences = self._get_sequences(X)
+
+        res = sequences.drop(self._item_id, axis=1).applymap(self._get_last)
+        res[self._item_id] = sequences.pop(self._item_id)
+        res["history"] = sequences.pop("history")
+        res.reset_index(inplace=True)
+        res = res.loc[res["history"].map(len) == self._window_size - 1, :]
+        res = res.loc[~res.date.isna()]
+
+        self._history = self._get_history(res)
+
+        res.drop(self._timestamp_feature, axis=1, inplace=True)
+        return res
+
+    def _get_sequences(self, df: pd.DataFrame):
         sequences: pd.DataFrame = (
-            X.sort_values(self._timestamp_feature)
+            df.sort_values(self._timestamp_feature)
             .set_index(self._user_id)
             .groupby(level=-1)
             .apply(self._mask)
@@ -66,15 +82,14 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
 
         sequences["history"] = sequences[self._item_id].map(lambda x: x[:-1])
         sequences[self._item_id] = sequences[self._item_id].map(self._get_last)
+        return sequences
 
-        res = sequences.drop(self._item_id, axis=1).applymap(self._get_last)
-        res[self._item_id] = sequences.pop(self._item_id)
-        res["history"] = sequences.pop("history")
-        res.reset_index(inplace=True)
-        res.drop(self._timestamp_feature, axis=1, inplace=True)
-        res = res.loc[res["history"].map(len) == self._window_size - 1, :]
-
-        return res
+    def _get_history(self, df: pd.DataFrame):
+        return (
+            df.groupby([self._user_id])
+            .agg({self._timestamp_feature: max, "history": lambda x: list(x)[-1]})
+            .drop(self._timestamp_feature, axis=1)
+        )
 
     def _mask(self, df: pd.DataFrame):
         return [list(df[col]) for col in self._columns]
@@ -108,3 +123,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
     @property
     def window_size(self):
         return self._window_size
+
+    @property
+    def history(self):
+        return self._history

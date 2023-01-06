@@ -94,6 +94,10 @@ class _EventGenerator(BaseEstimator, TransformerMixin, HasSchemaMixin):
     def ranking_features(self):
         return self._ppl.steps[0][1].ranking_features
 
+    @property
+    def history(self):
+        return self._ppl.steps[1][1].history
+
 
 class _TFDatasetGenerator(HasSchemaMixin):
     _event_gen: _EventGenerator
@@ -217,3 +221,7 @@ class FeatureExtractor(
     @property
     def ranking_features(self):
         return self._event_gen.ranking_features
+
+    @property
+    def history(self):
+        return self._event_gen.history
