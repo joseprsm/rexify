@@ -54,13 +54,13 @@ pip install rexify
 Rexify is meant to be usable right out of the box. All you need to set up your model is interaction
 data - something that kind of looks like this:
 
-| user_id | item_id | timestamp  | item_name   | event_type  |
-|---------|---------|------------|-------------|-------------|
-| 22      | 67      | 2021/05/13 | Blue Jeans  | Purchase    |
-| 37      | 9       | 2021/04/11 | White Shirt | Page View   |
-| 22      | 473     | 2021/04/11 | Red Purse   | Add to Cart |
-| ...     | ...     | ...        | ...         | ...         |
-| 358     | 51      | 2021/04/11 | Bracelet    | Purchase    |
+| user_id | item_id | timestamp  | event_type  |
+|---------|---------|------------|-------------|
+| 22      | 67      | 2021/05/13 | Purchase    |
+| 37      | 9       | 2021/04/11 | Page View   |
+| 22      | 473     | 2021/04/11 | Add to Cart |
+| ...     | ...     | ...        | ...         |
+| 358     | 51      | 2021/04/11 | Purchase    |
 
 Additionally, we'll have to have configured a schema for the data.
 This schema is what will allow Rexify to generate a dynamic model and preprocessing steps.
