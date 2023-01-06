@@ -64,25 +64,26 @@ data - something that kind of looks like this:
 
 Additionally, we'll have to have configured a schema for the data.
 This schema is what will allow Rexify to generate a dynamic model and preprocessing steps.
-The schema should be comprised of three dictionaries: `user`, `ìtem`, `context`.
+The schema should be comprised of two dictionaries (`user`, `ìtem`) and two key-value 
+pairs: `event_type` (which should point to the column of the event type) and `timestamp` (
+which should point to the timestamp column)
 
 Each of these dictionaries should consist of features and internal data types, 
-such as: `id`, `categorical`, `timestamp`, `text`. More data types will be available 
+such as: `id`, `category`, `number`. More data types will be available 
 in the future.
 
 ```json
 {
   "user": {
-    "user_id": "id"
+    "user_id": "id",
+    "age": "number"
   },
   "item": {
     "item_id": "id",
-    "timestamp": "timestamp",
-    "item_name": "text"
+    "category": "category"
   },
-  "context": {
-    "event_type": "categorical"
-  }
+  "timestamp": "timestamp"
+  "event_type": "event_type"
 }
 ```
 
@@ -105,27 +106,22 @@ More information about how the `FeatureExtractor` and the `Recommender` works ca
 A sample Rexify workflow should sort of look like this:
 
 ````python
-import json
+
 import pandas as pd
 
-from rexify import FeatureExtractor, Recommender
+from rexify import Schema, FeatureExtractor, Recommender
 
-users = pd.read_csv('path/to/users/data')
-items = pd.read_csv('path/to/items/data')
 events = pd.read_csv('path/to/events/data')
 
-with open('path/to/schema') as f:
-    schema = json.load(f)
+schema = Schema.load('path/to/schema')
 
-user_extractor = FeatureExtractor(schema, "user")
-users = user_extractor.fit(users).transform(users)
+feat = FeatureExtractor(schema, users_path='path/to/users/data', items_path='path/to/events/data')
+x = feat.fit_transform(events)
+x = feat.make_dataset(x)
 
-item_extractor = FeatureExtractor(schema, "item")
-items = item_extractor.fit(items).transform(items)
-
-model = Recommender(**user_extractor.model_params, **item_extractor.model_params)
+model = Recommender(**feat.model_params)
 model.compile()
-model.fit(events)
+model.fit(events, batch_size=512)
 ````
 
 When training is complete, you'll have a trained `tf.keras.Model` ready to be used, as
