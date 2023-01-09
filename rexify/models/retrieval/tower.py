@@ -50,7 +50,7 @@ class TowerModel(tf.keras.Model, DenseSetterMixin):
         self.output_model = self._set_dense_layers(self._layer_sizes, activation=None)
 
     @abstractmethod
-    def call(self, inputs: dict[str, tf.Tensor]):
+    def call(self, inputs: dict[str, tf.Tensor], training: bool = None):
         raise NotImplementedError
 
     def get_config(self):

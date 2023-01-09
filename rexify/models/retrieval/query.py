@@ -52,7 +52,7 @@ class QueryModel(TowerModel):
             dense_layer_sizes=sequential_dense_layers,
         )
 
-    def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
+    def call(self, inputs: dict[str, tf.Tensor], training: bool = None) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
         features = [self.lookup_model(inputs[self._id_feature])]
 
