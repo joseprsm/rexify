@@ -87,8 +87,9 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
     def _get_history(self, df: pd.DataFrame):
         return (
             df.groupby([self._user_id])
-            .agg({self._timestamp_feature: max, "history": lambda x: list(x)[-1]})
+            .agg({self._timestamp_feature: max, "history": list})
             .drop(self._timestamp_feature, axis=1)
+            .history.map(self._get_last)
         )
 
     def _mask(self, df: pd.DataFrame):
