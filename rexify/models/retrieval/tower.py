@@ -45,7 +45,7 @@ class TowerModel(tf.keras.Model, DenseSetterMixin):
         self.embedding_layer = tf.keras.layers.Embedding(n_dims, embedding_dim)
         self.feature_model = self._set_dense_layers(self._feature_layers)
         self.lookup_model = EmbeddingLookup(
-            identifiers=self._identifiers, embeddings=self._target_features
+            ids=self._identifiers, embeddings=self._target_features
         )
         self.output_model = self._set_dense_layers(self._layer_sizes, activation=None)
 
