@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 
+from rexify.models.lookup import SessionLookup
 from rexify.models.retrieval.tower import TowerModel
 from rexify.models.sequential import SequentialModel
 
@@ -29,6 +31,7 @@ class QueryModel(TowerModel):
         n_items: int,
         identifiers: np.array,
         feature_embeddings: np.array,
+        session_history: pd.DataFrame,
         embedding_dim: int = 32,
         output_layers: list[int] = None,
         feature_layers: list[int] = None,
@@ -51,14 +54,23 @@ class QueryModel(TowerModel):
             recurrent_layer_sizes=recurrent_layers,
             dense_layer_sizes=sequential_dense_layers,
         )
+        self.session_lookup = SessionLookup(
+            ids=session_history.index.values.astype(int),
+            sessions=np.stack(session_history.values).astype(int),
+        )
 
-    def call(self, inputs: dict[str, tf.Tensor]) -> tf.Tensor:
+    def call(self, inputs: dict[str, tf.Tensor], training: bool = None) -> tf.Tensor:
         x = self.embedding_layer(inputs[self._id_feature])
         features = [self.lookup_model(inputs[self._id_feature])]
 
-        if "history" in inputs.keys():
-            sequential_embedding = self.sequential_model(inputs["history"])
-            x = tf.concat([x, sequential_embedding], axis=1)
+        history = (
+            self.session_lookup(inputs[self._id_feature])
+            if not training
+            else inputs["history"]
+        )
+
+        sequential_embedding = self.sequential_model(history)
+        x = tf.concat([x, sequential_embedding], axis=1)
 
         features = tf.concat(features, axis=1) if len(features) > 1 else features[0]
         feature_embedding = self._call_layers(self.feature_model, features)

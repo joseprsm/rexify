@@ -15,6 +15,7 @@ class RetrievalMixin(tfrs.Model, ABC):
         item_dims: int,
         user_embeddings: pd.DataFrame,
         item_embeddings: pd.DataFrame,
+        session_history: pd.DataFrame,
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
@@ -37,6 +38,7 @@ class RetrievalMixin(tfrs.Model, ABC):
             self._item_dims,
             identifiers=user_embeddings.index.values.astype(int),
             feature_embeddings=user_embeddings.values.astype(float),
+            session_history=session_history,
             **joint_args
         )
 

@@ -115,7 +115,7 @@ events = pd.read_csv('path/to/events/data')
 
 schema = Schema.load('path/to/schema')
 
-feat = FeatureExtractor(schema, users_path='path/to/users/data', items_path='path/to/events/data')
+feat = FeatureExtractor(schema, users='path/to/users/data', items='path/to/events/data')
 x = feat.fit_transform(events)
 x = feat.make_dataset(x)
 

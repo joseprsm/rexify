@@ -164,17 +164,19 @@ class FeatureExtractor(
     def __init__(
         self,
         schema: Schema,
-        users_path: str = None,
-        items_path: str = None,
+        users: str = None,
+        items: str = None,
         load_fn: Callable = pd.read_csv,
+        return_dataset: bool = True,
     ):
         HasSchemaMixin.__init__(self, schema)
         self._user_transformer = TargetTransformer(schema, "user")
         self._item_transformer = TargetTransformer(schema, "item")
         self._load_fn = load_fn
 
-        self._users_path = users_path
-        self._items_path = items_path
+        self._users = users
+        self._items = items
+        self._return_dataset = return_dataset
 
     def fit(self, X, y=None):
         self._fit_extractor("user")
@@ -187,10 +189,14 @@ class FeatureExtractor(
         return self
 
     def transform(self, X):
-        return self._event_gen.transform(X)
+        events = self._event_gen.transform(X)
+        self._model_params["session_history"] = self.history
+        if self._return_dataset:
+            return self.make_dataset(events)
+        return events
 
     def _fit_extractor(self, target: str):
-        path = getattr(self, f"_{target}s_path")
+        path = getattr(self, f"_{target}s")
         transformer = getattr(self, f"_{target}_transformer")
         data = self._load_fn(path)
         _ = transformer.fit(data).transform(data)
@@ -204,11 +210,11 @@ class FeatureExtractor(
 
     @property
     def users_path(self):
-        return self._users_path
+        return self._users
 
     @property
     def items_path(self):
-        return self._items_path
+        return self._items
 
     @property
     def load_fn(self):
@@ -225,3 +231,7 @@ class FeatureExtractor(
     @property
     def history(self):
         return self._event_gen.history
+
+    @property
+    def dataset(self):
+        return self._return_dataset
