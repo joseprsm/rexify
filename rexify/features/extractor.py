@@ -168,6 +168,7 @@ class FeatureExtractor(
         items: str = None,
         load_fn: Callable = pd.read_csv,
         return_dataset: bool = True,
+        window_size: int = 3,
     ):
         HasSchemaMixin.__init__(self, schema)
         self._user_transformer = TargetTransformer(schema, "user")
@@ -177,12 +178,16 @@ class FeatureExtractor(
         self._users = users
         self._items = items
         self._return_dataset = return_dataset
+        self._window_size = window_size
 
     def fit(self, X, y=None):
         self._fit_extractor("user")
         self._fit_extractor("item")
         self._event_gen = _EventGenerator(
-            self._schema, self._user_transformer, self._item_transformer
+            schema=self._schema,
+            user_extractor=self._user_transformer,
+            item_extractor=self._item_transformer,
+            window_size=self._window_size,
         )
         self._event_gen.fit(X, y)
         self._model_params = self._get_model_params()
@@ -206,14 +211,15 @@ class FeatureExtractor(
         model_params.update(self._user_transformer.model_params)
         model_params.update(self._item_transformer.model_params)
         model_params.update({"ranking_features": self.ranking_features})
+        model_params["window_size"] = self._window_size
         return model_params
 
     @property
-    def users_path(self):
+    def users(self):
         return self._users
 
     @property
-    def items_path(self):
+    def items(self):
         return self._items
 
     @property
@@ -233,5 +239,9 @@ class FeatureExtractor(
         return self._event_gen.history
 
     @property
-    def dataset(self):
+    def return_dataset(self):
         return self._return_dataset
+
+    @property
+    def window_size(self):
+        return self._window_size

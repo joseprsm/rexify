@@ -16,6 +16,7 @@ class RetrievalMixin(tfrs.Model, ABC):
         user_embeddings: pd.DataFrame,
         item_embeddings: pd.DataFrame,
         session_history: pd.DataFrame,
+        window_size: int = 3,
         embedding_dim: int = 32,
         feature_layers: list[int] = None,
         output_layers: list[int] = None,
@@ -24,6 +25,7 @@ class RetrievalMixin(tfrs.Model, ABC):
         super().__init__()
         self._user_dims = user_dims
         self._item_dims = item_dims
+        self._window_size = window_size
         self._embedding_dim = embedding_dim
         self._output_layers = output_layers or [64, 32]
         self._feature_layers = feature_layers or [64, 32, 16]
@@ -58,3 +60,7 @@ class RetrievalMixin(tfrs.Model, ABC):
 
     def get_loss(self, *embeddings):
         return self.retrieval_task(*embeddings)
+
+    @property
+    def window_size(self):
+        return self._window_size
