@@ -1,7 +1,8 @@
 from abc import abstractmethod
 
 import tensorflow as tf
-import tensorflow_recommenders as tfrs
+
+from rexify.models.index import BruteForceIndex
 
 
 class _IndexCallback(tf.keras.callbacks.Callback):
@@ -35,7 +36,9 @@ class _IndexCallback(tf.keras.callbacks.Callback):
 
 class BruteForceCallback(_IndexCallback):
     def on_train_end(self, logs=None):
-        brute_force = tfrs.layers.factorized_top_k.BruteForce(self.model.query_model)
+        brute_force = BruteForceIndex(
+            self.model.query_model, window_size=self.model.window_size
+        )
         brute_force.index_from_dataset(candidates=self._get_dataset())
-        _ = brute_force(self._sample_query)
+        _ = brute_force(self._sample_query["user_id"])
         self.model.index = brute_force
