@@ -43,7 +43,7 @@ class _FeaturePipeline(tuple):
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 
-class TargetTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
+class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
     _features: pd.DataFrame
     _model_params: dict[str, Any]
 

@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
 from rexify.features.base import HasSchemaMixin, Serializable
-from rexify.features.transform import EventEncoder, Sequencer, TargetTransformer
+from rexify.features.transform import EntityTransformer, EventEncoder, Sequencer
 from rexify.schema import Schema
 from rexify.utils import get_target_id
 
@@ -24,10 +24,16 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         load_fn: Callable = pd.read_csv,
         return_dataset: bool = True,
         window_size: int = 3,
+        custom_transformers: dict[str, list[tuple[TransformerMixin, list[str]]]] = None,
     ):
         HasSchemaMixin.__init__(self, schema)
-        self._user_transformer = TargetTransformer(schema, "user")
-        self._item_transformer = TargetTransformer(schema, "item")
+
+        self._user_transformer = EntityTransformer(
+            schema, "user", custom_transformers["user"]
+        )
+        self._item_transformer = EntityTransformer(
+            schema, "item", custom_transformers["item"]
+        )
 
         self._users = users
         self._items = items
@@ -82,13 +88,13 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         _ = transformer.fit(data).transform(data)
 
     @staticmethod
-    def _encode(transformer: TargetTransformer, data: pd.DataFrame) -> pd.DataFrame:
+    def _encode(transformer: EntityTransformer, data: pd.DataFrame) -> pd.DataFrame:
         encoder, feature_names = transformer.encoder
         data[feature_names] = encoder.transform(data[feature_names])
         return data
 
     @staticmethod
-    def _drop(df: pd.DataFrame, transformer: TargetTransformer):
+    def _drop(df: pd.DataFrame, transformer: EntityTransformer):
         encoder, id_ = transformer.encoder
         return df.loc[df[id_].values.reshape(-1) != encoder.unknown_value, :]
 
