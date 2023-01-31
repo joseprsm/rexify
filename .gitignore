@@ -13,5 +13,12 @@ data
 
 outputs
 pipeline.json
+schema.json
 
 /docs/_build/
+/docs/api
+/docs/reference
+
+.DS_Store
+
+*.pyc
