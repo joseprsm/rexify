@@ -7,7 +7,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
 from rexify.features.base import HasSchemaMixin, Serializable
-from rexify.features.transform import EntityTransformer, EventEncoder, Sequencer
+from rexify.features.transform import EventEncoder, Sequencer
+from rexify.features.transform.entity import EntityTransformer
 from rexify.schema import Schema
 from rexify.utils import get_target_id
 
