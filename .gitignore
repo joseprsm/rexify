@@ -22,3 +22,4 @@ schema.json
 .DS_Store
 
 *.pyc
+.vscode/settings.json
