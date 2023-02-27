@@ -11,6 +11,7 @@ jobs:
     steps:
       - checkout
       - python/install-packages:
+          pre-install-steps: []
           pkg-manager: poetry
       - run:
           name: Run tests
