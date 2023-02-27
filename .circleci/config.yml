@@ -5,10 +5,19 @@ orbs:
 
 jobs:
 
+  test: 
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Run tests
+          command: |
+            poetry run pytest
+
   publish:
     docker:
       - image: cimg/python:3.10
-
     steps:
       - checkout
       - run:
@@ -21,6 +30,7 @@ jobs:
 workflows:
   build:
     jobs:
+      - test
       - publish:
           filters:
             branches:
