@@ -7,7 +7,7 @@ def _get_target(schema, target: str):
 
 def get_target_id(schema, target: str):
     schema_dict = _get_target(schema, target)
-    return [v for k, v in schema_dict.items() if k == "id"]
+    return [k for k, v in schema_dict.items() if v == "id"]
 
 
 def get_target_feature(schema, target: str, type_: str):
