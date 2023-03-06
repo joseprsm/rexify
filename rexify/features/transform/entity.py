@@ -2,6 +2,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.base import TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
@@ -39,7 +40,8 @@ class _FeaturePipeline(tuple):
             IDEncoder(schema, target),
             _FeatureTransformer(schema, target),
         )
-        keys = list(getattr(schema, target).to_dict().keys())
+        target_keys = getattr(schema, target).to_dict()
+        keys = [target_keys.pop("id")] + list(target_keys.keys())
         return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
 
 
@@ -47,10 +49,16 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
     _features: pd.DataFrame
     _model_params: dict[str, Any]
 
-    def __init__(self, schema: Schema, target: str):
+    def __init__(
+        self,
+        schema: Schema,
+        target: str,
+        custom_transformers: list[tuple[TransformerMixin, list[str]]] = None,
+    ):
         HasSchemaMixin.__init__(self, schema)
         HasTargetMixin.__init__(self, target)
         ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
+        self.custom_transformers = custom_transformers
 
     def fit(self, X, y=None):
         super().fit(X, y)
