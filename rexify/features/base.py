@@ -1,6 +1,8 @@
 import pickle
 from pathlib import Path
 
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import make_column_transformer
 from sklearn.pipeline import Pipeline
 
 from rexify.schema import Schema
@@ -69,6 +71,19 @@ class BaseEncoder(HasSchemaMixin):
     def as_tuple(self):
         return tuple(self)
 
-    @property
-    def name(self):
-        return self._name
+
+class BaseTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, transformer: TransformerMixin, target_features: list[str]):
+        super().__init__()
+        self.transformer = transformer
+        self.target_features = target_features
+
+        self._column_transformer = make_column_transformer(
+            (self.transformer, self.target_features),
+        )
+
+    def fit(self, X, y=None, **fit_params):
+        return self
+
+    def transform(self, X):
+        pass

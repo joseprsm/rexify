@@ -1,19 +1,20 @@
 import json
+from copy import deepcopy
 
 from rexify.utils import get_target_id
 
 
 class _JSONSerializable:
     def to_dict(self):
-        return self.__dict__
+        return self.__dict__.copy()
 
 
 class _TargetSchema(_JSONSerializable):
 
-    _SUPPORTED_DATA_TYPES = ["category", "number"]
+    _SUPPORTED_DATA_TYPES = ["category", "number", "id"]
 
     def __init__(self, id_: str, **features):
-        setattr(self, id_, "id")
+        self.id = id_
         for feature_name, dtype in features.items():
             self._validate_features(feature_name, dtype)
             setattr(self, feature_name, dtype)
@@ -47,14 +48,14 @@ class Schema(_JSONSerializable):
         self.event_type = event_type
 
     @classmethod
-    def load(cls, schema_path: str):
+    def from_json(cls, schema_path: str):
         with open(schema_path, "r") as f:
             schema = json.load(f)
         return Schema.from_dict(schema)
 
     @classmethod
     def from_dict(cls, schema: dict[str, str | dict[str, str]]):
-        schema_ = schema.copy()
+        schema_ = deepcopy(schema)
         user_id = get_target_id(schema_, "user")[0]
         _ = schema_["user"].pop(user_id)
 
@@ -70,10 +71,18 @@ class Schema(_JSONSerializable):
             item_features=schema_["item"],
         )
 
-    def to_dict(self) -> dict[str, str | dict[str, str]]:
-        schema = super().to_dict()
+    def to_dict(self):
+        schema = dict()
         schema["user"] = self.user.to_dict()
+        schema["user"][schema["user"]["id"]] = "id"
+        _ = schema["user"].pop("id")
+
         schema["item"] = self.item.to_dict()
+        schema["item"][schema["item"]["id"]] = "id"
+        _ = schema["item"].pop("id")
+
+        schema["event_type"] = self.event_type
+        schema["timestamp"] = self.timestamp
         return schema
 
     def save(self, path: str):
