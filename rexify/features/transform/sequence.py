@@ -60,7 +60,7 @@ class Sequencer(BaseEstimator, TransformerMixin, HasSchemaMixin):
         res["history"] = sequences.pop("history")
         res.reset_index(inplace=True)
         res = res.loc[res["history"].map(len) == self._window_size - 1, :]
-        res = res.loc[~res.date.isna()]
+        res = res.loc[~res.loc[:, self._timestamp_feature].isna()]
 
         self._history = self._get_history(res)
 
