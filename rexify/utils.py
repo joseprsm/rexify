@@ -5,9 +5,10 @@ def _get_target(schema, target: str):
     return getattr(schema, target).to_dict() if type(schema) != dict else schema[target]
 
 
-def get_target_id(schema, target: str):
-    schema_dict = _get_target(schema, target)
-    return [k for k, v in schema_dict.items() if v == "id"]
+def get_target_id(schema, target: str) -> list[str]:
+    if type(schema) != dict:
+        return [getattr(schema, target).id]
+    return [k for k, v in schema[target].items() if v == "id"]
 
 
 def get_target_feature(schema, target: str, type_: str):
