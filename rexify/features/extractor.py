@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -20,26 +20,26 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
     def __init__(
         self,
         schema: Schema,
-        users: str = None,
-        items: str = None,
-        load_fn: Callable = pd.read_csv,
+        users=None,
+        items=None,
         return_dataset: bool = True,
         window_size: int = 3,
         custom_transformers: dict[str, list[tuple[TransformerMixin, list[str]]]] = None,
     ):
         HasSchemaMixin.__init__(self, schema)
 
+        self._custom_transformers = custom_transformers or {"user": {}, "item": {}}
         self._user_transformer = EntityTransformer(
-            schema, "user", custom_transformers["user"]
+            schema, "user", self._custom_transformers["user"]
         )
         self._item_transformer = EntityTransformer(
-            schema, "item", custom_transformers["item"]
+            schema, "item", self._custom_transformers["item"]
         )
 
         self._users = users
         self._items = items
+
         self._return_dataset = return_dataset
-        self._load_fn = load_fn
         self._window_size = window_size
         self._window_size = window_size
         self._timestamp = schema.timestamp
@@ -54,8 +54,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         )
 
     def fit(self, X: pd.DataFrame):
-        self._fit_extractor("user")
-        self._fit_extractor("item")
+        _ = self._user_transformer.fit(self._users).transform(self._users)
+        _ = self._item_transformer.fit(self._items).transform(self._items)
 
         x_ = X.copy()
         events = self._encode(self._user_transformer, x_)
@@ -81,12 +81,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         ds = self._get_dataset(X)
         ds = ds.map(self._get_header_fn())
         return ds
-
-    def _fit_extractor(self, target: str):
-        path = getattr(self, f"_{target}s")
-        transformer = getattr(self, f"_{target}_transformer")
-        data = self._load_fn(path)
-        _ = transformer.fit(data).transform(data)
 
     @staticmethod
     def _encode(transformer: EntityTransformer, data: pd.DataFrame) -> pd.DataFrame:
@@ -184,3 +178,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
     @property
     def window_size(self):
         return self._window_size
+
+    @property
+    def custom_transformers(self):
+        return self._custom_transformers
