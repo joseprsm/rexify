@@ -1,8 +1,11 @@
+import numpy as np
 import pandas as pd
 import pytest
 import tensorflow as tf
+from sklearn.preprocessing import StandardScaler
 
 from rexify import FeatureExtractor, Schema
+from rexify.features.transform import CustomTransformer
 
 
 class TestFeatureExtractor:
@@ -53,3 +56,21 @@ class TestFeatureExtractor:
         assert isinstance(transformed, tf.data.Dataset)
         example = list(transformed.take(1))[0]
         assert isinstance(example, dict)
+
+    @pytest.fixture(scope="class")
+    def custom_feat(self, schema, users, items):
+        users["custom_feature"] = np.random.randint(100, 200, size=users.shape[0])
+        return FeatureExtractor(
+            schema,
+            users,
+            items,
+            custom_transformers=[
+                CustomTransformer("user", StandardScaler(), ["custom_feature"])
+            ],
+        )
+
+    def test_fit_custom(self, data, feat, custom_feat):
+        _ = feat.fit(data)
+        _ = custom_feat.fit(data)
+        assert feat.model_params["user_embeddings"].shape[1] == 3
+        assert custom_feat.model_params["user_embeddings"].shape[1] == 4
