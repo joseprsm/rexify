@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
 from rexify.features.base import HasSchemaMixin, Serializable
-from rexify.features.transform import EventEncoder, Sequencer
+from rexify.features.transform import CustomTransformer, EventEncoder, Sequencer
 from rexify.features.transform.entity import EntityTransformer
 from rexify.schema import Schema
 from rexify.utils import get_target_id
@@ -24,25 +24,24 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         items=None,
         return_dataset: bool = True,
         window_size: int = 3,
-        custom_transformers: dict[str, list[tuple[TransformerMixin, list[str]]]] = None,
+        custom_transformers: list[CustomTransformer] = None,
     ):
         HasSchemaMixin.__init__(self, schema)
 
-        self._custom_transformers = custom_transformers or {"user": {}, "item": {}}
-        self._user_transformer = EntityTransformer(
-            schema, "user", self._custom_transformers["user"]
-        )
-        self._item_transformer = EntityTransformer(
-            schema, "item", self._custom_transformers["item"]
-        )
-
         self._users = users
         self._items = items
-
         self._return_dataset = return_dataset
         self._window_size = window_size
         self._window_size = window_size
         self._timestamp = schema.timestamp
+        self._custom_transformers = custom_transformers or []
+
+        self._user_transformer = EntityTransformer(
+            schema, "user", self._custom_transformers
+        )
+        self._item_transformer = EntityTransformer(
+            schema, "item", self._custom_transformers
+        )
 
         self._ppl = make_pipeline(
             EventEncoder(self._schema),

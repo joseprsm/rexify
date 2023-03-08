@@ -2,12 +2,16 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline, make_pipeline
 
 from rexify.features.base import HasSchemaMixin, HasTargetMixin
-from rexify.features.transform import CategoricalEncoder, IDEncoder, NumericalEncoder
+from rexify.features.transform import (
+    CategoricalEncoder,
+    CustomTransformer,
+    IDEncoder,
+    NumericalEncoder,
+)
 from rexify.schema import Schema
 from rexify.utils import get_target_id
 
@@ -53,12 +57,17 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
         self,
         schema: Schema,
         target: str,
-        custom_transformers: list[tuple[TransformerMixin, list[str]]] = None,
+        custom_transformers: list[CustomTransformer] = None,
     ):
         HasSchemaMixin.__init__(self, schema)
         HasTargetMixin.__init__(self, target)
-        ColumnTransformer.__init__(self, [_FeaturePipeline(self._schema, self._target)])
-        self.custom_transformers = custom_transformers
+        self._custom_transformers = (
+            self._filter_custom_transformers(custom_transformers, self._target) or []
+        )
+        transformers = [
+            _FeaturePipeline(self._schema, self._target)
+        ] + self._custom_transformers
+        ColumnTransformer.__init__(self, transformers)
 
     def fit(self, X, y=None):
         super().fit(X, y)
@@ -87,6 +96,15 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
         input_dims = int(X[id_col].nunique() + 1)
         return {f"{self._target}_dims": input_dims}
 
+    @staticmethod
+    def _filter_custom_transformers(
+        custom_transformers: list[CustomTransformer], target: str
+    ):
+        def target_from_name(x):
+            return x[0].split("_")[0] == target
+
+        return list(filter(target_from_name, custom_transformers))
+
     @property
     def model_params(self):
         return self._model_params
@@ -99,3 +117,7 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
     def encoder(self):
         encoder = self.transformers_[0][1].steps[0][1].transformer.transformers_[0]
         return encoder[1], encoder[-1]
+
+    @property
+    def custom_transformers(self):
+        return self._custom_transformers
