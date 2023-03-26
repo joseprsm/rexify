@@ -1,4 +1,5 @@
 import pickle
+import re
 from pathlib import Path
 
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -36,8 +37,9 @@ class HasTargetMixin:
 
 
 class Serializable:
-    def save(self, output_dir: str, filename: str):
+    def save(self, output_dir: str, filename: str = None):
         make_dirs(output_dir)
+        filename = filename or self._camel_to_snake_case(self.__name__) + ".pickle"
         output_path = Path(output_dir) / filename
         with open(output_path, "wb") as f:
             pickle.dump(self, f)
@@ -47,6 +49,10 @@ class Serializable:
         with open(path, "rb") as f:
             feat = pickle.load(f)
         return feat
+
+    @staticmethod
+    def _camel_to_snake_case(name: str):
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
 class BaseEncoder(HasSchemaMixin):
