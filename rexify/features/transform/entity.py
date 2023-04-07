@@ -37,18 +37,6 @@ class _FeatureTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
         return transformer_list
 
 
-class _FeaturePipeline(tuple):
-    def __new__(cls, schema: Schema, target: str):
-        name = f"{target}_featureExtractor"
-        ppl = make_pipeline(
-            IDEncoder(schema, target),
-            _FeatureTransformer(schema, target),
-        )
-        target_keys = getattr(schema, target).to_dict()
-        keys = [target_keys.pop("id")] + list(target_keys.keys())
-        return tuple.__new__(_FeaturePipeline, (name, ppl, keys))
-
-
 class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
     _features: pd.DataFrame
     _model_params: dict[str, Any]
@@ -65,7 +53,7 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
             self._filter_custom_transformers(custom_transformers, self._target) or []
         )
         transformers = [
-            _FeaturePipeline(self._schema, self._target)
+            self._get_feature_pipeline(self._schema, self._target)
         ] + self._custom_transformers
         ColumnTransformer.__init__(self, transformers)
 
@@ -104,6 +92,17 @@ class EntityTransformer(ColumnTransformer, HasSchemaMixin, HasTargetMixin):
             return x[0].split("_")[0] == target
 
         return list(filter(target_from_name, custom_transformers))
+
+    @staticmethod
+    def _get_feature_pipeline(schema, target) -> tuple[str, Pipeline, list[str]]:
+        name = f"{target}_featureExtractor"
+        ppl = make_pipeline(
+            IDEncoder(schema, target),
+            _FeatureTransformer(schema, target),
+        )
+        target_keys = getattr(schema, target).to_dict()
+        keys = [target_keys.pop("id")] + list(target_keys.keys())
+        return name, ppl, keys
 
     @property
     def model_params(self):

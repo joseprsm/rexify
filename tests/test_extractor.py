@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -74,3 +77,13 @@ class TestFeatureExtractor:
         _ = custom_feat.fit(data)
         assert feat.model_params["user_embeddings"].shape[1] == 3
         assert custom_feat.model_params["user_embeddings"].shape[1] == 4
+
+    def test_save_load(self, data, feat):
+        _ = feat.fit(data).transform(data)
+        tmp_dir = tempfile.mkdtemp()
+        feat.save(tmp_dir)
+        feat_path = Path(tmp_dir) / "feature_extractor.pickle"
+        assert feat_path.exists()
+
+        fe = FeatureExtractor.load(feat_path)
+        assert fe
