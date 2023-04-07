@@ -1,16 +1,14 @@
 from typing import Any
 
-import numpy as np
 import pandas as pd
-import tensorflow as tf
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
+from rexify.data import DataFrame
 from rexify.features.base import HasSchemaMixin, Serializable
 from rexify.features.transform import CustomTransformer, EventEncoder, Sequencer
 from rexify.features.transform.entity import EntityTransformer
 from rexify.schema import Schema
-from rexify.utils import get_target_id
 
 
 class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializable):
@@ -64,7 +62,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         self._model_params = self._get_model_params()
         return self
 
-    def transform(self, X: pd.DataFrame):
+    def transform(self, X: pd.DataFrame) -> DataFrame:
         x_ = X.copy()
         events = self._encode(self._user_transformer, x_)
         events = self._encode(self._item_transformer, events)
@@ -72,14 +70,11 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         events = self._drop(events, self._user_transformer)
         events = self._drop(events, self._item_transformer)
         self._model_params["session_history"] = self.history
-        if self._return_dataset:
-            return self.make_dataset(events)
-        return events
 
-    def make_dataset(self, X: pd.DataFrame) -> tf.data.Dataset:
-        ds = self._get_dataset(X)
-        ds = ds.map(self._get_header_fn())
-        return ds
+        transformed = DataFrame(
+            events, schema=self._schema, ranking_features=self.ranking_features
+        )
+        return transformed.to_dataset() if self._return_dataset else transformed
 
     @staticmethod
     def _encode(transformer: EntityTransformer, data: pd.DataFrame) -> pd.DataFrame:
@@ -99,52 +94,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         model_params.update({"ranking_features": self.ranking_features})
         model_params["window_size"] = self._window_size
         return model_params
-
-    def _get_dataset(self, data: pd.DataFrame) -> tf.data.Dataset:
-        return tf.data.Dataset.zip(
-            (
-                self._get_target_vector_dataset(data, self._schema, "user"),
-                self._get_target_vector_dataset(data, self._schema, "item"),
-                tf.data.Dataset.from_tensor_slices(
-                    np.stack(data["history"].values).astype(np.int32)
-                ),
-                self._get_ranking_dataset(data),
-            )
-        )
-
-    @staticmethod
-    def _get_target_vector_dataset(
-        data, schema: Schema, target: str
-    ) -> tf.data.Dataset:
-        return tf.data.Dataset.from_tensor_slices(
-            data.loc[:, get_target_id(schema, target)]
-            .values.reshape(-1)
-            .astype(np.int32)
-        )
-
-    def _get_ranking_dataset(self, data) -> tf.data.Dataset:
-        @tf.autograph.experimental.do_not_convert
-        def add_header(x):
-            return {
-                self.ranking_features[i]: x[i]
-                for i in range(len(self.ranking_features))
-            }
-
-        return tf.data.Dataset.from_tensor_slices(
-            data.loc[:, self.ranking_features].values.astype(np.int32)
-        ).map(add_header)
-
-    @staticmethod
-    def _get_header_fn():
-        @tf.autograph.experimental.do_not_convert
-        def header_fn(user_id, item_id, history, ranks):
-            return {
-                "query": {"user_id": user_id, "history": history},
-                "candidate": {"item_id": item_id},
-                "rank": ranks,
-            }
-
-        return header_fn
 
     @property
     def users(self):
