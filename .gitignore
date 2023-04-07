@@ -1,6 +1,6 @@
-build
-dist
-data
+/build
+/dist
+/data
 
 .idea
 .env
