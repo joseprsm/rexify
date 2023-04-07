@@ -39,7 +39,9 @@ class HasTargetMixin:
 class Serializable:
     def save(self, output_dir: str, filename: str = None):
         make_dirs(output_dir)
-        filename = filename or self._camel_to_snake_case(self.__name__) + ".pickle"
+        filename = (
+            filename or self._camel_to_snake_case(self.__class__.__name__) + ".pickle"
+        )
         output_path = Path(output_dir) / filename
         with open(output_path, "wb") as f:
             pickle.dump(self, f)
