@@ -7,7 +7,7 @@ from rexify.schema import Schema
 from rexify.utils import get_target_id
 
 
-class DataFrame(pd.DataFrame):
+class DataFrame(pd.DataFrame, HasSchemaMixin):
     def __init__(
         self,
         data: pd.DataFrame,
