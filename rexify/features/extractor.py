@@ -72,7 +72,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         self._model_params["session_history"] = self.history
 
         transformed = DataFrame(
-            events, schema=self._schema, ranking_features=self.ranking_features
+            data=events, schema=self._schema, ranking_features=self.ranking_features
         )
         return transformed.to_dataset() if self._return_dataset else transformed
 
