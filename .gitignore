@@ -12,8 +12,6 @@
 *.egg-info/
 
 outputs
-pipeline.json
-schema.json
 
 /docs/_build/
 /docs/api
