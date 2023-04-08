@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 from rexify.features.base import HasSchemaMixin
 from rexify.schema import Schema
@@ -20,6 +21,10 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
         super().__init__(data)
         HasSchemaMixin.__init__(self, schema)
         self._ranking_features = ranking_features
+        self._dataframe_args = {
+            "schema": self._schema,
+            "ranking_features": self._ranking_features,
+        }
 
     def save(self, path: str | Path, name: str = None):
         path = Path(path)
@@ -50,6 +55,12 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
             ranking_features = json.load(f)
 
         return DataFrame(features, schema=schema, ranking_features=ranking_features)
+
+    def split(self, **kwargs):
+        train, val = train_test_split(self, **kwargs)
+        train = DataFrame(train, **self._dataframe_args)
+        val = DataFrame(val, **self._dataframe_args)
+        return train, val
 
     def to_dataset(self) -> tf.data.Dataset:
         return self._make_dataset().map(self._get_header_fn())

@@ -101,3 +101,11 @@ class TestFeatureExtractor:
 
         df = DataFrame.load(transformed_path)
         df.to_dataset()
+
+    def test_data_split(self, data, fe_no_data):
+        transformed = fe_no_data.fit(data).transform(data)
+        assert isinstance(transformed, DataFrame)
+
+        train, val = transformed.split(test_size=0.5)
+        assert isinstance(train, DataFrame)
+        assert isinstance(val, DataFrame)
