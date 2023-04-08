@@ -105,7 +105,7 @@ class Recommender(RetrievalMixin, RankingMixin):
         if batch_size:
             x = x.batch(batch_size)
             if validation_data:
-                validation_data.batch(batch_size)
+                validation_data = validation_data.batch(batch_size)
 
         return super().fit(
             x, epochs=epochs, validation_data=validation_data, callbacks=callbacks
