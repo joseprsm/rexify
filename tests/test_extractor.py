@@ -109,3 +109,7 @@ class TestFeatureExtractor:
         train, val = transformed.split(test_size=0.5)
         assert isinstance(train, DataFrame)
         assert isinstance(val, DataFrame)
+
+        train, val = transformed.split(return_dataset=True, test_size=0.5)
+        assert isinstance(train, tf.data.Dataset)
+        assert isinstance(val, tf.data.Dataset)

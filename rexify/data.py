@@ -56,10 +56,12 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
 
         return DataFrame(features, schema=schema, ranking_features=ranking_features)
 
-    def split(self, **kwargs):
+    def split(self, return_dataset: bool = False, **kwargs):
         train, val = train_test_split(self, **kwargs)
         train = DataFrame(train, **self._dataframe_args)
         val = DataFrame(val, **self._dataframe_args)
+        if return_dataset:
+            return train.to_dataset(), val.to_dataset()
         return train, val
 
     def to_dataset(self) -> tf.data.Dataset:
