@@ -101,7 +101,11 @@ class Recommender(RetrievalMixin, RankingMixin):
         sample_query = list(x.batch(1).take(1))[0]["query"]
         base_callbacks = [BruteForceCallback(sample_query)]
         callbacks = base_callbacks if callbacks is None else callbacks
-        x = x.batch(batch_size) if batch_size else x
+
+        if batch_size:
+            x = x.batch(batch_size)
+            if validation_data:
+                validation_data.batch(batch_size)
 
         return super().fit(
             x, epochs=epochs, validation_data=validation_data, callbacks=callbacks
