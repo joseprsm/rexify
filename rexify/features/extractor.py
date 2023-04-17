@@ -95,6 +95,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         model_params["window_size"] = self._window_size
         return model_params
 
+    @staticmethod
+    def _get_ids(df: pd.DataFrame, transformer: EntityTransformer):
+        return df.loc[:, transformer.encoder[1][0]].values
+
     @property
     def users(self):
         return self._users
@@ -132,5 +136,13 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         return self._item_transformer.encoder[0]
 
     @property
+    def item_ids(self):
+        return self._get_ids(self._items, self._item_transformer)
+
+    @property
     def user_encoder(self):
         return self._user_transformer.encoder[0]
+
+    @property
+    def user_ids(self):
+        return self._get_ids(self._users, self._user_transformer)
