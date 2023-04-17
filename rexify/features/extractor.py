@@ -104,10 +104,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         return self._items
 
     @property
-    def load_fn(self):
-        return self._load_fn
-
-    @property
     def model_params(self):
         return self._model_params
 
@@ -130,3 +126,11 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
     @property
     def custom_transformers(self):
         return self._custom_transformers
+
+    @property
+    def item_encoder(self):
+        return self._item_transformer.encoder[0]
+
+    @property
+    def user_encoder(self):
+        return self._user_transformer.encoder[0]
