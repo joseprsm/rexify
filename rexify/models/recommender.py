@@ -121,3 +121,7 @@ class Recommender(RetrievalMixin, RankingMixin):
             "ranking_features": self._ranking_features,
             "ranking_weights": self._ranking_weights,
         }
+
+    @classmethod
+    def load(cls, export_dir: str) -> tf.keras.Model:
+        return tf.saved_model.load(export_dir)
