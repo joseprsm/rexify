@@ -15,6 +15,8 @@ from rexify.schema import Schema
 class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializable):
 
     _model_params: dict[str, Any]
+    _item_ids: np.ndarray
+    _user_ids: np.ndarray
 
     def __init__(
         self,
@@ -75,6 +77,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         transformed = DataFrame(
             data=events, schema=self._schema, ranking_features=self.ranking_features
         )
+
+        self._user_ids = self._get_ids(transformed, self._user_transformer)
+        self._item_ids = self._get_ids(transformed, self._item_transformer)
+
         return transformed.to_dataset() if self._return_dataset else transformed
 
     @staticmethod
@@ -138,7 +144,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
 
     @property
     def item_ids(self):
-        return self._get_ids(self._items, self._item_transformer)
+        return self._item_ids
 
     @property
     def user_encoder(self):
@@ -146,4 +152,4 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
 
     @property
     def user_ids(self):
-        return self._get_ids(self._users, self._user_transformer)
+        return self._user_ids
