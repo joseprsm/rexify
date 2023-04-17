@@ -1,5 +1,6 @@
 from typing import Any
 
+import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
@@ -97,7 +98,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
 
     @staticmethod
     def _get_ids(df: pd.DataFrame, transformer: EntityTransformer):
-        return df.loc[:, transformer.encoder[1][0]].values
+        return df.loc[:, transformer.encoder[1][0]].values.astype(np.int32)
 
     @property
     def users(self):
