@@ -1,4 +1,5 @@
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -20,11 +21,13 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
     ):
         super().__init__(data)
         HasSchemaMixin.__init__(self, schema)
-        self._ranking_features = ranking_features
-        self._dataframe_args = {
-            "schema": self._schema,
-            "ranking_features": self._ranking_features,
-        }
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            self._ranking_features = ranking_features
+            self._dataframe_args = {
+                "schema": self._schema,
+                "ranking_features": self._ranking_features,
+            }
 
     def save(self, path: str | Path, name: str = None):
         path = Path(path)
