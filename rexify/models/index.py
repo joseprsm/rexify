@@ -7,7 +7,7 @@ class BruteForceIndex(tfrs.layers.factorized_top_k.BruteForce):
         self,
         query_model: tf.keras.Model,
         window_size,
-        k: int = 10,
+        k: int = 2,
         name: str = None,
     ):
         super().__init__(query_model, k, name)
