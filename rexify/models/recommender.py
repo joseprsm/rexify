@@ -97,18 +97,7 @@ class Recommender(RetrievalMixin, RankingMixin):
         callbacks: list[tf.keras.callbacks.Callback] = None,
         validation_data=None,
     ):
-        # required to set index shapes
-        sample_query = list(x.batch(1).take(1))[0]["query"]
-        base_callbacks = [BruteForceCallback(sample_query)]
-
-        try:
-            from rexify.models.callbacks import MlflowCallback
-
-            base_callbacks += [MlflowCallback()]
-        except ImportError:
-            pass
-
-        callbacks = base_callbacks if callbacks is None else callbacks
+        callbacks = callbacks if callbacks else self._get_callbacks(x)
 
         if batch_size:
             x = x.batch(batch_size)
@@ -133,3 +122,18 @@ class Recommender(RetrievalMixin, RankingMixin):
     @classmethod
     def load(cls, export_dir: str) -> tf.keras.Model:
         return tf.saved_model.load(export_dir)
+
+    @staticmethod
+    def _get_callbacks(x) -> list[tf.keras.callbacks.Callback]:
+        # required to set index shapes
+        sample_query = list(x.batch(1).take(1))[0]["query"]
+        callbacks = [BruteForceCallback(sample_query)]
+
+        try:
+            from rexify.models.callbacks import MlflowCallback
+
+            callbacks += [MlflowCallback()]
+        except ImportError:
+            pass
+
+        return callbacks
