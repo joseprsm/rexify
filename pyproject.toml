@@ -34,6 +34,10 @@ kfp = "^1.8.0"
 scikit-learn = "1.*"
 pandas = "^1.4.0"
 numpy = ">=1.22.3"
+mlflow = { version = "^2.3.0", optional = true }
+
+[tool.poetry.extras]
+mlflow = ["mlflow"]
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
