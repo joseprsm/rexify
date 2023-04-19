@@ -17,7 +17,7 @@ class _BaseIndex:
         return self.__class__.__bases__[1].call(self, inputs, k)
 
 
-class BruteForceIndex(_BaseIndex, tfrs.layers.factorized_top_k.BruteForce):
+class BruteForce(_BaseIndex, tfrs.layers.factorized_top_k.BruteForce):
     def __init__(
         self,
         query_model: tf.keras.Model,

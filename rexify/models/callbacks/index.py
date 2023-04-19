@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-from rexify.models.index import BruteForceIndex
+from rexify.models.index import BruteForce
 
 
 class _IndexCallback(tf.keras.callbacks.Callback):
@@ -36,7 +36,7 @@ class _IndexCallback(tf.keras.callbacks.Callback):
 
 class BruteForceCallback(_IndexCallback):
     def on_train_end(self, logs=None):
-        brute_force = BruteForceIndex(
+        brute_force = BruteForce(
             self.model.query_model, window_size=self.model.window_size
         )
         brute_force.index_from_dataset(candidates=self._get_dataset())
