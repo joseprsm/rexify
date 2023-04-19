@@ -100,6 +100,14 @@ class Recommender(RetrievalMixin, RankingMixin):
         # required to set index shapes
         sample_query = list(x.batch(1).take(1))[0]["query"]
         base_callbacks = [BruteForceCallback(sample_query)]
+
+        try:
+            from rexify.models.callbacks import MlflowCallback
+
+            base_callbacks += [MlflowCallback()]
+        except ImportError:
+            pass
+
         callbacks = base_callbacks if callbacks is None else callbacks
 
         if batch_size:
