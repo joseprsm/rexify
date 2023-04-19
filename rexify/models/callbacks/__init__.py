@@ -1,4 +1,4 @@
-from .index import BruteForceCallback
+from .index import BruteForceCallback, ScaNNCallback
 
 
 try:

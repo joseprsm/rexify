@@ -2,21 +2,27 @@ from abc import abstractmethod
 
 import tensorflow as tf
 
-from rexify.models.index import BruteForceIndex
+from rexify.models.index import BruteForce, ScaNN
 
 
 class _IndexCallback(tf.keras.callbacks.Callback):
-
-    index: tf.keras.Model
-
-    def __init__(self, sample_query: dict[str, tf.Tensor], batch_size: int = 128):
+    def __init__(
+        self, sample_query: dict[str, tf.Tensor], batch_size: int = 128, **index_args
+    ):
         super().__init__()
         self._batch_size = batch_size
         self._sample_query = sample_query
+        self._index_args = index_args
 
     @abstractmethod
-    def on_train_end(self):
+    def set(self) -> tf.keras.Model:
         pass
+
+    def on_train_end(self, logs=None):
+        index = self.set()
+        index.index_from_dataset(candidates=self._get_dataset())
+        _ = index(self._sample_query["user_id"])
+        self.model.index = index
 
     def _get_dataset(self):
         def zip_item_dataset(item):
@@ -35,10 +41,12 @@ class _IndexCallback(tf.keras.callbacks.Callback):
 
 
 class BruteForceCallback(_IndexCallback):
-    def on_train_end(self, logs=None):
-        brute_force = BruteForceIndex(
-            self.model.query_model, window_size=self.model.window_size
+    def set(self) -> tf.keras.Model:
+        return BruteForce(
+            self.model.query_model, self.model.window_size, **self._index_args
         )
-        brute_force.index_from_dataset(candidates=self._get_dataset())
-        _ = brute_force(self._sample_query["user_id"])
-        self.model.index = brute_force
+
+
+class ScaNNCallback(_IndexCallback):
+    def set(self) -> tf.keras.Model:
+        return ScaNN(self.model.query_model, self.model.window_size, **self._index_args)
