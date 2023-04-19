@@ -23,7 +23,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         schema: Schema,
         users=None,
         items=None,
-        return_dataset: bool = True,
+        return_dataset: bool = False,
         window_size: int = 3,
         custom_transformers: list[CustomTransformer] = None,
     ):
