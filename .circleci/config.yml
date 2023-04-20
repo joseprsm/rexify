@@ -57,7 +57,10 @@ workflows:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
-      - docker:
+      - request_docker:
           type: approval
           requires:
             - test
+      - docker:
+          requires:
+            - request_docker
