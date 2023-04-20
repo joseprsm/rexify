@@ -1,14 +1,14 @@
-from kfp.v2.dsl import Artifact, Dataset, Input, Output, component
+from kfp.v2.dsl import Artifact, Dataset, Output, component
 
 from rexify import BASE_IMAGE
 
 
 @component(base_image=BASE_IMAGE)
-def preprocess(
-    events: Input[Dataset],
-    users: Input[Dataset],
-    items: Input[Dataset],
-    schema: Input[Artifact],
+def load(
+    events: str,
+    users: str,
+    items: str,
+    schema: str,
     feature_extractor: Output[Artifact],
     train_data: Output[Dataset],
     validation_data: Output[Dataset],
@@ -21,12 +21,10 @@ def preprocess(
 
     from rexify import DataFrame, FeatureExtractor
 
-    events = pd.read_csv(events.path)
-    users = pd.read_csv(users.path)
-    items = pd.read_csv(items.path)
-
-    with open(schema.path, "r") as f:
-        schema = json.load(f)
+    events = pd.read_csv(events)
+    users = pd.read_csv(users)
+    items = pd.read_csv(items)
+    schema = json.loads(schema)
 
     fe = FeatureExtractor(schema, users, items, return_dataset=False)
 
