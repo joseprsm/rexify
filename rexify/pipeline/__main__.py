@@ -1,3 +1,5 @@
+import warnings
+
 import typer
 from kfp.v2.compiler import Compiler
 from kfp.v2.dsl import pipeline
@@ -5,7 +7,7 @@ from kfp.v2.dsl import pipeline
 from rexify.pipeline.components import load, train
 
 
-@pipeline(name="pipeline")
+@pipeline(name="pipeline", pipeline_root="here")
 def pipeline(
     events_uri: str = None,
     users_uri: str = None,
@@ -32,8 +34,12 @@ def pipeline(
 
 
 def compile(
-    output_path: str = typer.Option(None, help="Pipeline definition output path"),
-    parameter: list[str] = typer.Option(None, help="Pipeline parameter, KEY=VALUE"),
+    output_path: str = typer.Option(
+        None, help="Output path for the pipeline definition JSON file"
+    ),
+    parameter: list[str] = typer.Option(
+        None, "--parameter", "-p", help="Pipeline parameter, KEY=VALUE"
+    ),
 ):
     output_path = output_path if output_path else "pipeline.json"
 
@@ -43,11 +49,13 @@ def compile(
         else None
     )
 
-    Compiler().compile(
-        pipeline_func=pipeline,
-        package_path=output_path,
-        pipeline_parameters=pipeline_parameters,
-    )
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        Compiler().compile(
+            pipeline_func=pipeline,
+            package_path=output_path,
+            pipeline_parameters=pipeline_parameters,
+        )
 
 
 if __name__ == "__main__":
