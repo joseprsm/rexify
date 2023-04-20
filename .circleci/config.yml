@@ -64,7 +64,8 @@ workflows:
           requires:
             - test
       - docker:
-          <<: *only_tags
+          filters:
+            <<: *only_tags
           requires:
             - request_docker
             - publish
