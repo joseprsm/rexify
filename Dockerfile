@@ -1,5 +1,18 @@
-ARG version=0.0.9
+ARG python="3.10"
+ARG filesystem="gcs"
 
-FROM python:3.10
+FROM python:${python} AS base
 
-RUN pip install rexify==$version
+RUN if [[ $(uname -m) != *arm* ]]; then pip install scann; fi
+
+RUN pip install pandas numpy scikit-learn fsspec rexify
+
+FROM base AS fs-s3
+
+RUN pip install s3fs
+
+FROM base AS fs-gcs
+
+RUN pip install gcsfs
+
+FROM fs-${filesystem} AS final

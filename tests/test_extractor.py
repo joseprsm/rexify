@@ -56,9 +56,7 @@ class TestFeatureExtractor:
 
     def test_transform(self, data, feat):
         transformed = feat.fit(data).transform(data)
-        assert isinstance(transformed, tf.data.Dataset)
-        example = list(transformed.take(1))[0]
-        assert isinstance(example, dict)
+        assert isinstance(transformed, DataFrame)
 
     @pytest.fixture(scope="class")
     def custom_feat(self, schema, users, items):
