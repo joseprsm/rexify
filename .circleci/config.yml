@@ -52,13 +52,12 @@ workflows:
     jobs:
       - test
       - publish:
-          filters:  &only_tags
+          filters:
             branches:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
       - docker:
-          <<: *only_tags
           type: approval
           requires:
-            - publish
+            - test
