@@ -1,6 +1,5 @@
 /build
 /dist
-/data
 
 .idea
 .env
@@ -23,3 +22,5 @@ outputs
 .vscode/settings.json
 
 mlruns
+
+/*.json
