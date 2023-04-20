@@ -19,7 +19,7 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
         schema: Schema,
         ranking_features: list[str] | None = None,
     ):
-        super().__init__(data)
+        pd.DataFrame.__init__(data)
         HasSchemaMixin.__init__(self, schema)
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
