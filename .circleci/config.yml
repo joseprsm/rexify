@@ -30,13 +30,35 @@ jobs:
             poetry version $(git describe --tags --abbrev=0)
             poetry publish --build --username $PYPI_USERNAME --password $PYPI_PASSWORD
 
+  docker:
+    docker:
+      -  image: circleci/buildpack-deps:stretch
+    environment:
+      IMAGE_URI: joseprsm/rexify
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build . -t $IMAGE_URI
+      - run:
+          name: Push Docker image
+          command: | 
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push $IMAGE_URI
+
 workflows:
   build:
     jobs:
       - test
       - publish:
-          filters:
+          filters:  &only_tags
             branches:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
+      - docker:
+          <<: *only_tags
+          type: approval
+          requires:
+            - publish
