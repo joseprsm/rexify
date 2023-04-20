@@ -3,7 +3,7 @@ ARG filesystem="gcs"
 
 FROM python:${python} AS base
 
-RUN if [ $(uname -m) != *arm* ]; then pip install scann; fi
+RUN if [ $(uname -m) != *arm* ]; then pip install scann==1.2.3; fi
 
 RUN pip install pandas numpy scikit-learn fsspec rexify
 
