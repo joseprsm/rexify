@@ -4,23 +4,24 @@ import typer
 from kfp.v2.compiler import Compiler
 from kfp.v2.dsl import pipeline
 
+from rexify.pipeline import PIPELINE_ROOT
 from rexify.pipeline.components import load, train
 
 
-@pipeline(name="pipeline", pipeline_root="here")
+@pipeline(name="pipeline", pipeline_root=PIPELINE_ROOT)
 def pipeline(
-    events_uri: str = None,
-    users_uri: str = None,
-    items_uri: str = None,
-    schema: str = None,
+    events: str,
+    users: str,
+    items: str,
+    schema: str,
     epochs: int = 100,
     batch_size: int = 512,
 ):
 
     load_task = load(
-        events=events_uri,
-        users=users_uri,
-        items=items_uri,
+        events=events,
+        users=users,
+        items=items,
         schema=schema,
     )
 
