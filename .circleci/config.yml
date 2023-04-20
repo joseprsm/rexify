@@ -52,7 +52,9 @@ workflows:
     jobs:
       - test
       - publish:
-          filters:
+          requires:
+            - test
+          filters:  &only_tags
             branches:
               ignore: /.*/
             tags:
@@ -62,5 +64,7 @@ workflows:
           requires:
             - test
       - docker:
+          <<: *only_tags
           requires:
             - request_docker
+            - publish
