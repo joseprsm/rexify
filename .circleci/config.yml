@@ -54,20 +54,23 @@ workflows:
           
   test_and_build:
     jobs:
-      - test:
+      - test:  &tags_only
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
       - publish:
+          <<: *tags_only
           requires:
             - test
       - request_docker:
+          <<: *tags_only
           type: approval
           requires:
             - test
       - docker:
+          <<: *tags_only
           requires:
             - request_docker
             - publish
