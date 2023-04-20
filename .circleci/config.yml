@@ -5,7 +5,7 @@ orbs:
 
 jobs:
 
-  test: 
+  test:
     docker:
       - image: cimg/python:3.10
     steps:
@@ -32,7 +32,7 @@ jobs:
 
   docker:
     docker:
-      -  image: circleci/buildpack-deps:stretch
+      - image: cimg/base:2023.04
     environment:
       IMAGE_URI: joseprsm/rexify
     steps:
@@ -48,20 +48,22 @@ jobs:
             docker push $IMAGE_URI
 
 workflows:
-  build:
+  test_only:
     jobs:
       - test
-      - publish:
-          requires:
-            - test
-          filters:  &only_tags
+          
+  test_and_build:
+    jobs:
+      - test:
+          filters:
             branches:
               ignore: /.*/
             tags:
               only: /^\d+\.\d+\.\d+$/
+      - publish:
+          requires:
+            - test
       - request_docker:
-          filters:
-            <<: *only_tags
           type: approval
           requires:
             - test
