@@ -112,20 +112,26 @@ import pandas as pd
 from rexify import Schema, FeatureExtractor, Recommender
 
 events = pd.read_csv('path/to/events/data')
-
 schema = Schema.load('path/to/schema')
 
-feat = FeatureExtractor(schema, users='path/to/users/data', items='path/to/events/data')
-x = feat.fit_transform(events)
-x = feat.make_dataset(x)
+fe = FeatureExtractor(schema, users='path/to/users/data', items='path/to/events/data', return_dataset=True)
+x = fe.fit(events).transform(events)
 
-model = Recommender(**feat.model_params)
+model = Recommender(**fe.model_params)
 model.compile()
 model.fit(events, batch_size=512)
 ````
 
 When training is complete, you'll have a trained `tf.keras.Model` ready to be used, as
 you normally would. 
+
+Alternatively, you can also run:
+
+```shell
+python -m rexify.pipeline -p events=$EVENTS_PATH -p users=$USER_PATH -p items=$ITEMS_PATH -p schema=$SCHEMA_PATH
+```
+
+Which will generate a `pipeline.json` file, that you can use on Kubeflow Pipelines (or Vertex AI Pipelines).
 
 ## License
 
