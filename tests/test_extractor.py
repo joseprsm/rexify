@@ -7,7 +7,7 @@ import pytest
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
-from rexify import DataFrame, FeatureExtractor, Schema
+from rexify import FeatureExtractor, Output, Schema
 from rexify.features.transform import CustomTransformer
 
 
@@ -56,7 +56,7 @@ class TestFeatureExtractor:
 
     def test_transform(self, data, feat):
         transformed = feat.fit(data).transform(data)
-        assert isinstance(transformed, DataFrame)
+        assert isinstance(transformed, Output)
 
     @pytest.fixture(scope="class")
     def custom_feat(self, schema, users, items):
@@ -97,16 +97,16 @@ class TestFeatureExtractor:
         transformed_path = Path(tmp_dir)
         transformed.save(transformed_path)
 
-        df = DataFrame.load(transformed_path)
+        df = Output.load(transformed_path)
         df.to_dataset()
 
     def test_data_split(self, data, fe_no_data):
         transformed = fe_no_data.fit(data).transform(data)
-        assert isinstance(transformed, DataFrame)
+        assert isinstance(transformed, Output)
 
         train, val = transformed.split(test_size=0.5)
-        assert isinstance(train, DataFrame)
-        assert isinstance(val, DataFrame)
+        assert isinstance(train, Output)
+        assert isinstance(val, Output)
 
         train, val = transformed.split(return_dataset=True, test_size=0.5)
         assert isinstance(train, tf.data.Dataset)
