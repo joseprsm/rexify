@@ -1,4 +1,5 @@
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -11,8 +12,16 @@ from rexify.utils import get_target_id, make_dirs
 
 
 class Output(BaseDataFrame):
-    def __init__(self, data: pd.DataFrame) -> None:
-        super().__init__(data)
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        schema: Schema,
+        ranking_features: list[str] | None = None,
+    ) -> None:
+        super().__init__(data, schema)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            self._ranking_features = ranking_features
 
     @classmethod
     def load(cls, path: str | Path):
