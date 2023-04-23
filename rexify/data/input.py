@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from pathlib import Path
 
 import pandas as pd
@@ -18,6 +19,10 @@ class Input(BaseDataFrame):
     def split(self, **kwargs):
         train, val = train_test_split(self, **kwargs)
         return Input(train, self.schema), Input(val, self.schema)
+
+    @abstractmethod
+    def generate(cls, n: int = 100):
+        raise NotImplementedError
 
 
 class Events(Input):
