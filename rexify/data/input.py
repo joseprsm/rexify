@@ -18,7 +18,7 @@ class Input(BaseDataFrame):
 
     def split(self, **kwargs):
         train, val = train_test_split(self, **kwargs)
-        return Input(train, self.schema), Input(val, self.schema)
+        return self.__class__(train, self.schema), self.__class__(val, self.schema)
 
     @abstractmethod
     def generate(cls, n: int = 100):
