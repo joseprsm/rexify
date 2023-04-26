@@ -83,11 +83,11 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
 
         return transformed.to_dataset() if self._return_dataset else transformed
 
-    def _fit_transformer(self, input_type: Users | Items):
-        input_name = input_type.__name__.lower()
+    def _fit_transformer(self, inputs: Users | Items):
+        input_name = inputs.__name__.lower()
         input_path: str = getattr(self, f"_{input_name}")
         transformer = getattr(self, f"_{input_name[:-1]}_transformer")
-        x = input_type.load(input_path)
+        x = inputs.load(input_path, schema=self._schema)
         transformer.fit(x).transform(x)
 
     @staticmethod
