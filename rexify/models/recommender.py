@@ -99,7 +99,8 @@ class Recommender(RetrievalMixin, RankingMixin):
         validation_data=None,
     ):
         callbacks = callbacks if callbacks else self._get_callbacks(x, batch_size)
-        # require name if more than a single index callback
+        # todo: validate number of index callbacks
+        #   - can't be more than a single index for each model (query, candidate)
 
         if batch_size:
             x = x.batch(batch_size)
