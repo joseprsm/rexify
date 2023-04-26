@@ -16,21 +16,14 @@ def load(
 ):
     import json
 
-    import pandas as pd
-    from sklearn.model_selection import train_test_split
+    from rexify import Events, FeatureExtractor, Output, Schema
 
-    from rexify import DataFrame, FeatureExtractor
-
-    events = pd.read_csv(events)
-    users = pd.read_csv(users)
-    items = pd.read_csv(items)
-    schema = json.loads(schema)
+    schema = Schema.from_dict(json.loads(schema))
+    train, val = Events.load(events, schema=schema).split(test_size=test_size)
 
     fe = FeatureExtractor(schema, users, items, return_dataset=False)
-
-    train, val = train_test_split(events, test_size=test_size)
-    train: DataFrame = fe.fit(train).transform(train)
-    val: DataFrame = fe.transform(val)
+    train: Output = fe.fit(train).transform(train)
+    val: Output = fe.transform(val)
 
     fe.save(feature_extractor.path)
     train.save(train_data.path, "train.csv")

@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import make_pipeline
 
-from rexify.data import DataFrame
+from rexify.data import Events, Items, Output, Users
 from rexify.features.base import HasSchemaMixin, Serializable
 from rexify.features.transform import CustomTransformer, EventEncoder, Sequencer
 from rexify.features.transform.entity import EntityTransformer
@@ -21,8 +21,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
     def __init__(
         self,
         schema: Schema,
-        users=None,
-        items=None,
+        users: str = None,
+        items: str = None,
         return_dataset: bool = False,
         window_size: int = 3,
         custom_transformers: list[CustomTransformer] = None,
@@ -53,9 +53,9 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
             ),
         )
 
-    def fit(self, X: pd.DataFrame):
-        _ = self._user_transformer.fit(self._users).transform(self._users)
-        _ = self._item_transformer.fit(self._items).transform(self._items)
+    def fit(self, X: Events):
+        self._fit_transformer(Users)
+        self._fit_transformer(Items)
 
         x_ = X.copy()
         events = self._encode(self._user_transformer, x_)
@@ -65,7 +65,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         self._model_params = self._get_model_params()
         return self
 
-    def transform(self, X: pd.DataFrame) -> DataFrame:
+    def transform(self, X: Events) -> Output:
         x_ = X.copy()
         events = self._encode(self._user_transformer, x_)
         events = self._encode(self._item_transformer, events)
@@ -74,7 +74,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         events = self._drop(events, self._item_transformer)
         self._model_params["session_history"] = self.history
 
-        transformed = DataFrame(
+        transformed = Output(
             data=events, schema=self._schema, ranking_features=self.ranking_features
         )
 
@@ -82,6 +82,13 @@ class FeatureExtractor(BaseEstimator, TransformerMixin, HasSchemaMixin, Serializ
         self._item_ids = self._get_ids(transformed, self._item_transformer)
 
         return transformed.to_dataset() if self._return_dataset else transformed
+
+    def _fit_transformer(self, inputs: Users | Items):
+        input_name = inputs.__name__.lower()
+        input_path: str = getattr(self, f"_{input_name}")
+        transformer = getattr(self, f"_{input_name[:-1]}_transformer")
+        x = inputs.load(input_path, schema=self._schema)
+        transformer.fit(x).transform(x)
 
     @staticmethod
     def _encode(transformer: EntityTransformer, data: pd.DataFrame) -> pd.DataFrame:

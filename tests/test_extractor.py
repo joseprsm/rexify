@@ -1,13 +1,13 @@
+import os
 import tempfile
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
-import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 
-from rexify import DataFrame, FeatureExtractor, Schema
+from rexify import FeatureExtractor, Output, Schema
 from rexify.features.transform import CustomTransformer
 
 
@@ -49,6 +49,7 @@ class TestFeatureExtractor:
 
     @pytest.fixture(scope="class")
     def feat(self, schema, users, items):
+        users, items = self._save_users_items(users, items)
         return FeatureExtractor(schema, users, items)
 
     def test_fit(self, data, feat):
@@ -56,11 +57,12 @@ class TestFeatureExtractor:
 
     def test_transform(self, data, feat):
         transformed = feat.fit(data).transform(data)
-        assert isinstance(transformed, DataFrame)
+        assert isinstance(transformed, Output)
 
     @pytest.fixture(scope="class")
     def custom_feat(self, schema, users, items):
         users["custom_feature"] = np.random.randint(100, 200, size=users.shape[0])
+        users, items = self._save_users_items(users, items)
         return FeatureExtractor(
             schema,
             users,
@@ -88,6 +90,7 @@ class TestFeatureExtractor:
 
     @pytest.fixture(scope="class")
     def fe_no_data(self, schema, users, items):
+        users, items = self._save_users_items(users, items)
         return FeatureExtractor(schema, users, items, return_dataset=False)
 
     def test_make_dataset(self, data, fe_no_data):
@@ -97,17 +100,16 @@ class TestFeatureExtractor:
         transformed_path = Path(tmp_dir)
         transformed.save(transformed_path)
 
-        df = DataFrame.load(transformed_path)
+        df = Output.load(transformed_path)
         df.to_dataset()
 
-    def test_data_split(self, data, fe_no_data):
-        transformed = fe_no_data.fit(data).transform(data)
-        assert isinstance(transformed, DataFrame)
+    def _save_users_items(self, users, items) -> tuple[str, str]:
+        tmp_dir = tempfile.mkdtemp()
 
-        train, val = transformed.split(test_size=0.5)
-        assert isinstance(train, DataFrame)
-        assert isinstance(val, DataFrame)
+        users_path = os.path.join(tmp_dir, "users.csv")
+        users.to_csv(users_path)
 
-        train, val = transformed.split(return_dataset=True, test_size=0.5)
-        assert isinstance(train, tf.data.Dataset)
-        assert isinstance(val, tf.data.Dataset)
+        items_path = os.path.join(tmp_dir, "items.csv")
+        items.to_csv(items_path)
+
+        return users_path, items_path

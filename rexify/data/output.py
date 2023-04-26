@@ -5,29 +5,38 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from sklearn.model_selection import train_test_split
 
-from rexify.features.base import HasSchemaMixin
+from rexify.data.base import BaseDataFrame
 from rexify.schema import Schema
 from rexify.utils import get_target_id, make_dirs
 
 
-class DataFrame(pd.DataFrame, HasSchemaMixin):
+class Output(BaseDataFrame):
     def __init__(
         self,
         data: pd.DataFrame,
         schema: Schema,
         ranking_features: list[str] | None = None,
-    ):
-        super().__init__(data)
-        HasSchemaMixin.__init__(self, schema)
+    ) -> None:
+        super().__init__(data, schema)
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
             self._ranking_features = ranking_features
-            self._dataframe_args = {
-                "schema": self._schema,
-                "ranking_features": self._ranking_features,
-            }
+
+    @classmethod
+    def load(cls, path: str | Path):
+        path = Path(path)
+
+        history = pd.read_csv(path / "history.csv")
+        features = pd.read_csv(path / "features.csv")
+        features["history"] = history.values.tolist()
+        del history
+
+        schema = Schema.from_json(path / "schema.json")
+        with open(path / "ranks.json", "r") as f:
+            ranking_features = json.load(f)
+
+        return cls(features, schema=schema, ranking_features=ranking_features)
 
     def save(self, path: str | Path, name: str = None):
         path = Path(path)
@@ -43,29 +52,6 @@ class DataFrame(pd.DataFrame, HasSchemaMixin):
             json.dump(self._ranking_features, f)
 
         self.schema.save(path / "schema.json")
-
-    @classmethod
-    def load(cls, path: str | Path):
-        path = Path(path)
-
-        history = pd.read_csv(path / "history.csv")
-        features = pd.read_csv(path / "features.csv")
-        features["history"] = history.values.tolist()
-        del history
-
-        schema = Schema.from_json(path / "schema.json")
-        with open(path / "ranks.json", "r") as f:
-            ranking_features = json.load(f)
-
-        return DataFrame(features, schema=schema, ranking_features=ranking_features)
-
-    def split(self, return_dataset: bool = False, **kwargs):
-        train, val = train_test_split(self, **kwargs)
-        train = DataFrame(train, **self._dataframe_args)
-        val = DataFrame(val, **self._dataframe_args)
-        if return_dataset:
-            return train.to_dataset(), val.to_dataset()
-        return train, val
 
     def to_dataset(self) -> tf.data.Dataset:
         return self._make_dataset().map(self._get_header_fn())
