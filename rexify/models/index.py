@@ -3,17 +3,22 @@ import tensorflow_recommenders as tfrs
 
 
 class _BaseIndex:
-    def __init__(self, window_size: int):
+    def __init__(self, query_model: tf.keras.Model, window_size: int):
+        self.query_model = query_model
         self._window_size = window_size
 
     def call(self, queries: tf.Tensor, k: int = None):
         queries_shape = queries.shape[0] or 1
-        inputs = {
-            "user_id": queries,
-            "history": tf.zeros(
-                shape=(queries_shape, self._window_size), dtype=tf.int32
-            ),
-        }
+        inputs = (
+            {
+                "user_id": queries,
+                "history": tf.zeros(
+                    shape=(queries_shape, self._window_size), dtype=tf.int32
+                ),
+            }
+            if self.query_model.name.startswith("query")
+            else {"item_id": queries}
+        )
         return self.__class__.__bases__[1].call(self, inputs, k)
 
 
@@ -26,7 +31,7 @@ class BruteForce(_BaseIndex, tfrs.layers.factorized_top_k.BruteForce):
         name: str = None,
     ):
         tfrs.layers.factorized_top_k.BruteForce.__init__(self, query_model, k, name)
-        _BaseIndex.__init__(self, window_size)
+        _BaseIndex.__init__(self, query_model, window_size)
 
 
 class ScaNN(_BaseIndex, tfrs.layers.factorized_top_k.ScaNN):
@@ -57,4 +62,4 @@ class ScaNN(_BaseIndex, tfrs.layers.factorized_top_k.ScaNN):
             parallelize_batch_searches,
             name,
         )
-        _BaseIndex.__init__(self, window_size)
+        _BaseIndex.__init__(self, query_model, window_size)

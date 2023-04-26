@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import tensorflow as tf
+
 
 def _get_target(schema, target: str):
     return getattr(schema, target).to_dict() if type(schema) != dict else schema[target]
@@ -22,3 +24,7 @@ def get_target_feature(schema, target: str, type_: str):
 def make_dirs(*args):
     for dir_ in args:
         Path(dir_).mkdir(parents=True, exist_ok=True)
+
+
+def get_sample_query(x: tf.data.Dataset):
+    return list(x.batch(1).take(1))[0]

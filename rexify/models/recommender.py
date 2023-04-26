@@ -4,6 +4,7 @@ import tensorflow as tf
 from rexify.models.callbacks import BruteForceCallback
 from rexify.models.ranking import RankingMixin
 from rexify.models.retrieval import RetrievalMixin
+from rexify.utils import get_sample_query
 
 
 class Recommender(RetrievalMixin, RankingMixin):
@@ -98,6 +99,8 @@ class Recommender(RetrievalMixin, RankingMixin):
         validation_data=None,
     ):
         callbacks = callbacks if callbacks else self._get_callbacks(x, batch_size)
+        # todo: validate number of index callbacks
+        #   - can't be more than a single index for each model (query, candidate)
 
         if batch_size:
             x = x.batch(batch_size)
@@ -126,7 +129,7 @@ class Recommender(RetrievalMixin, RankingMixin):
     @staticmethod
     def _get_callbacks(x, batch_size: int = None) -> list[tf.keras.callbacks.Callback]:
         # required to set index shapes
-        sample_query = list(x.batch(1).take(1))[0]["query"]
+        sample_query = get_sample_query(x)["query"]
 
         def get_index_callback():
             try:

@@ -1,30 +1,37 @@
-from abc import abstractmethod
-
 import tensorflow as tf
 
 from rexify.models.index import BruteForce, ScaNN
 
 
 class _IndexCallback(tf.keras.callbacks.Callback):
+
+    INDEX: BruteForce | ScaNN
+
     def __init__(
-        self, sample_query: dict[str, tf.Tensor], batch_size: int = 128, **index_args
+        self,
+        sample_query: dict[str, tf.Tensor],
+        query_model: str = "query_model",
+        batch_size: int = 128,
+        **index_args,
     ):
         super().__init__()
+        self._query_model = query_model
         self._batch_size = batch_size
         self._sample_query = sample_query
         self._index_args = index_args
+        self._target = "user" if self._query_model == "query_model" else "item"
 
-    @abstractmethod
     def set(self) -> tf.keras.Model:
-        pass
+        query_model = getattr(self.model, self._query_model)
+        return self.INDEX(query_model, self.model.window_size, **self._index_args)
 
     def on_train_end(self, logs=None):
         index = self.set()
-        index.index_from_dataset(candidates=self._get_dataset())
-        _ = index(self._sample_query["user_id"])
-        self.model.index = index
+        index.index_from_dataset(candidates=self._get_candidates_dataset())
+        _ = index(self._sample_query[f"{self._target}_id"])
+        setattr(self.model, f"{self._target}_index", index)
 
-    def _get_dataset(self):
+    def _get_candidates_dataset(self):
         def zip_item_dataset(item):
             return (item["item_id"], self.model.candidate_model(item))
 
@@ -41,12 +48,10 @@ class _IndexCallback(tf.keras.callbacks.Callback):
 
 
 class BruteForceCallback(_IndexCallback):
-    def set(self) -> tf.keras.Model:
-        return BruteForce(
-            self.model.query_model, self.model.window_size, **self._index_args
-        )
+
+    INDEX = BruteForce
 
 
 class ScaNNCallback(_IndexCallback):
-    def set(self) -> tf.keras.Model:
-        return ScaNN(self.model.query_model, self.model.window_size, **self._index_args)
+
+    INDEX = ScaNN
