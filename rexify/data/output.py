@@ -101,3 +101,7 @@ class Output(BaseDataFrame):
         return tf.data.Dataset.from_tensor_slices(
             data.loc[:, self._ranking_features].values.astype(np.int32)
         ).map(add_header)
+
+    @property
+    def ranking_features(self):
+        return self._ranking_features
